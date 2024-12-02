@@ -136,7 +136,7 @@ export function Board({
       <div className="relative md:w-[10000px] md:h-full">
         {/* Mobile Layout */}
         <div className="md:hidden min-h-screen px-4 py-20 flex flex-col items-center">
-          <div className="w-full max-w-md space-y-4">
+          <div className="w-full max-w-md space-y-8">
             {board.cards?.map(card => (
               <Card
                 key={card.id}
