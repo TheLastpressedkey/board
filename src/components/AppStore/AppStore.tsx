@@ -46,9 +46,9 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
   return (
     <>
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" onClick={onClose} />
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-3xl h-[80vh] bg-gray-900 rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden border border-gray-800">
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-3xl h-[80vh] bg-gray-900 rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-800">
+        <div className="flex items-center justify-between p-6 border-b border-gray-800/50">
           <h2 className="text-2xl font-bold text-white">App Store</h2>
           <button
             onClick={onClose}
@@ -59,13 +59,13 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
         </div>
 
         {/* Search */}
-        <div className="p-4 border-b border-gray-800">
+        <div className="p-4 border-b border-gray-800/50">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input
               type="text"
               placeholder="Search apps..."
-              className="w-full pl-10 pr-4 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="w-full pl-10 pr-4 py-2 bg-gray-800/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
             />
           </div>
         </div>
@@ -80,7 +80,7 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
                   onSelect(app.id);
                   onClose();
                 }}
-                className="flex items-start gap-4 p-4 bg-gray-800 rounded-lg hover:bg-gray-750 transition-colors group text-left"
+                className="flex items-start gap-4 p-4 rounded-lg hover:bg-gray-800/50 transition-colors group text-left"
               >
                 <div className="relative">
                   <div className="w-12 h-12 bg-pink-500/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -97,7 +97,7 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
                   <h3 className="text-lg font-semibold text-white mb-1">{app.name}</h3>
                   <p className="text-sm text-gray-400 mb-2">{app.description}</p>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs px-2 py-1 bg-gray-700 rounded-full text-gray-300">
+                    <span className="text-xs px-2 py-1 bg-gray-800/50 rounded-full text-gray-300">
                       {app.category}
                     </span>
                     <span className="text-xs text-gray-500">
