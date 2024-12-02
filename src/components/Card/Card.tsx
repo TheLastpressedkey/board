@@ -16,8 +16,6 @@ interface CardProps {
   isMobile: boolean;
 }
 
-const MOBILE_CARD_DIMENSIONS = { width: '80%', height: 150 };
-
 export function Card({ 
   card, 
   onDelete, 
@@ -48,9 +46,8 @@ export function Card({
   };
 
   const cardStyle = isMobile ? {
-    position: 'relative',
-    width: MOBILE_CARD_DIMENSIONS.width,
-    height: MOBILE_CARD_DIMENSIONS.height
+    width: '100%',
+    height: card.type === 'link' ? 'auto' : '200px'
   } : {
     position: 'absolute',
     left: position.x,
