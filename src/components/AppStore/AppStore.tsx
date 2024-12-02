@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calculator, Table, X, Search, Plus } from 'lucide-react';
+import { Calculator, Table, X, Search, Plus, Clock } from 'lucide-react';
 
 interface AppStoreProps {
   onSelect: (appType: string) => void;
@@ -22,6 +22,14 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
       name: 'Calculator',
       description: 'A powerful calculator with basic and scientific functions',
       icon: Calculator,
+      category: 'Tools',
+      author: 'Core Apps'
+    },
+    {
+      id: 'clock',
+      name: 'Clock',
+      description: 'Display current time and date with a beautiful interface',
+      icon: Clock,
       category: 'Tools',
       author: 'Core Apps'
     },
