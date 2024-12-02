@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Type, Monitor, Box, Cpu, Palette, Command } from 'lucide-react';
 import { ContentType } from '../../types';
+import { AppStore } from '../AppStore/AppStore';
 
 interface ContextMenuProps {
   x: number;
@@ -10,6 +11,8 @@ interface ContextMenuProps {
 }
 
 export function ContextMenu({ x, y, onSelect, onClose }: ContextMenuProps) {
+  const [showAppStore, setShowAppStore] = useState(false);
+
   const menuItems = [
     { type: 'text' as ContentType, icon: Type, label: 'Text' },
     { type: 'embed' as ContentType, icon: Monitor, label: 'Web Embed' },
@@ -18,6 +21,20 @@ export function ContextMenu({ x, y, onSelect, onClose }: ContextMenuProps) {
     { type: 'theme' as ContentType, icon: Palette, label: 'Theme' },
     { type: 'shortcut' as ContentType, icon: Command, label: 'Shortcut' },
   ];
+
+  const handleItemClick = (type: ContentType) => {
+    if (type === 'app') {
+      setShowAppStore(true);
+    } else {
+      onSelect(type);
+      onClose();
+    }
+  };
+
+  const handleAppSelect = (appType: string) => {
+    onSelect(`app-${appType}` as ContentType);
+    onClose();
+  };
 
   return (
     <>
@@ -30,13 +47,20 @@ export function ContextMenu({ x, y, onSelect, onClose }: ContextMenuProps) {
           <button
             key={type}
             className="w-full px-4 py-2 flex items-center gap-3 hover:bg-gray-700 text-white text-left"
-            onClick={() => onSelect(type)}
+            onClick={() => handleItemClick(type)}
           >
             <Icon className="w-5 h-5" />
             {label}
           </button>
         ))}
       </div>
+
+      {showAppStore && (
+        <AppStore
+          onSelect={handleAppSelect}
+          onClose={() => setShowAppStore(false)}
+        />
+      )}
     </>
   );
 }
