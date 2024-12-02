@@ -58,10 +58,8 @@ export function Card({
     >
       {/* Header */}
       <div className="flex-shrink-0 flex justify-between items-center px-4 py-2 bg-gray-50 border-b border-gray-200">
-        <div className="text-sm text-gray-600 truncate flex-1 mr-2">
-          <span className="font-medium">{title}</span>
-          <span className="mx-2 text-gray-300">•</span>
-          <span className="capitalize text-gray-400">{card.type}</span>
+        <div className="text-sm font-medium text-gray-600 truncate flex-1 mr-2">
+          {title}
         </div>
         <button
           onClick={() => onDelete(card.id)}
