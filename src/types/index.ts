@@ -1,4 +1,5 @@
-export type ContentType = 'text' | 'link' | 'embed' | 'app' | 'custom' | 'ai' | 'theme' | 'shortcut';
+import { ContentType } from './ContentType';
+export { ContentType } from './ContentType';
 
 export interface Board {
   id: string;
