@@ -38,8 +38,8 @@ export function SearchModal({ boards, currentBoard, onClose, onBoardSelect }: Se
   return (
     <>
       <div className="fixed inset-0 backdrop-blur-sm z-50" onClick={onClose} />
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] max-h-[80vh] bg-black/40 backdrop-blur-md rounded-lg shadow-2xl z-50 border border-white/10">
-        <div className="p-4">
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 w-[90%] md:w-[600px] max-h-[80vh] bg-black/40 backdrop-blur-md rounded-lg shadow-2xl z-50 border border-white/10">
+        <div className="p-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
@@ -59,7 +59,7 @@ export function SearchModal({ boards, currentBoard, onClose, onBoardSelect }: Se
               <button
                 key={`${result.boardId}-${result.cardId}`}
                 onClick={() => handleBoardSelect(result.boardId)}
-                className="w-full p-4 hover:bg-white/5 rounded-lg mb-2 text-left group transition-colors"
+                className="w-full p-3 hover:bg-white/5 rounded-lg mb-2 text-left group transition-colors"
               >
                 <div className="flex items-center gap-2 mb-1">
                   <Layout className="w-4 h-4 text-gray-400" />
@@ -75,7 +75,7 @@ export function SearchModal({ boards, currentBoard, onClose, onBoardSelect }: Se
             ))}
 
             {results.length === 0 && (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-6 text-gray-400">
                 No results found for "{query}"
               </div>
             )}
@@ -84,7 +84,7 @@ export function SearchModal({ boards, currentBoard, onClose, onBoardSelect }: Se
 
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1 hover:bg-white/5 rounded-full transition-colors"
+          className="absolute top-3 right-3 p-1 hover:bg-white/5 rounded-full transition-colors"
         >
           <X className="w-5 h-5 text-gray-400" />
         </button>
