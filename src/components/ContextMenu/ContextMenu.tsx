@@ -17,7 +17,7 @@ export function ContextMenu({ x, y, onSelect, onClose }: ContextMenuProps) {
     { type: 'text' as ContentType, icon: Type, label: 'Text' },
     { type: 'embed' as ContentType, icon: Monitor, label: 'Web Embed' },
     { type: 'app' as ContentType, icon: Box, label: 'Install App' },
-    { type: 'ai' as ContentType, icon: Cpu, label: 'Create an App with AI' },
+    { type: 'userapp' as ContentType, icon: Cpu, label: 'Create an App' },
     { type: 'theme' as ContentType, icon: Palette, label: 'Theme' },
     { type: 'shortcut' as ContentType, icon: Command, label: 'Shortcut' },
   ];
