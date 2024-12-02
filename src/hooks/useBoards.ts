@@ -102,6 +102,16 @@ export function useBoards() {
     setUnsavedChanges(true);
   }, []);
 
+  const updateCardMetadata = useCallback((cardId: string, metadata: any) => {
+    setBoards(prevBoards => prevBoards.map(board => ({
+      ...board,
+      cards: board.cards?.map(card => 
+        card.id === cardId ? { ...card, metadata } : card
+      ) || []
+    })));
+    setUnsavedChanges(true);
+  }, []);
+
   const updateCardPosition = useCallback((cardId: string, position: { x: number; y: number }) => {
     setBoards(prevBoards => prevBoards.map(board => ({
       ...board,
@@ -157,6 +167,7 @@ export function useBoards() {
     updateCardPosition,
     updateCardContent,
     updateCardDimensions,
+    updateCardMetadata,
     loadBoards,
     saveBoards,
     hasUnsavedChanges: unsavedChanges,
