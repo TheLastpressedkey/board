@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calculator } from '../Apps/Calculator/Calculator';
+import { Clock } from '../Apps/Clock/Clock';
 
 interface AppCardContentProps {
   appType: string;
@@ -20,6 +21,8 @@ export function AppCardContent({ appType, onClose, isMobile = false }: AppCardCo
     switch (appType) {
       case 'calculator':
         return <Calculator onClose={onClose} />;
+      case 'clock':
+        return <Clock onClose={onClose} />;
       default:
         return (
           <div className="h-full flex items-center justify-center text-gray-500">
