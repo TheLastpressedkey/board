@@ -133,17 +133,35 @@ export function Board({
       onMouseMove={(e) => !isDraggingBoard && handleSelectionMove(e)}
       onMouseUp={handleBoardMouseUp}
     >
-      <div className="relative" style={{ width: '10000px', height: '100%' }}>
-        {board.cards?.map(card => (
-          <Card
-            key={card.id}
-            card={card}
-            onDelete={onDeleteCard}
-            onPositionChange={(position) => onUpdateCardPosition(card.id, position)}
-            onContentChange={onContentChange}
-            onDimensionsChange={onUpdateCardDimensions}
-          />
-        ))}
+      <div className="relative md:w-[10000px] md:h-full">
+        <div className="md:hidden grid grid-cols-1 gap-4 p-4 auto-rows-max">
+          {board.cards?.map(card => (
+            <Card
+              key={card.id}
+              card={card}
+              onDelete={onDeleteCard}
+              onPositionChange={(position) => onUpdateCardPosition(card.id, position)}
+              onContentChange={onContentChange}
+              onDimensionsChange={onUpdateCardDimensions}
+              isMobile={true}
+            />
+          ))}
+        </div>
+
+        <div className="hidden md:block">
+          {board.cards?.map(card => (
+            <Card
+              key={card.id}
+              card={card}
+              onDelete={onDeleteCard}
+              onPositionChange={(position) => onUpdateCardPosition(card.id, position)}
+              onContentChange={onContentChange}
+              onDimensionsChange={onUpdateCardDimensions}
+              isMobile={false}
+            />
+          ))}
+        </div>
+
         {isSelecting && selectionZone && <SelectionZone zone={selectionZone} />}
       </div>
 
