@@ -4,9 +4,10 @@ import { Calculator } from '../Apps/Calculator/Calculator';
 interface AppCardContentProps {
   appType: string;
   onClose: () => void;
+  isMobile?: boolean;
 }
 
-export function AppCardContent({ appType, onClose }: AppCardContentProps) {
+export function AppCardContent({ appType, onClose, isMobile = false }: AppCardContentProps) {
   switch (appType) {
     case 'calculator':
       return <Calculator onClose={onClose} />;
