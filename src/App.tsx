@@ -28,8 +28,9 @@ export default function App() {
     deleteCard, 
     updateCardPosition,
     updateCardContent,
-    currentBoardData,
     updateCardDimensions,
+    updateCardMetadata,
+    currentBoardData,
     loadBoards,
     saveBoards,
     hasUnsavedChanges
@@ -108,6 +109,7 @@ export default function App() {
           onScrollProgress={setScrollProgress}
           onAddCard={handleCardTypeSelect}
           onUpdateCardDimensions={updateCardDimensions}
+          onUpdateCardMetadata={updateCardMetadata}
         />
       )}
 
