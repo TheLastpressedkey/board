@@ -21,12 +21,6 @@ export function Sidebar({
 }: SidebarProps) {
   return (
     <div className="fixed left-4 top-4 z-50 flex flex-col gap-2">
-      <div className="mb-4 p-2 bg-gray-800 rounded-lg">
-        <div className="text-gray-300 text-sm truncate max-w-[120px]">
-          {user.email?.split('@')[0]}
-        </div>
-      </div>
-
       {boards.map((board) => (
         <div key={board.id} className="relative group">
           <button
