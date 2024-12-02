@@ -135,18 +135,19 @@ export function Board({
     >
       <div className="relative md:w-[10000px] md:h-full">
         {/* Mobile Layout */}
-        <div className="md:hidden min-h-screen px-4 py-20 flex flex-col items-center">
-          <div className="w-full max-w-md space-y-8">
+        <div className="md:hidden min-h-screen py-20">
+          <div className="flex flex-col items-center">
             {board.cards?.map(card => (
-              <Card
-                key={card.id}
-                card={card}
-                onDelete={onDeleteCard}
-                onPositionChange={(position) => onUpdateCardPosition(card.id, position)}
-                onContentChange={onContentChange}
-                onDimensionsChange={onUpdateCardDimensions}
-                isMobile={true}
-              />
+              <div key={card.id} className="w-full flex justify-center mb-4">
+                <Card
+                  card={card}
+                  onDelete={onDeleteCard}
+                  onPositionChange={(position) => onUpdateCardPosition(card.id, position)}
+                  onContentChange={onContentChange}
+                  onDimensionsChange={onUpdateCardDimensions}
+                  isMobile={true}
+                />
+              </div>
             ))}
           </div>
         </div>
