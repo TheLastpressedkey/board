@@ -8,6 +8,7 @@ interface BottomBarProps {
   onCreateBoard: () => void;
   onSaveBoards: () => Promise<void>;
   username: string;
+  email: string;
   hasUnsavedChanges: boolean;
   onUpdateUsername: (newUsername: string) => void;
 }
@@ -17,6 +18,7 @@ export function BottomBar({
   onCreateBoard, 
   onSaveBoards, 
   username,
+  email,
   hasUnsavedChanges,
   onUpdateUsername
 }: BottomBarProps) {
@@ -116,6 +118,7 @@ export function BottomBar({
       {showSettings && (
         <UserSettings
           username={username}
+          email={email}
           onUpdateUsername={onUpdateUsername}
           onClose={() => setShowSettings(false)}
         />
