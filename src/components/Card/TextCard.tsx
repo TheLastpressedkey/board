@@ -20,7 +20,7 @@ export function TextCardContent({ content, onChange }: TextCardContentProps) {
       <textarea
         className="w-full h-full resize-none p-4 text-gray-700 placeholder-gray-400
           focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50
-          bg-white scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
+          bg-white card-scrollbar"
         value={content}
         onChange={handleChange}
         onMouseDown={handleMouseDown}
