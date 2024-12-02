@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from './hooks/useAuth';
+import { useUserProfile } from './hooks/useUserProfile';
 import { AuthForm } from './components/Auth/AuthForm';
 import { Sidebar } from './components/Sidebar/Sidebar';
 import { ContextMenu } from './components/ContextMenu/ContextMenu';
@@ -12,13 +13,16 @@ import { LinkInput } from './components/Card/LinkInput';
 import { ContentType } from './types';
 
 export default function App() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const defaultUsername = user?.email?.split('@')[0] || 'User';
+  const { username, updateUsername, loading: profileLoading } = useUserProfile(defaultUsername);
+  
   const { 
     boards, 
     currentBoard, 
     setCurrentBoard, 
     createBoard,
-    deleteBoard, 
+    deleteBoard,
     addCard,
     addLinkCard, 
     deleteCard, 
@@ -32,8 +36,8 @@ export default function App() {
   } = useBoards();
   
   const { contextMenu, setContextMenu, handleContextMenu } = useContextMenu();
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [showLinkInput, setShowLinkInput] = useState(false);
+  const [scrollProgress, setScrollProgress] = React.useState(0);
+  const [showLinkInput, setShowLinkInput] = React.useState(false);
 
   useEffect(() => {
     if (user) {
@@ -72,7 +76,7 @@ export default function App() {
     }
   };
 
-  if (loading) {
+  if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-500 border-t-transparent"></div>
@@ -135,8 +139,9 @@ export default function App() {
         scrollProgress={scrollProgress}
         onCreateBoard={createBoard}
         onSaveBoards={saveBoards}
-        username={user.email?.split('@')[0] || 'User'}
+        username={username}
         hasUnsavedChanges={hasUnsavedChanges}
+        onUpdateUsername={updateUsername}
       />
     </div>
   );
