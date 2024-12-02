@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 interface Dimensions {
   width: number;
@@ -7,6 +7,14 @@ interface Dimensions {
 
 type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'nw' | 'ne' | 'sw' | 'se';
 
+interface ResizeState {
+  startX: number;
+  startY: number;
+  startWidth: number;
+  startHeight: number;
+  direction: ResizeDirection;
+}
+
 export function useResizable(
   initialDimensions: Dimensions,
   onDimensionsChange: (dimensions: Dimensions) => void,
@@ -14,61 +22,89 @@ export function useResizable(
   minHeight = 100
 ) {
   const [isResizing, setIsResizing] = useState(false);
-  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
-  const [startDimensions, setStartDimensions] = useState(initialDimensions);
-  const [currentDimensions, setCurrentDimensions] = useState(initialDimensions);
+  const [dimensions, setDimensions] = useState(initialDimensions);
+  const resizeState = useRef<ResizeState | null>(null);
+  const rafId = useRef<number>();
+
+  // Update dimensions when initialDimensions changes
+  useEffect(() => {
+    setDimensions(initialDimensions);
+  }, [initialDimensions]);
 
   const handleResizeStart = useCallback((e: React.MouseEvent, direction: ResizeDirection) => {
     e.preventDefault();
     e.stopPropagation();
+    
     setIsResizing(true);
-    setStartPos({ x: e.clientX, y: e.clientY });
-    setStartDimensions(currentDimensions);
+    resizeState.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      startWidth: dimensions.width,
+      startHeight: dimensions.height,
+      direction
+    };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const dx = e.clientX - startPos.x;
-      const dy = e.clientY - startPos.y;
+    document.body.style.cursor = `${direction}-resize`;
+  }, [dimensions]);
 
-      let newWidth = startDimensions.width;
-      let newHeight = startDimensions.height;
+  const handleResize = useCallback((e: MouseEvent) => {
+    if (!resizeState.current) return;
 
-      switch (direction) {
-        case 'se':
-          newWidth = Math.max(minWidth, startDimensions.width + dx);
-          newHeight = Math.max(minHeight, startDimensions.height + dy);
-          break;
-        case 'sw':
-          newWidth = Math.max(minWidth, startDimensions.width - dx);
-          newHeight = Math.max(minHeight, startDimensions.height + dy);
-          break;
-        case 'ne':
-          newWidth = Math.max(minWidth, startDimensions.width + dx);
-          newHeight = Math.max(minHeight, startDimensions.height - dy);
-          break;
-        case 'nw':
-          newWidth = Math.max(minWidth, startDimensions.width - dx);
-          newHeight = Math.max(minHeight, startDimensions.height - dy);
-          break;
-      }
+    const { startX, startY, startWidth, startHeight, direction } = resizeState.current;
+    
+    // Calculate deltas
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
 
+    // Calculate new dimensions based on direction
+    let newWidth = startWidth;
+    let newHeight = startHeight;
+
+    if (direction.includes('e')) newWidth = Math.max(minWidth, startWidth + dx);
+    if (direction.includes('w')) newWidth = Math.max(minWidth, startWidth - dx);
+    if (direction.includes('s')) newHeight = Math.max(minHeight, startHeight + dy);
+    if (direction.includes('n')) newHeight = Math.max(minHeight, startHeight - dy);
+
+    // Use requestAnimationFrame for smooth updates
+    if (rafId.current) {
+      cancelAnimationFrame(rafId.current);
+    }
+
+    rafId.current = requestAnimationFrame(() => {
       const newDimensions = { width: newWidth, height: newHeight };
-      setCurrentDimensions(newDimensions);
+      setDimensions(newDimensions);
       onDimensionsChange(newDimensions);
-    };
+    });
+  }, [minWidth, minHeight, onDimensionsChange]);
 
-    const handleMouseUp = () => {
-      setIsResizing(false);
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
+  const handleResizeEnd = useCallback(() => {
+    setIsResizing(false);
+    resizeState.current = null;
+    document.body.style.cursor = '';
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  }, [startPos, startDimensions, currentDimensions, minWidth, minHeight, onDimensionsChange]);
+    if (rafId.current) {
+      cancelAnimationFrame(rafId.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isResizing) {
+      window.addEventListener('mousemove', handleResize);
+      window.addEventListener('mouseup', handleResizeEnd);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleResize);
+      window.removeEventListener('mouseup', handleResizeEnd);
+      if (rafId.current) {
+        cancelAnimationFrame(rafId.current);
+      }
+    };
+  }, [isResizing, handleResize, handleResizeEnd]);
 
   return {
     isResizing,
-    dimensions: currentDimensions,
+    dimensions,
     handleResizeStart
   };
 }
