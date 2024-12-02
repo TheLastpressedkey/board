@@ -13,14 +13,18 @@ interface CardProps {
   onPositionChange: (position: { x: number; y: number }) => void;
   onContentChange: (id: string, content: string) => void;
   onDimensionsChange?: (id: string, dimensions: { width: number; height: number }) => void;
+  isMobile: boolean;
 }
+
+const MOBILE_CARD_DIMENSIONS = { width: '80%', height: 150 };
 
 export function Card({ 
   card, 
   onDelete, 
   onPositionChange, 
   onContentChange,
-  onDimensionsChange 
+  onDimensionsChange,
+  isMobile
 }: CardProps) {
   const defaultPosition = useMemo(() => ({ x: 0, y: 0 }), []);
   const defaultDimensions = useMemo(() => ({ width: 300, height: 200 }), []);
@@ -43,20 +47,27 @@ export function Card({
     onContentChange(card.id, content);
   };
 
+  const cardStyle = isMobile ? {
+    position: 'relative',
+    width: MOBILE_CARD_DIMENSIONS.width,
+    height: MOBILE_CARD_DIMENSIONS.height
+  } : {
+    position: 'absolute',
+    left: position.x,
+    top: position.y,
+    width: dimensions.width,
+    height: dimensions.height,
+    transform: isDragging ? 'translate(0, 0) scale(1.02)' : 'translate(0, 0)',
+    transition: isDragging ? 'none' : 'transform 0.2s ease, box-shadow 0.2s ease'
+  };
+
   return (
     <div
-      className={`card absolute bg-white rounded-lg shadow-lg select-none flex flex-col overflow-hidden
-        ${isDragging ? 'cursor-grabbing shadow-xl scale-[1.02] z-50' : 'cursor-grab shadow-lg z-10'}
-        ${isResizing ? 'cursor-nwse-resize' : ''}`}
-      style={{ 
-        left: position.x,
-        top: position.y,
-        width: dimensions.width,
-        height: dimensions.height,
-        transform: isDragging ? 'translate(0, 0) scale(1.02)' : 'translate(0, 0)',
-        transition: isDragging ? 'none' : 'transform 0.2s ease, box-shadow 0.2s ease'
-      }}
-      onMouseDown={handleMouseDown}
+      className={`card bg-white rounded-lg shadow-lg select-none flex flex-col overflow-hidden
+        ${!isMobile && isDragging ? 'cursor-grabbing shadow-xl scale-[1.02] z-50' : 'cursor-grab shadow-lg z-10'}
+        ${!isMobile && isResizing ? 'cursor-nwse-resize' : ''}`}
+      style={cardStyle as any}
+      onMouseDown={!isMobile ? handleMouseDown : undefined}
     >
       {/* Header */}
       <div className="flex-shrink-0 flex justify-between items-center px-4 py-2 bg-gray-50 border-b border-gray-200">
@@ -88,31 +99,27 @@ export function Card({
         )}
       </div>
 
-      {/* Resize handles */}
-      <div
-        className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize opacity-0 hover:opacity-100 transition-opacity"
-        onMouseDown={(e) => handleResizeStart(e, 'se')}
-      >
-        <div className="absolute bottom-0 right-0 w-3 h-3 border-r-2 border-b-2 border-gray-400" />
-      </div>
-      <div
-        className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize opacity-0 hover:opacity-100 transition-opacity"
-        onMouseDown={(e) => handleResizeStart(e, 'sw')}
-      >
-        <div className="absolute bottom-0 left-0 w-3 h-3 border-l-2 border-b-2 border-gray-400" />
-      </div>
-      <div
-        className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize opacity-0 hover:opacity-100 transition-opacity"
-        onMouseDown={(e) => handleResizeStart(e, 'ne')}
-      >
-        <div className="absolute top-0 right-0 w-3 h-3 border-r-2 border-t-2 border-gray-400" />
-      </div>
-      <div
-        className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize opacity-0 hover:opacity-100 transition-opacity"
-        onMouseDown={(e) => handleResizeStart(e, 'nw')}
-      >
-        <div className="absolute top-0 left-0 w-3 h-3 border-l-2 border-t-2 border-gray-400" />
-      </div>
+      {/* Resize handles - only show on desktop */}
+      {!isMobile && (
+        <>
+          <div
+            className="resize-handle se"
+            onMouseDown={(e) => handleResizeStart(e, 'se')}
+          />
+          <div
+            className="resize-handle sw"
+            onMouseDown={(e) => handleResizeStart(e, 'sw')}
+          />
+          <div
+            className="resize-handle ne"
+            onMouseDown={(e) => handleResizeStart(e, 'ne')}
+          />
+          <div
+            className="resize-handle nw"
+            onMouseDown={(e) => handleResizeStart(e, 'nw')}
+          />
+        </>
+      )}
     </div>
   );
 }
