@@ -79,11 +79,18 @@ export function useBoards() {
           ? { ...board, cards: [...(board.cards || []), newCard] }
           : board
       ));
-      setUnsavedChanges(true);
+      
+      // Auto-save after adding a link card
+      const updatedBoard = boards.find(b => b.id === currentBoard);
+      if (updatedBoard) {
+        const updatedCards = [...(updatedBoard.cards || []), newCard];
+        await database.saveCards(currentBoard, updatedCards);
+        setUnsavedChanges(false);
+      }
     } catch (error) {
       console.error('Error adding link card:', error);
     }
-  }, [currentBoard]);
+  }, [currentBoard, boards]);
 
   const updateCardContent = useCallback((cardId: string, content: string) => {
     setBoards(prevBoards => prevBoards.map(board => ({
