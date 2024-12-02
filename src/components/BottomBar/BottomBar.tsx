@@ -52,13 +52,13 @@ export function BottomBar({
             <User className="w-3 h-3 text-gray-300" />
           </div>
           <span className="text-gray-300 text-xs">{username}</span>
-          <button className="ml-1 px-1.5 py-0.5 text-gray-300 hover:text-gray-100 text-xs flex items-center gap-1">
+          <button className="ml-1 px-1.5 py-0.5 text-gray-300 hover:text-gray-100 text-xs flex items-center gap-1 hidden md:flex">
             <Share2 className="w-3 h-3" />
             <span>Share</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2">
           <button className="p-0.5 hover:bg-green-500/20 rounded text-gray-300 hover:text-gray-100">
             <ChevronLeft className="w-3 h-3" />
           </button>
