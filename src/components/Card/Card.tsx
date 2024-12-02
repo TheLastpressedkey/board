@@ -43,32 +43,32 @@ export function Card({
 
   return (
     <div
-      className={`card absolute bg-white rounded-lg shadow-lg select-none flex flex-col
-        ${isDragging ? 'cursor-grabbing shadow-xl' : 'cursor-grab shadow-lg'}
+      className={`card absolute bg-white rounded-lg shadow-lg select-none flex flex-col overflow-hidden
+        ${isDragging ? 'cursor-grabbing shadow-xl scale-[1.02] z-50' : 'cursor-grab shadow-lg z-10'}
         ${isResizing ? 'cursor-nwse-resize' : ''}`}
       style={{ 
         left: position.x,
         top: position.y,
         width: dimensions.width,
         height: dimensions.height,
-        transform: 'translate(0, 0)',
-        zIndex: isDragging || isResizing ? 50 : 10
+        transform: isDragging ? 'translate(0, 0) scale(1.02)' : 'translate(0, 0)',
+        transition: isDragging ? 'none' : 'transform 0.2s ease, box-shadow 0.2s ease'
       }}
       onMouseDown={handleMouseDown}
     >
       {/* Header */}
-      <div className="flex-shrink-0 flex justify-between items-start p-3 border-b border-gray-100">
-        <div className="text-sm text-gray-500 truncate flex-1 mr-2">
-          <span className="capitalize">{card.type}</span>
-          <span className="mx-2">•</span>
+      <div className="flex-shrink-0 flex justify-between items-center px-4 py-2 bg-gray-50 border-b border-gray-200">
+        <div className="text-sm text-gray-600 truncate flex-1 mr-2">
           <span className="font-medium">{title}</span>
+          <span className="mx-2 text-gray-300">•</span>
+          <span className="capitalize text-gray-400">{card.type}</span>
         </div>
         <button
           onClick={() => onDelete(card.id)}
-          className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0"
+          className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
           onMouseDown={(e) => e.stopPropagation()}
         >
-          <X className="w-4 h-4" />
+          <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
         </button>
       </div>
 
@@ -90,21 +90,29 @@ export function Card({
 
       {/* Resize handles */}
       <div
-        className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize"
+        className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize opacity-0 hover:opacity-100 transition-opacity"
         onMouseDown={(e) => handleResizeStart(e, 'se')}
-      />
+      >
+        <div className="absolute bottom-0 right-0 w-3 h-3 border-r-2 border-b-2 border-gray-400" />
+      </div>
       <div
-        className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize"
+        className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize opacity-0 hover:opacity-100 transition-opacity"
         onMouseDown={(e) => handleResizeStart(e, 'sw')}
-      />
+      >
+        <div className="absolute bottom-0 left-0 w-3 h-3 border-l-2 border-b-2 border-gray-400" />
+      </div>
       <div
-        className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize"
+        className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize opacity-0 hover:opacity-100 transition-opacity"
         onMouseDown={(e) => handleResizeStart(e, 'ne')}
-      />
+      >
+        <div className="absolute top-0 right-0 w-3 h-3 border-r-2 border-t-2 border-gray-400" />
+      </div>
       <div
-        className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize"
+        className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize opacity-0 hover:opacity-100 transition-opacity"
         onMouseDown={(e) => handleResizeStart(e, 'nw')}
-      />
+      >
+        <div className="absolute top-0 left-0 w-3 h-3 border-l-2 border-t-2 border-gray-400" />
+      </div>
     </div>
   );
 }
