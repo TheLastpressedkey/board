@@ -134,20 +134,24 @@ export function Board({
       onMouseUp={handleBoardMouseUp}
     >
       <div className="relative md:w-[10000px] md:h-full">
-        <div className="md:hidden grid grid-cols-1 gap-4 p-4 auto-rows-max">
-          {board.cards?.map(card => (
-            <Card
-              key={card.id}
-              card={card}
-              onDelete={onDeleteCard}
-              onPositionChange={(position) => onUpdateCardPosition(card.id, position)}
-              onContentChange={onContentChange}
-              onDimensionsChange={onUpdateCardDimensions}
-              isMobile={true}
-            />
-          ))}
+        {/* Mobile Layout */}
+        <div className="md:hidden min-h-screen px-4 py-20 flex flex-col items-center">
+          <div className="w-full max-w-md space-y-4">
+            {board.cards?.map(card => (
+              <Card
+                key={card.id}
+                card={card}
+                onDelete={onDeleteCard}
+                onPositionChange={(position) => onUpdateCardPosition(card.id, position)}
+                onContentChange={onContentChange}
+                onDimensionsChange={onUpdateCardDimensions}
+                isMobile={true}
+              />
+            ))}
+          </div>
         </div>
 
+        {/* Desktop Layout */}
         <div className="hidden md:block">
           {board.cards?.map(card => (
             <Card
