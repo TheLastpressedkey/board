@@ -14,6 +14,7 @@ interface CardProps {
   onPositionChange: (position: { x: number; y: number }) => void;
   onContentChange: (id: string, content: string) => void;
   onDimensionsChange?: (id: string, dimensions: { width: number; height: number }) => void;
+  onMetadataChange?: (id: string, metadata: any) => void;
   isMobile?: boolean;
 }
 
@@ -23,6 +24,7 @@ export function Card({
   onPositionChange, 
   onContentChange,
   onDimensionsChange,
+  onMetadataChange,
   isMobile = false
 }: CardProps) {
   const defaultPosition = useMemo(() => ({ x: 0, y: 0 }), []);
@@ -41,6 +43,10 @@ export function Card({
 
   const handleContentChange = (content: string) => {
     onContentChange(card.id, content);
+  };
+
+  const handleMetadataChange = (metadata: any) => {
+    onMetadataChange?.(card.id, metadata);
   };
 
   const displayTitle = card.type === 'link' && card.metadata?.title 
@@ -73,6 +79,8 @@ export function Card({
           appType={card.type.replace('app-', '')}
           onClose={() => onDelete(card.id)}
           isMobile={isMobile}
+          metadata={card.metadata}
+          onDataChange={handleMetadataChange}
         />
       );
     }
