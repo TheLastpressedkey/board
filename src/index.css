@@ -69,3 +69,26 @@
 .card.resizing * {
   @apply select-none pointer-events-none;
 }
+
+/* Custom app styles */
+.preview-container {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+.preview-container > * {
+  max-width: 100%;
+}
+
+/* App card styles */
+.app-card {
+  @apply bg-gray-900 text-white;
+}
+
+.app-card .card-content {
+  height: calc(100% - 2rem);
+  margin: 1rem;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}

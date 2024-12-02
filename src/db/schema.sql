@@ -1,6 +1,15 @@
 -- Drop existing tables if they exist
 DROP TABLE IF EXISTS cards;
 DROP TABLE IF EXISTS boards;
+DROP TABLE IF EXISTS user_profiles;
+
+-- Create user_profiles table
+CREATE TABLE user_profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id),
+    preferred_username TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 
 -- Create boards table
 CREATE TABLE boards (
@@ -51,9 +60,29 @@ CREATE TRIGGER update_cards_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_user_profiles_updated_at
+    BEFORE UPDATE ON user_profiles
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
 -- Add RLS policies
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE boards ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cards ENABLE ROW LEVEL SECURITY;
+
+-- User profiles policies
+CREATE POLICY "Users can view their own profile"
+    ON user_profiles FOR SELECT
+    USING (auth.uid() = id);
+
+CREATE POLICY "Users can update their own profile"
+    ON user_profiles FOR UPDATE
+    USING (auth.uid() = id)
+    WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Users can insert their own profile"
+    ON user_profiles FOR INSERT
+    WITH CHECK (auth.uid() = id);
 
 -- Boards policies
 CREATE POLICY "Users can view their own boards"
@@ -71,7 +100,7 @@ CREATE POLICY "Users can update their own boards"
 
 CREATE POLICY "Users can delete their own boards"
     ON boards FOR DELETE
-    USING (auth.uid() = user_id AND NOT is_main_board);
+    USING (auth.uid() = user_id);
 
 -- Cards policies
 CREATE POLICY "Users can view cards in their boards"
@@ -105,31 +134,3 @@ CREATE POLICY "Users can delete cards in their boards"
         WHERE boards.id = cards.board_id
         AND boards.user_id = auth.uid()
     ));
-
--- Create a unique constraint for one main board per user
-CREATE UNIQUE INDEX idx_one_main_board_per_user 
-ON boards (user_id) 
-WHERE is_main_board = true;
-
--- Create a trigger to ensure only one main board per user
-CREATE OR REPLACE FUNCTION check_main_board()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.is_main_board = true THEN
-        IF EXISTS (
-            SELECT 1 FROM boards 
-            WHERE user_id = NEW.user_id 
-            AND is_main_board = true 
-            AND id != NEW.id
-        ) THEN
-            RAISE EXCEPTION 'User can only have one main board';
-        END IF;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER ensure_one_main_board
-    BEFORE INSERT OR UPDATE ON boards
-    FOR EACH ROW
-    EXECUTE FUNCTION check_main_board();
