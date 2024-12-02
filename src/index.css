@@ -9,19 +9,63 @@
 }
 
 /* Custom scrollbar styles */
-.overflow-auto::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.overflow-auto::-webkit-scrollbar,
+.card-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
 }
 
-.overflow-auto::-webkit-scrollbar-track {
+.overflow-auto::-webkit-scrollbar-track,
+.card-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.overflow-auto::-webkit-scrollbar-thumb {
+.overflow-auto::-webkit-scrollbar-thumb,
+.card-scrollbar::-webkit-scrollbar-thumb {
+  background: theme('colors.pink.500');
+  border-radius: 4px;
+}
+
+.overflow-auto::-webkit-scrollbar-corner,
+.card-scrollbar::-webkit-scrollbar-corner {
   background: transparent;
 }
 
-.overflow-auto::-webkit-scrollbar-corner {
-  background: transparent;
+/* Resize handle styles */
+.resize-handle {
+  @apply absolute w-4 h-4 opacity-0 transition-opacity duration-200;
+}
+
+.resize-handle:hover,
+.card:hover .resize-handle {
+  @apply opacity-100;
+}
+
+.resize-handle::after {
+  content: '';
+  @apply absolute w-2 h-2 border-2 border-gray-400 rounded-sm;
+}
+
+.resize-handle.nw { @apply top-0 left-0 cursor-nw-resize; }
+.resize-handle.ne { @apply top-0 right-0 cursor-ne-resize; }
+.resize-handle.sw { @apply bottom-0 left-0 cursor-sw-resize; }
+.resize-handle.se { @apply bottom-0 right-0 cursor-se-resize; }
+
+.resize-handle.nw::after { @apply top-0 left-0; }
+.resize-handle.ne::after { @apply top-0 right-0; }
+.resize-handle.sw::after { @apply bottom-0 left-0; }
+.resize-handle.se::after { @apply bottom-0 right-0; }
+
+/* Card resizing styles */
+.card {
+  @apply transition-transform duration-200 ease-out;
+}
+
+.card.resizing {
+  @apply transition-none shadow-xl z-50;
+  will-change: width, height;
+}
+
+.card.resizing * {
+  @apply select-none pointer-events-none;
 }
