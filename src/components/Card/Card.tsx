@@ -45,9 +45,12 @@ export function Card({
     ? card.metadata.title 
     : `${card.id.slice(0, 8)}`;
 
+  const isAppCard = card.type.startsWith('app-');
+
   const cardStyle = isMobile ? {
     width: '80%',
-    height: card.type === 'link' ? 'auto' : '150px'
+    height: isAppCard ? '100%' : card.type === 'link' ? 'auto' : '150px',
+    margin: '0 auto'
   } : {
     position: 'absolute',
     left: position.x,
@@ -59,11 +62,12 @@ export function Card({
   };
 
   const renderContent = () => {
-    if (card.type.startsWith('app-')) {
+    if (isAppCard) {
       return (
         <AppCardContent
           appType={card.type.replace('app-', '')}
           onClose={() => onDelete(card.id)}
+          isMobile={isMobile}
         />
       );
     }
@@ -92,11 +96,12 @@ export function Card({
     <div
       className={`card bg-white rounded-lg shadow-lg select-none flex flex-col overflow-hidden
         ${!isMobile && isDragging ? 'cursor-grabbing shadow-xl z-50' : 'cursor-grab shadow-lg z-10'}
-        ${!isMobile && isResizing ? 'cursor-nwse-resize' : ''}`}
+        ${!isMobile && isResizing ? 'cursor-nwse-resize' : ''}
+        ${isAppCard ? 'app-card' : ''}`}
       style={cardStyle as any}
       onMouseDown={!isMobile ? handleMouseDown : undefined}
     >
-      {!card.type.startsWith('app-') && (
+      {!isAppCard && (
         <div className="flex-shrink-0 flex justify-between items-center px-4 py-2 bg-gray-50 border-b border-gray-200">
           <div className="text-sm font-medium text-gray-600 truncate flex-1 mr-2">
             {displayTitle}
