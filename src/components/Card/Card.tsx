@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react';
-import { X } from 'lucide-react';
+import { X, Code, Eye } from 'lucide-react';
 import { Card as CardType } from '../../types';
 import { useDraggable } from '../../hooks/useDraggable';
 import { useResizable } from '../../hooks/useResizable';
 import { TextCardContent } from './TextCard';
 import { LinkCardContent } from './LinkCard';
 import { AppCardContent } from './AppCard';
+import { UserAppContent } from './UserAppContent';
 
 interface CardProps {
   card: CardType;
@@ -26,6 +27,7 @@ export function Card({
 }: CardProps) {
   const defaultPosition = useMemo(() => ({ x: 0, y: 0 }), []);
   const defaultDimensions = useMemo(() => ({ width: 300, height: 200 }), []);
+  const [isEditing, setIsEditing] = React.useState(false);
 
   const { position, isDragging, handleMouseDown } = useDraggable(
     card.position || defaultPosition,
@@ -43,13 +45,16 @@ export function Card({
 
   const displayTitle = card.type === 'link' && card.metadata?.title 
     ? card.metadata.title 
+    : card.type === 'userapp' 
+    ? 'Custom App' 
     : `${card.id.slice(0, 8)}`;
 
   const isAppCard = card.type.startsWith('app-');
+  const isUserApp = card.type === 'userapp';
 
   const cardStyle = isMobile ? {
     width: '80%',
-    height: isAppCard ? '100%' : card.type === 'link' ? 'auto' : '150px',
+    height: isAppCard || isUserApp ? '400px' : card.type === 'link' ? 'auto' : '150px',
     margin: '0 auto'
   } : {
     position: 'absolute',
@@ -87,6 +92,14 @@ export function Card({
             metadata={card.metadata}
           />
         );
+      case 'userapp':
+        return (
+          <UserAppContent
+            content={card.content}
+            onChange={handleContentChange}
+            isEditing={isEditing}
+          />
+        );
       default:
         return null;
     }
@@ -97,7 +110,7 @@ export function Card({
       className={`card bg-white rounded-lg shadow-lg select-none flex flex-col overflow-hidden
         ${!isMobile && isDragging ? 'cursor-grabbing shadow-xl z-50' : 'cursor-grab shadow-lg z-10'}
         ${!isMobile && isResizing ? 'cursor-nwse-resize' : ''}
-        ${isAppCard ? 'app-card' : ''}`}
+        ${isAppCard || isUserApp ? 'app-card' : ''}`}
       style={cardStyle as any}
       onMouseDown={!isMobile ? handleMouseDown : undefined}
     >
@@ -106,13 +119,28 @@ export function Card({
           <div className="text-sm font-medium text-gray-600 truncate flex-1 mr-2">
             {displayTitle}
           </div>
-          <button
-            onClick={() => onDelete(card.id)}
-            className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-          </button>
+          <div className="flex items-center gap-2">
+            {isUserApp && (
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                {isEditing ? (
+                  <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                ) : (
+                  <Code className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                )}
+              </button>
+            )}
+            <button
+              onClick={() => onDelete(card.id)}
+              className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+            </button>
+          </div>
         </div>
       )}
 
@@ -120,7 +148,6 @@ export function Card({
         {renderContent()}
       </div>
 
-      {/* Resize handles - only show on desktop */}
       {!isMobile && (
         <>
           <div
