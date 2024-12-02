@@ -5,7 +5,7 @@ import { useDraggable } from '../../hooks/useDraggable';
 import { useResizable } from '../../hooks/useResizable';
 import { TextCardContent } from './TextCard';
 import { LinkCardContent } from './LinkCard';
-import { formatCardTitle } from '../../utils/cardUtils';
+import { AppCardContent } from './AppCard';
 
 interface CardProps {
   card: CardType;
@@ -13,7 +13,7 @@ interface CardProps {
   onPositionChange: (position: { x: number; y: number }) => void;
   onContentChange: (id: string, content: string) => void;
   onDimensionsChange?: (id: string, dimensions: { width: number; height: number }) => void;
-  isMobile: boolean;
+  isMobile?: boolean;
 }
 
 export function Card({ 
@@ -22,7 +22,7 @@ export function Card({
   onPositionChange, 
   onContentChange,
   onDimensionsChange,
-  isMobile
+  isMobile = false
 }: CardProps) {
   const defaultPosition = useMemo(() => ({ x: 0, y: 0 }), []);
   const defaultDimensions = useMemo(() => ({ width: 300, height: 200 }), []);
@@ -36,14 +36,14 @@ export function Card({
     card.dimensions || defaultDimensions,
     (newDimensions) => onDimensionsChange?.(card.id, newDimensions)
   );
-  
-  const displayTitle = card.type === 'link' && card.metadata?.title 
-    ? card.metadata.title 
-    : formatCardTitle(card.type, card.id);
 
   const handleContentChange = (content: string) => {
     onContentChange(card.id, content);
   };
+
+  const displayTitle = card.type === 'link' && card.metadata?.title 
+    ? card.metadata.title 
+    : `${card.id.slice(0, 8)}`;
 
   const cardStyle = isMobile ? {
     width: '80%',
@@ -58,42 +58,61 @@ export function Card({
     transition: isDragging ? 'none' : 'transform 0.2s ease, box-shadow 0.2s ease'
   };
 
-  return (
-    <div
-      className={`card bg-white rounded-lg shadow-lg select-none flex flex-col overflow-hidden
-        ${!isMobile && isDragging ? 'cursor-grabbing shadow-xl scale-[1.02] z-50' : 'cursor-grab shadow-lg z-10'}
-        ${!isMobile && isResizing ? 'cursor-nwse-resize' : ''}`}
-      style={cardStyle as any}
-      onMouseDown={!isMobile ? handleMouseDown : undefined}
-    >
-      {/* Header */}
-      <div className="flex-shrink-0 flex justify-between items-center px-4 py-2 bg-gray-50 border-b border-gray-200">
-        <div className="text-sm font-medium text-gray-600 truncate flex-1 mr-2">
-          {displayTitle}
-        </div>
-        <button
-          onClick={() => onDelete(card.id)}
-          className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
-          onMouseDown={(e) => e.stopPropagation()}
-        >
-          <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-        </button>
-      </div>
+  const renderContent = () => {
+    if (card.type.startsWith('app-')) {
+      return (
+        <AppCardContent
+          appType={card.type.replace('app-', '')}
+          onClose={() => onDelete(card.id)}
+        />
+      );
+    }
 
-      {/* Content */}
-      <div className="flex-1 overflow-hidden min-h-0">
-        {card.type === 'text' && (
+    switch (card.type) {
+      case 'text':
+        return (
           <TextCardContent
             content={card.content}
             onChange={handleContentChange}
           />
-        )}
-        {card.type === 'link' && (
+        );
+      case 'link':
+        return (
           <LinkCardContent
             content={card.content}
             metadata={card.metadata}
           />
-        )}
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div
+      className={`card bg-white rounded-lg shadow-lg select-none flex flex-col overflow-hidden
+        ${!isMobile && isDragging ? 'cursor-grabbing shadow-xl z-50' : 'cursor-grab shadow-lg z-10'}
+        ${!isMobile && isResizing ? 'cursor-nwse-resize' : ''}`}
+      style={cardStyle as any}
+      onMouseDown={!isMobile ? handleMouseDown : undefined}
+    >
+      {!card.type.startsWith('app-') && (
+        <div className="flex-shrink-0 flex justify-between items-center px-4 py-2 bg-gray-50 border-b border-gray-200">
+          <div className="text-sm font-medium text-gray-600 truncate flex-1 mr-2">
+            {displayTitle}
+          </div>
+          <button
+            onClick={() => onDelete(card.id)}
+            className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+          </button>
+        </div>
+      )}
+
+      <div className="flex-1 overflow-hidden min-h-0">
+        {renderContent()}
       </div>
 
       {/* Resize handles - only show on desktop */}
