@@ -35,7 +35,9 @@ export function Card({
     (newDimensions) => onDimensionsChange?.(card.id, newDimensions)
   );
   
-  const title = formatCardTitle(card.type, card.id);
+  const displayTitle = card.type === 'link' && card.metadata?.title 
+    ? card.metadata.title 
+    : formatCardTitle(card.type, card.id);
 
   const handleContentChange = (content: string) => {
     onContentChange(card.id, content);
@@ -59,7 +61,7 @@ export function Card({
       {/* Header */}
       <div className="flex-shrink-0 flex justify-between items-center px-4 py-2 bg-gray-50 border-b border-gray-200">
         <div className="text-sm font-medium text-gray-600 truncate flex-1 mr-2">
-          {title}
+          {displayTitle}
         </div>
         <button
           onClick={() => onDelete(card.id)}
