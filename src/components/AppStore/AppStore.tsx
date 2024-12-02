@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calculator, Table, X, Search, Plus, Clock, ListTodo } from 'lucide-react';
+import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar } from 'lucide-react';
 
 interface AppStoreProps {
   onSelect: (appType: string) => void;
@@ -38,6 +38,14 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
       name: 'Todo List',
       description: 'Stay organized with a simple and elegant todo list',
       icon: ListTodo,
+      category: 'Productivity',
+      author: 'Core Apps'
+    },
+    {
+      id: 'calendar',
+      name: 'Calendar',
+      description: 'Manage your schedule and events with a beautiful calendar',
+      icon: Calendar,
       category: 'Productivity',
       author: 'Core Apps'
     },

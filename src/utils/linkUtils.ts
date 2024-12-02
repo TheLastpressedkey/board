@@ -29,7 +29,9 @@ export async function fetchLinkMetadata(url: string) {
 
 export function isValidUrl(str: string) {
   try {
-    new URL(str);
+    // Add protocol if missing
+    const urlString = str.match(/^https?:\/\//) ? str : `https://${str}`;
+    new URL(urlString);
     return true;
   } catch {
     return false;

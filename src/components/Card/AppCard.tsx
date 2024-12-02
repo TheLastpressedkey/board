@@ -2,6 +2,7 @@ import React from 'react';
 import { Calculator } from '../Apps/Calculator/Calculator';
 import { Clock } from '../Apps/Clock/Clock';
 import { TodoList } from '../Apps/TodoList/TodoList';
+import { Calendar } from '../Apps/Calendar/Calendar';
 
 interface AppCardContentProps {
   appType: string;
@@ -31,7 +32,6 @@ export function AppCardContent({
   const containerStyle = {
     width: '100%',
     height: '100%',
-    padding: '16px',
     display: 'flex',
     flexDirection: 'column' as const,
   };
@@ -44,6 +44,14 @@ export function AppCardContent({
         return <Clock onClose={onClose} />;
       case 'todolist':
         return <TodoList onClose={onClose} />;
+      case 'calendar':
+        return (
+          <Calendar
+            onClose={onClose}
+            metadata={metadata}
+            onDataChange={onDataChange}
+          />
+        );
       default:
         return (
           <div className="h-full flex items-center justify-center text-gray-500">
