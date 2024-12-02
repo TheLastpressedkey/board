@@ -140,6 +140,7 @@ export default function App() {
         onCreateBoard={createBoard}
         onSaveBoards={saveBoards}
         username={username}
+        email={user.email || ''}
         hasUnsavedChanges={hasUnsavedChanges}
         onUpdateUsername={updateUsername}
       />
