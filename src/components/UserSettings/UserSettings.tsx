@@ -3,11 +3,12 @@ import { X } from 'lucide-react';
 
 interface UserSettingsProps {
   username: string;
+  email: string;
   onUpdateUsername: (newUsername: string) => void;
   onClose: () => void;
 }
 
-export function UserSettings({ username, onUpdateUsername, onClose }: UserSettingsProps) {
+export function UserSettings({ username, email, onUpdateUsername, onClose }: UserSettingsProps) {
   const [newUsername, setNewUsername] = useState(username);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -32,10 +33,19 @@ export function UserSettings({ username, onUpdateUsername, onClose }: UserSettin
           </button>
         </div>
 
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-300 mb-1">
+            Email
+          </label>
+          <div className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-300">
+            {email}
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-1">
-              Username
+              Display Name
             </label>
             <input
               type="text"
@@ -43,7 +53,7 @@ export function UserSettings({ username, onUpdateUsername, onClose }: UserSettin
               value={newUsername}
               onChange={(e) => setNewUsername(e.target.value)}
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
-              placeholder="Enter username"
+              placeholder="Enter display name"
             />
           </div>
 
