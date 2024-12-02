@@ -4,8 +4,6 @@ import { Board as BoardType, ContentType } from '../../types';
 import { useScrollProgress } from '../../hooks/useScrollProgress';
 import { useSelectionZone } from '../../hooks/useSelectionZone';
 import { SelectionZone } from '../SelectionZone/SelectionZone';
-import { ContextMenu } from '../ContextMenu/ContextMenu';
-import { LinkInput } from '../Card/LinkInput';
 
 interface BoardProps {
   board: BoardType;
@@ -15,6 +13,7 @@ interface BoardProps {
   onScrollProgress: (progress: number) => void;
   onAddCard: (type: ContentType, position: { x: number; y: number }, dimensions?: { width: number; height: number }) => void;
   onUpdateCardDimensions: (id: string, dimensions: { width: number; height: number }) => void;
+  onUpdateCardMetadata: (id: string, metadata: any) => void;
 }
 
 export function Board({ 
@@ -24,7 +23,8 @@ export function Board({
   onContentChange, 
   onScrollProgress,
   onAddCard,
-  onUpdateCardDimensions
+  onUpdateCardDimensions,
+  onUpdateCardMetadata
 }: BoardProps) {
   const boardRef = useRef<HTMLDivElement>(null);
   const [isDraggingBoard, setIsDraggingBoard] = React.useState(false);
@@ -145,6 +145,7 @@ export function Board({
                   onPositionChange={(position) => onUpdateCardPosition(card.id, position)}
                   onContentChange={onContentChange}
                   onDimensionsChange={onUpdateCardDimensions}
+                  onMetadataChange={onUpdateCardMetadata}
                   isMobile={true}
                 />
               </div>
@@ -162,6 +163,7 @@ export function Board({
               onPositionChange={(position) => onUpdateCardPosition(card.id, position)}
               onContentChange={onContentChange}
               onDimensionsChange={onUpdateCardDimensions}
+              onMetadataChange={onUpdateCardMetadata}
               isMobile={false}
             />
           ))}
@@ -169,34 +171,6 @@ export function Board({
 
         {isSelecting && selectionZone && <SelectionZone zone={selectionZone} />}
       </div>
-
-      {showContextMenu && (
-        <ContextMenu
-          x={contextMenuPosition.x}
-          y={contextMenuPosition.y}
-          onSelect={handleCardTypeSelect}
-          onClose={() => {
-            setShowContextMenu(false);
-            setSelectedZone(null);
-          }}
-        />
-      )}
-
-      {showLinkInput && selectedZone && (
-        <LinkInput
-          position={contextMenuPosition}
-          onSubmit={(url) => {
-            onAddCard('link', selectedZone.position, selectedZone.dimensions);
-            onContentChange(board.cards[board.cards.length - 1].id, url);
-            setShowLinkInput(false);
-            setSelectedZone(null);
-          }}
-          onClose={() => {
-            setShowLinkInput(false);
-            setSelectedZone(null);
-          }}
-        />
-      )}
     </div>
   );
 }
