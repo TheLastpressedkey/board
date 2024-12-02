@@ -46,8 +46,8 @@ export function Card({
   };
 
   const cardStyle = isMobile ? {
-    width: '100%',
-    height: card.type === 'link' ? 'auto' : '200px'
+    width: '80%',
+    height: card.type === 'link' ? 'auto' : '150px'
   } : {
     position: 'absolute',
     left: position.x,
