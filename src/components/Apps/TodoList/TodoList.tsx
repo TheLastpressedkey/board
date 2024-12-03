@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { TodoItem } from './TodoItem';
 import { TodoInput } from './TodoInput';
 import { useTodoList } from './useTodoList';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface TodoListProps {
   onClose: () => void;
@@ -11,6 +12,7 @@ interface TodoListProps {
 export function TodoList({ onClose }: TodoListProps) {
   const { todos, addTodo, toggleTodo, deleteTodo } = useTodoList();
   const [newTodo, setNewTodo] = useState('');
+  const { themeColors } = useTheme();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +25,10 @@ export function TodoList({ onClose }: TodoListProps) {
   return (
     <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="flex justify-between items-center px-4 py-2 bg-gray-800">
+      <div 
+        className="flex justify-between items-center px-4 py-2"
+        style={{ backgroundColor: themeColors.menuBg }}
+      >
         <span className="text-sm font-medium text-gray-300">Todo List</span>
         <button
           onClick={onClose}
@@ -61,7 +66,10 @@ export function TodoList({ onClose }: TodoListProps) {
       </div>
 
       {/* Stats */}
-      <div className="px-4 py-3 bg-gray-800/50 border-t border-gray-800">
+      <div 
+        className="px-4 py-3 border-t border-gray-800"
+        style={{ backgroundColor: themeColors.menuBg }}
+      >
         <div className="text-sm text-gray-400">
           {todos.filter(t => t.completed).length} of {todos.length} completed
         </div>

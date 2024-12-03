@@ -11,6 +11,7 @@ import { useContextMenu } from './hooks/useContextMenu';
 import { isValidUrl } from './utils/linkUtils';
 import { LinkInput } from './components/Card/LinkInput';
 import { ContentType } from './types';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -90,62 +91,64 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900" onContextMenu={handleContextMenu}>
-      <Sidebar
-        boards={boards}
-        currentBoard={currentBoard || ''}
-        onBoardSelect={setCurrentBoard}
-        onBoardDelete={deleteBoard}
-        user={user}
-        onSignOut={signOut}
-      />
-
-      {currentBoardData && (
-        <Board
-          board={currentBoardData}
-          onDeleteCard={deleteCard}
-          onUpdateCardPosition={updateCardPosition}
-          onContentChange={updateCardContent}
-          onScrollProgress={setScrollProgress}
-          onAddCard={handleCardTypeSelect}
-          onUpdateCardDimensions={updateCardDimensions}
-          onUpdateCardMetadata={updateCardMetadata}
+    <ThemeProvider>
+      <div className="min-h-screen bg-gray-900" onContextMenu={handleContextMenu}>
+        <Sidebar
+          boards={boards}
+          currentBoard={currentBoard || ''}
+          onBoardSelect={setCurrentBoard}
+          onBoardDelete={deleteBoard}
+          user={user}
+          onSignOut={signOut}
         />
-      )}
 
-      {contextMenu && !showLinkInput && (
-        <ContextMenu
-          x={contextMenu.x}
-          y={contextMenu.y}
-          onSelect={handleCardTypeSelect}
-          onClose={() => setContextMenu(null)}
+        {currentBoardData && (
+          <Board
+            board={currentBoardData}
+            onDeleteCard={deleteCard}
+            onUpdateCardPosition={updateCardPosition}
+            onContentChange={updateCardContent}
+            onScrollProgress={setScrollProgress}
+            onAddCard={handleCardTypeSelect}
+            onUpdateCardDimensions={updateCardDimensions}
+            onUpdateCardMetadata={updateCardMetadata}
+          />
+        )}
+
+        {contextMenu && !showLinkInput && (
+          <ContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            onSelect={handleCardTypeSelect}
+            onClose={() => setContextMenu(null)}
+          />
+        )}
+
+        {showLinkInput && contextMenu && (
+          <LinkInput
+            position={contextMenu}
+            onSubmit={(url) => {
+              addLinkCard(contextMenu, url);
+              setShowLinkInput(false);
+              setContextMenu(null);
+            }}
+            onClose={() => {
+              setShowLinkInput(false);
+              setContextMenu(null);
+            }}
+          />
+        )}
+
+        <BottomBar 
+          scrollProgress={scrollProgress}
+          onCreateBoard={createBoard}
+          onSaveBoards={saveBoards}
+          username={username}
+          email={user.email || ''}
+          hasUnsavedChanges={hasUnsavedChanges}
+          onUpdateUsername={updateUsername}
         />
-      )}
-
-      {showLinkInput && contextMenu && (
-        <LinkInput
-          position={contextMenu}
-          onSubmit={(url) => {
-            addLinkCard(contextMenu, url);
-            setShowLinkInput(false);
-            setContextMenu(null);
-          }}
-          onClose={() => {
-            setShowLinkInput(false);
-            setContextMenu(null);
-          }}
-        />
-      )}
-
-      <BottomBar 
-        scrollProgress={scrollProgress}
-        onCreateBoard={createBoard}
-        onSaveBoards={saveBoards}
-        username={username}
-        email={user.email || ''}
-        hasUnsavedChanges={hasUnsavedChanges}
-        onUpdateUsername={updateUsername}
-      />
-    </div>
+      </div>
+    </ThemeProvider>
   );
 }

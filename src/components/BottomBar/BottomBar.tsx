@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Share2, User, PlusCircle, Save, Wifi, WifiOff, Settings } from 'lucide-react';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { UserSettings } from '../UserSettings/UserSettings';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface BottomBarProps {
   scrollProgress: number;
@@ -25,6 +26,7 @@ export function BottomBar({
   const [currentTime, setCurrentTime] = React.useState(new Date());
   const { isOnline, isSyncing, setIsSyncing } = useNetworkStatus();
   const [showSettings, setShowSettings] = useState(false);
+  const { themeColors } = useTheme();
 
   React.useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -46,7 +48,7 @@ export function BottomBar({
 
   return (
     <>
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-green-600/20 backdrop-blur-sm px-4 py-2 rounded-lg">
+      <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 ${themeColors.menuBg} backdrop-blur-sm px-4 py-2 rounded-lg`}>
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 rounded-full flex items-center justify-center">
             <User className="w-3 h-3 text-gray-300" />
@@ -59,21 +61,24 @@ export function BottomBar({
         </div>
 
         <div className="hidden md:flex items-center gap-2">
-          <button className="p-0.5 hover:bg-green-500/20 rounded text-gray-300 hover:text-gray-100">
+          <button className={`p-0.5 ${themeColors.menuHover} rounded text-gray-300 hover:text-gray-100`}>
             <ChevronLeft className="w-3 h-3" />
           </button>
           <div className="text-gray-300 font-mono text-xs">
             {currentTime.toLocaleTimeString()} - {currentTime.toLocaleDateString()}
           </div>
-          <button className="p-0.5 hover:bg-green-500/20 rounded text-gray-300 hover:text-gray-100">
+          <button className={`p-0.5 ${themeColors.menuHover} rounded text-gray-300 hover:text-gray-100`}>
             <ChevronRight className="w-3 h-3" />
           </button>
         </div>
 
-        <div className="w-24 h-0.5 bg-pink-500/20 rounded-full overflow-hidden">
+        <div className="w-24 h-0.5 bg-gray-700 rounded-full overflow-hidden">
           <div 
-            className="h-full bg-pink-500 rounded-full transition-all duration-300"
-            style={{ width: `${scrollProgress * 100}%` }}
+            className="h-full rounded-full transition-all duration-300"
+            style={{ 
+              width: `${scrollProgress * 100}%`,
+              backgroundColor: themeColors.primary
+            }}
           />
         </div>
 
@@ -90,25 +95,28 @@ export function BottomBar({
             onClick={handleSave}
             disabled={!isOnline || isSyncing || !hasUnsavedChanges}
             className={`p-1 rounded text-gray-300 transition-all relative
-              ${!isOnline || !hasUnsavedChanges ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-500/20 hover:text-gray-100'}`}
+              ${!isOnline || !hasUnsavedChanges ? 'opacity-50 cursor-not-allowed' : `${themeColors.menuHover} hover:text-gray-100`}`}
             title="Save boards"
           >
             <Save className={`w-4 h-4 ${isSyncing ? 'animate-pulse' : ''}`} />
             {hasUnsavedChanges && (
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-pink-500 rounded-full" />
+              <span 
+                className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
+                style={{ backgroundColor: themeColors.primary }}
+              />
             )}
           </button>
 
           <button
             onClick={onCreateBoard}
-            className="p-1 hover:bg-green-500/20 rounded text-gray-300 hover:text-gray-100"
+            className={`p-1 ${themeColors.menuHover} rounded text-gray-300 hover:text-gray-100`}
           >
             <PlusCircle className="w-4 h-4" />
           </button>
 
           <button
             onClick={() => setShowSettings(true)}
-            className="p-1 hover:bg-green-500/20 rounded text-gray-300 hover:text-gray-100"
+            className={`p-1 ${themeColors.menuHover} rounded text-gray-300 hover:text-gray-100`}
           >
             <Settings className="w-4 h-4" />
           </button>

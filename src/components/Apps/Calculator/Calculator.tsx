@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { X } from 'lucide-react';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface CalculatorProps {
   onClose: () => void;
@@ -8,10 +9,11 @@ interface CalculatorProps {
 type Operation = '+' | '-' | '*' | '/' | null;
 
 export function Calculator({ onClose }: CalculatorProps) {
-  const [display, setDisplay] = useState('0');
-  const [firstNumber, setFirstNumber] = useState<number | null>(null);
-  const [operation, setOperation] = useState<Operation>(null);
-  const [newNumber, setNewNumber] = useState(true);
+  const [display, setDisplay] = React.useState('0');
+  const [firstNumber, setFirstNumber] = React.useState<number | null>(null);
+  const [operation, setOperation] = React.useState<Operation>(null);
+  const [newNumber, setNewNumber] = React.useState(true);
+  const { themeColors } = useTheme();
 
   const handleNumber = (num: string) => {
     if (newNumber) {
@@ -74,7 +76,10 @@ export function Calculator({ onClose }: CalculatorProps) {
   return (
     <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="flex justify-between items-center px-4 py-2 bg-gray-800">
+      <div 
+        className="flex justify-between items-center px-4 py-2"
+        style={{ backgroundColor: themeColors.menuBg }}
+      >
         <span className="text-sm font-medium text-gray-300">Calculator</span>
         <button
           onClick={onClose}
@@ -96,8 +101,9 @@ export function Calculator({ onClose }: CalculatorProps) {
       {/* Keypad */}
       <div className="flex-1 grid grid-cols-4 gap-1 p-2 bg-gray-900">
         <button
-          className="col-span-4 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors"
+          className="col-span-4 text-white rounded transition-colors"
           onClick={handleClear}
+          style={{ backgroundColor: themeColors.primary }}
         >
           C
         </button>
@@ -112,12 +118,11 @@ export function Calculator({ onClose }: CalculatorProps) {
                   else if (['+', '-', '*', '/'].includes(btn)) handleOperation(btn as Operation);
                   else handleNumber(btn);
                 }}
-                className={`
-                  p-4 text-lg font-medium rounded transition-colors
-                  ${['+', '-', '*', '/', '='].includes(btn)
-                    ? 'bg-pink-500 text-white hover:bg-pink-600'
-                    : 'bg-gray-800 text-white hover:bg-gray-700'}
-                `}
+                className="p-4 text-lg font-medium rounded transition-colors"
+                style={{
+                  backgroundColor: ['+', '-', '*', '/', '='].includes(btn) ? themeColors.primary : 'rgb(31, 41, 55)',
+                  color: 'white'
+                }}
               >
                 {btn}
               </button>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface TodoInputProps {
   value: string;
@@ -8,8 +9,10 @@ interface TodoInputProps {
 }
 
 export function TodoInput({ value, onChange, onSubmit }: TodoInputProps) {
+  const { themeColors } = useTheme();
+
   return (
-    <form onSubmit={onSubmit} className="p-4 border-b border-gray-800">
+    <form onSubmit={onSubmit} className="p-4" style={{ backgroundColor: themeColors.menuBg }}>
       <div className="flex gap-2">
         <input
           type="text"
@@ -17,14 +20,18 @@ export function TodoInput({ value, onChange, onSubmit }: TodoInputProps) {
           onChange={(e) => onChange(e.target.value)}
           placeholder="Add a new todo..."
           className="flex-1 px-3 py-2 bg-gray-800 text-white rounded-lg 
-            placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500"
+            placeholder-gray-500 focus:outline-none focus:ring-2"
+          style={{ 
+            '--tw-ring-color': themeColors.primary,
+            '--tw-ring-opacity': 0.5
+          } as React.CSSProperties}
           onMouseDown={(e) => e.stopPropagation()}
         />
         <button
           type="submit"
           disabled={!value.trim()}
-          className="px-3 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 
-            disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-3 py-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ backgroundColor: themeColors.primary }}
           onMouseDown={(e) => e.stopPropagation()}
         >
           <Plus className="w-5 h-5" />

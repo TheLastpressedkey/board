@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Type, Monitor, Box, Cpu, Palette, Command } from 'lucide-react';
 import { ContentType } from '../../types';
 import { AppStore } from '../AppStore/AppStore';
+import { ThemeSelector } from '../ThemeSelector/ThemeSelector';
 
 interface ContextMenuProps {
   x: number;
@@ -12,6 +13,7 @@ interface ContextMenuProps {
 
 export function ContextMenu({ x, y, onSelect, onClose }: ContextMenuProps) {
   const [showAppStore, setShowAppStore] = useState(false);
+  const [showThemeSelector, setShowThemeSelector] = useState(false);
 
   const menuItems = [
     { type: 'text' as ContentType, icon: Type, label: 'Text' },
@@ -25,6 +27,8 @@ export function ContextMenu({ x, y, onSelect, onClose }: ContextMenuProps) {
   const handleItemClick = (type: ContentType) => {
     if (type === 'app') {
       setShowAppStore(true);
+    } else if (type === 'theme') {
+      setShowThemeSelector(true);
     } else {
       onSelect(type);
       onClose();
@@ -59,6 +63,12 @@ export function ContextMenu({ x, y, onSelect, onClose }: ContextMenuProps) {
         <AppStore
           onSelect={handleAppSelect}
           onClose={() => setShowAppStore(false)}
+        />
+      )}
+
+      {showThemeSelector && (
+        <ThemeSelector
+          onClose={() => setShowThemeSelector(false)}
         />
       )}
     </>

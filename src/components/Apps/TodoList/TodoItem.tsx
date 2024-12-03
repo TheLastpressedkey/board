@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check, Trash2 } from 'lucide-react';
 import { Todo } from './types';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface TodoItemProps {
   todo: Todo;
@@ -9,6 +10,8 @@ interface TodoItemProps {
 }
 
 export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
+  const { themeColors } = useTheme();
+
   return (
     <div className="flex items-center gap-3 p-3 bg-gray-800/50 rounded-lg group">
       <button
@@ -16,10 +19,11 @@ export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
           e.stopPropagation();
           onToggle();
         }}
-        className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors
-          ${todo.completed 
-            ? 'bg-pink-500 border-pink-500' 
-            : 'border-gray-600 hover:border-pink-500'}`}
+        className="w-5 h-5 rounded-full border flex items-center justify-center transition-colors"
+        style={{ 
+          backgroundColor: todo.completed ? themeColors.primary : 'transparent',
+          borderColor: todo.completed ? themeColors.primary : '#4B5563'
+        }}
       >
         {todo.completed && <Check className="w-3 h-3 text-white" />}
       </button>

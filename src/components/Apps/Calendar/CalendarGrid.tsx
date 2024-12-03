@@ -8,9 +8,16 @@ interface CalendarGridProps {
   events: Event[];
   onSelectDate: (date: Date) => void;
   selectedDate: Date | null;
+  themeColors: any;
 }
 
-export function CalendarGrid({ currentDate, events, onSelectDate, selectedDate }: CalendarGridProps) {
+export function CalendarGrid({ 
+  currentDate, 
+  events, 
+  onSelectDate, 
+  selectedDate,
+  themeColors 
+}: CalendarGridProps) {
   const [hoveredDate, setHoveredDate] = useState<number | null>(null);
   const daysInMonth = getDaysInMonth(currentDate);
   const firstDayOfMonth = getFirstDayOfMonth(currentDate);
@@ -28,7 +35,7 @@ export function CalendarGrid({ currentDate, events, onSelectDate, selectedDate }
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4">
+    <div className="rounded-lg p-4">
       {/* Weekday headers */}
       <div className="grid grid-cols-7 gap-2 mb-2">
         {days.map(day => (
@@ -58,11 +65,15 @@ export function CalendarGrid({ currentDate, events, onSelectDate, selectedDate }
               className={`
                 relative aspect-square rounded-lg transition-all duration-200
                 ${isCurrentMonth ? 'hover:bg-gray-700' : 'opacity-30'}
-                ${isToday ? 'bg-pink-500/20' : ''}
-                ${isSelected ? 'bg-pink-500/40 ring-2 ring-pink-500' : ''}
+                ${isToday ? 'bg-opacity-20' : ''}
+                ${isSelected ? 'bg-opacity-40 ring-2' : ''}
                 ${!isCurrentMonth && 'pointer-events-none'}
                 group
               `}
+              style={{
+                backgroundColor: isToday || isSelected ? themeColors.primary : undefined,
+                borderColor: isSelected ? themeColors.primary : undefined
+              }}
               onMouseEnter={() => setHoveredDate(i)}
               onMouseLeave={() => setHoveredDate(null)}
             >
@@ -72,8 +83,7 @@ export function CalendarGrid({ currentDate, events, onSelectDate, selectedDate }
               >
                 <span className={`
                   text-sm font-medium
-                  ${isToday ? 'text-pink-500' : 'text-gray-300'}
-                  ${isSelected ? 'text-white' : ''}
+                  ${isToday || isSelected ? 'text-white' : 'text-gray-300'}
                 `}>
                   {date.getDate()}
                 </span>
@@ -83,26 +93,25 @@ export function CalendarGrid({ currentDate, events, onSelectDate, selectedDate }
                     {dayEvents.slice(0, 3).map(event => (
                       <div
                         key={event.id}
-                        className="w-1 h-1 rounded-full bg-pink-500"
+                        className="w-1 h-1 rounded-full"
+                        style={{ backgroundColor: themeColors.primary }}
                       />
                     ))}
                     {dayEvents.length > 3 && (
-                      <span className="text-xs text-pink-500">+{dayEvents.length - 3}</span>
+                      <span className="text-xs" style={{ color: themeColors.primary }}>
+                        +{dayEvents.length - 3}
+                      </span>
                     )}
                   </div>
                 )}
               </button>
 
               {/* Add Event Button (appears on hover) */}
-              {isCurrentMonth && (
+              {isCurrentMonth && isHovered && (
                 <button
                   onClick={() => onSelectDate(date)}
-                  className={`
-                    absolute top-1 right-1 p-1 rounded-full
-                    bg-pink-500 text-white
-                    transform transition-all duration-200
-                    ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}
-                  `}
+                  className="absolute top-1 right-1 p-1 rounded-full text-white transform transition-all duration-200"
+                  style={{ backgroundColor: themeColors.primary }}
                 >
                   <Plus className="w-3 h-3" />
                 </button>

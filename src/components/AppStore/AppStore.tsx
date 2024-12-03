@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppStoreProps {
   onSelect: (appType: string) => void;
@@ -16,6 +17,8 @@ interface AppInfo {
 }
 
 export function AppStore({ onSelect, onClose }: AppStoreProps) {
+  const { themeColors } = useTheme();
+
   const apps: AppInfo[] = [
     {
       id: 'calculator',
@@ -62,13 +65,16 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
   return (
     <>
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" onClick={onClose} />
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-3xl h-[80vh] bg-gray-900 rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden">
+      <div 
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-3xl h-[80vh] rounded-xl shadow-2xl z-50 flex flex-col border border-white/10 overflow-hidden"
+        style={{ backgroundColor: themeColors.menuBg }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-800/50">
           <h2 className="text-2xl font-bold text-white">App Store</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-800 rounded-full transition-colors"
+            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
           >
             <X className="w-5 h-5 text-gray-400" />
           </button>
@@ -81,13 +87,14 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
             <input
               type="text"
               placeholder="Search apps..."
-              className="w-full pl-10 pr-4 py-2 bg-gray-800/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="w-full pl-10 pr-4 py-2 bg-gray-800/50 text-white rounded-lg focus:outline-none focus:ring-2"
+              style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
             />
           </div>
         </div>
 
         {/* Apps Grid */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 card-scrollbar">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {apps.map((app) => (
               <button
@@ -99,12 +106,21 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
                 className="flex items-start gap-4 p-4 rounded-lg hover:bg-gray-800/50 transition-colors group text-left"
               >
                 <div className="relative">
-                  <div className="w-12 h-12 bg-pink-500/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <app.icon className="w-6 h-6 text-pink-500" />
+                  <div 
+                    className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"
+                    style={{ backgroundColor: `${themeColors.primary}20` }}
+                  >
+                    <app.icon 
+                      className="w-6 h-6"
+                      style={{ color: themeColors.primary }}
+                    />
                   </div>
                   {/* Install button that appears on hover */}
                   <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-6 h-6 bg-pink-500 rounded-full flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform">
+                    <div 
+                      className="w-6 h-6 rounded-full flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform"
+                      style={{ backgroundColor: themeColors.primary }}
+                    >
                       <Plus className="w-4 h-4 text-white" />
                     </div>
                   </div>

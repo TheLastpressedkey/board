@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme variables */
+:root {
+  --theme-primary-color: theme('colors.pink.500');
+  --theme-scrollbar-color: theme('colors.pink.500');
+  --theme-menu-bg: rgba(31, 41, 55, 0.4);
+  --theme-menu-hover: rgba(55, 65, 81, 0.5);
+}
+
+:root[data-theme='ocean'] {
+  --theme-primary-color: theme('colors.sky.400');
+  --theme-scrollbar-color: theme('colors.sky.400');
+  --theme-menu-bg: rgba(12, 74, 110, 0.4);
+  --theme-menu-hover: rgba(7, 89, 133, 0.5);
+}
+
+:root[data-theme='sunset'] {
+  --theme-primary-color: theme('colors.orange.400');
+  --theme-scrollbar-color: theme('colors.orange.400');
+  --theme-menu-bg: rgba(124, 45, 18, 0.4);
+  --theme-menu-hover: rgba(154, 52, 18, 0.5);
+}
+
 .bg-dots {
   background-color: #1a1a1a;
   background-image: radial-gradient(circle, #333 1px, transparent 1px);
@@ -23,7 +45,7 @@
 
 .overflow-auto::-webkit-scrollbar-thumb,
 .card-scrollbar::-webkit-scrollbar-thumb {
-  background: theme('colors.pink.500');
+  background: var(--theme-scrollbar-color);
   border-radius: 4px;
 }
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Layout, LogOut, X, Search } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { SearchModal } from './SearchModal';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface SidebarProps {
   boards: { id: string; name: string; isMainBoard?: boolean }[];
@@ -21,6 +22,10 @@ export function Sidebar({
   onSignOut 
 }: SidebarProps) {
   const [showSearch, setShowSearch] = useState(false);
+  const { themeColors } = useTheme();
+
+  const activeButtonStyle = `bg-[${themeColors.primary}] text-white`;
+  const inactiveButtonStyle = 'text-gray-400 hover:text-gray-200';
 
   return (
     <>
@@ -38,10 +43,10 @@ export function Sidebar({
             <button
               onClick={() => onBoardSelect(board.id)}
               className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all
-                ${currentBoard === board.id 
-                  ? 'bg-pink-500 text-white' 
-                  : 'text-gray-400 hover:text-gray-200'
-                }`}
+                ${currentBoard === board.id ? activeButtonStyle : inactiveButtonStyle}`}
+              style={{
+                backgroundColor: currentBoard === board.id ? themeColors.primary : undefined
+              }}
             >
               <Layout className="w-4 h-4" />
             </button>

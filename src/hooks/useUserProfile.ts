@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { userProfile } from '../services/userProfile';
+import { ThemeType } from '../contexts/ThemeContext';
 
 export function useUserProfile(defaultUsername: string) {
   const [username, setUsername] = useState(defaultUsername);
@@ -8,7 +9,7 @@ export function useUserProfile(defaultUsername: string) {
   useEffect(() => {
     async function loadUsername() {
       try {
-        const preferredUsername = await userProfile.getPreferredUsername();
+        const { username: preferredUsername } = await userProfile.getPreferredUsername();
         if (preferredUsername) {
           setUsername(preferredUsername);
         }
@@ -20,7 +21,7 @@ export function useUserProfile(defaultUsername: string) {
     }
 
     loadUsername();
-  }, []);
+  }, [defaultUsername]);
 
   const updateUsername = useCallback(async (newUsername: string) => {
     try {

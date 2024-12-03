@@ -5,6 +5,7 @@ import { CalendarGrid } from './CalendarGrid';
 import { EventForm } from './EventForm';
 import { EventList } from './EventList';
 import { useCalendar } from './useCalendar';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { Event } from './types';
 
 interface CalendarProps {
@@ -14,6 +15,7 @@ interface CalendarProps {
 }
 
 export function Calendar({ onClose, metadata, onDataChange }: CalendarProps) {
+  const { themeColors } = useTheme();
   const [showEventForm, setShowEventForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showSidebar, setShowSidebar] = useState(true);
@@ -76,9 +78,15 @@ export function Calendar({ onClose, metadata, onDataChange }: CalendarProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden" ref={containerRef}>
+    <div 
+      className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden" 
+      ref={containerRef}
+    >
       {/* Header */}
-      <div className="flex justify-between items-center px-4 py-2 bg-gray-800">
+      <div 
+        className="flex justify-between items-center px-4 py-2"
+        style={{ backgroundColor: themeColors.menuBg }}
+      >
         <span className="text-sm font-medium text-gray-300">Calendar</span>
         <button
           onClick={onClose}
@@ -90,26 +98,36 @@ export function Calendar({ onClose, metadata, onDataChange }: CalendarProps) {
 
       {/* Calendar Content */}
       <div className="flex-1 flex gap-4 p-4 min-h-0">
-        <div className="flex-1 flex flex-col min-h-0" ref={calendarRef}>
+        <div 
+          className="flex-1 flex flex-col min-h-0" 
+          ref={calendarRef}
+          style={{ backgroundColor: themeColors.menuBg }}
+        >
           <CalendarHeader
             currentDate={currentDate}
             onNavigate={navigateMonth}
+            themeColors={themeColors}
           />
           <CalendarGrid
             currentDate={currentDate}
             events={events}
             onSelectDate={handleDateSelect}
             selectedDate={selectedDate}
+            themeColors={themeColors}
           />
         </div>
         
         {showSidebar && (
-          <div className="w-[280px] flex-shrink-0 flex flex-col min-h-0">
+          <div 
+            className="w-[280px] flex-shrink-0 flex flex-col min-h-0"
+            style={{ backgroundColor: themeColors.menuBg }}
+          >
             <EventList
               events={events}
               onDeleteEvent={handleDeleteEvent}
               onUpdateEvent={handleUpdateEvent}
               calendarHeight={calendarRef.current?.clientHeight}
+              themeColors={themeColors}
             />
           </div>
         )}
@@ -124,6 +142,7 @@ export function Calendar({ onClose, metadata, onDataChange }: CalendarProps) {
             setShowEventForm(false);
             setSelectedDate(null);
           }}
+          themeColors={themeColors}
         />
       )}
     </div>

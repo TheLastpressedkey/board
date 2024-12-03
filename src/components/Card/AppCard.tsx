@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Calculator } from '../Apps/Calculator/Calculator';
 import { Clock } from '../Apps/Clock/Clock';
 import { TodoList } from '../Apps/TodoList/TodoList';
 import { Calendar } from '../Apps/Calendar/Calendar';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppCardContentProps {
   appType: string;
@@ -19,8 +20,10 @@ export function AppCardContent({
   metadata,
   onDataChange 
 }: AppCardContentProps) {
+  const { themeColors } = useTheme();
+
   // Expose metadata and change handler to app components
-  React.useEffect(() => {
+  useEffect(() => {
     window.cardMetadata = metadata;
     window.onCardDataChange = onDataChange;
     return () => {
@@ -34,6 +37,9 @@ export function AppCardContent({
     height: '100%',
     display: 'flex',
     flexDirection: 'column' as const,
+    backgroundColor: 'rgb(17, 24, 39)', // bg-gray-900
+    borderRadius: '0.5rem', // rounded-lg
+    overflow: 'hidden',
   };
 
   const renderApp = () => {
@@ -54,7 +60,10 @@ export function AppCardContent({
         );
       default:
         return (
-          <div className="h-full flex items-center justify-center text-gray-500">
+          <div 
+            className="h-full flex items-center justify-center text-gray-500"
+            style={{ backgroundColor: themeColors.menuBg }}
+          >
             App not found
           </div>
         );
