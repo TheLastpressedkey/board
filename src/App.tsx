@@ -50,7 +50,12 @@ export default function App() {
   useEffect(() => {
     const handlePaste = async (e: ClipboardEvent) => {
       const text = e.clipboardData?.getData('text');
-      if (text && isValidUrl(text)) {
+      // Check if an input or textarea is focused
+      const activeElement = document.activeElement;
+      const isInputActive = activeElement instanceof HTMLInputElement || 
+                          activeElement instanceof HTMLTextAreaElement;
+
+      if (text && isValidUrl(text) && !isInputActive) {
         const rect = document.querySelector('.bg-dots')?.getBoundingClientRect();
         if (rect) {
           const position = {

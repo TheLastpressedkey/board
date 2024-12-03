@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar } from 'lucide-react';
+import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppStoreProps {
@@ -47,17 +47,17 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
     {
       id: 'calendar',
       name: 'Calendar',
-      description: 'Manage your schedule and events with a beautiful calendar',
+      description: 'Manage your schedule with a beautiful calendar interface',
       icon: Calendar,
       category: 'Productivity',
       author: 'Core Apps'
     },
     {
-      id: 'table',
-      name: 'Table',
-      description: 'Create and manage data with customizable tables',
-      icon: Table,
-      category: 'Productivity',
+      id: 'rss',
+      name: 'RSS Reader',
+      description: 'Stay updated with your favorite news sources and blogs',
+      icon: Rss,
+      category: 'News',
       author: 'Core Apps'
     }
   ];
@@ -66,11 +66,11 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
     <>
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" onClick={onClose} />
       <div 
-        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-3xl h-[80vh] rounded-xl shadow-2xl z-50 flex flex-col border border-white/10 overflow-hidden"
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-3xl h-[80vh] rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden"
         style={{ backgroundColor: themeColors.menuBg }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-800/50">
+        <div className="flex items-center justify-between p-6 border-b border-gray-700/50">
           <h2 className="text-2xl font-bold text-white">App Store</h2>
           <button
             onClick={onClose}
@@ -81,14 +81,15 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
         </div>
 
         {/* Search */}
-        <div className="p-4 border-b border-gray-800/50">
+        <div className="p-4 border-b border-gray-700/50">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input
               type="text"
               placeholder="Search apps..."
-              className="w-full pl-10 pr-4 py-2 bg-gray-800/50 text-white rounded-lg focus:outline-none focus:ring-2"
+              className="w-full pl-10 pr-4 py-2 bg-gray-700/50 text-white rounded-lg focus:outline-none focus:ring-2"
               style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
+              autoFocus
             />
           </div>
         </div>
@@ -103,7 +104,7 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
                   onSelect(app.id);
                   onClose();
                 }}
-                className="flex items-start gap-4 p-4 rounded-lg hover:bg-gray-800/50 transition-colors group text-left"
+                className="flex items-start gap-4 p-4 rounded-lg hover:bg-gray-700/50 transition-colors group text-left"
               >
                 <div className="relative">
                   <div 

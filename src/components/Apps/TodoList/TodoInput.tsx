@@ -19,7 +19,7 @@ export function TodoInput({ value, onChange, onSubmit }: TodoInputProps) {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Add a new todo..."
-          className="flex-1 px-3 py-2 bg-gray-800 text-white rounded-lg 
+          className="flex-1 px-3 py-2 bg-gray-700 text-white rounded-lg 
             placeholder-gray-500 focus:outline-none focus:ring-2"
           style={{ 
             '--tw-ring-color': themeColors.primary,

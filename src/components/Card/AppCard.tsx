@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Calculator } from '../Apps/Calculator/Calculator';
 import { Clock } from '../Apps/Clock/Clock';
 import { TodoList } from '../Apps/TodoList/TodoList';
 import { Calendar } from '../Apps/Calendar/Calendar';
+import { RSSReader } from '../Apps/RSS/RSSReader';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppCardContentProps {
@@ -23,7 +24,7 @@ export function AppCardContent({
   const { themeColors } = useTheme();
 
   // Expose metadata and change handler to app components
-  useEffect(() => {
+  React.useEffect(() => {
     window.cardMetadata = metadata;
     window.onCardDataChange = onDataChange;
     return () => {
@@ -35,11 +36,9 @@ export function AppCardContent({
   const containerStyle = {
     width: '100%',
     height: '100%',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    backgroundColor: 'rgb(17, 24, 39)', // bg-gray-900
-    borderRadius: '0.5rem', // rounded-lg
-    overflow: 'hidden',
+    backgroundColor: themeColors.menuBg,
+    borderRadius: '0.5rem',
+    overflow: 'hidden'
   };
 
   const renderApp = () => {
@@ -51,19 +50,12 @@ export function AppCardContent({
       case 'todolist':
         return <TodoList onClose={onClose} />;
       case 'calendar':
-        return (
-          <Calendar
-            onClose={onClose}
-            metadata={metadata}
-            onDataChange={onDataChange}
-          />
-        );
+        return <Calendar onClose={onClose} metadata={metadata} onDataChange={onDataChange} />;
+      case 'rss':
+        return <RSSReader onClose={onClose} metadata={metadata} onDataChange={onDataChange} />;
       default:
         return (
-          <div 
-            className="h-full flex items-center justify-center text-gray-500"
-            style={{ backgroundColor: themeColors.menuBg }}
-          >
+          <div className="h-full flex items-center justify-center text-gray-500">
             App not found
           </div>
         );

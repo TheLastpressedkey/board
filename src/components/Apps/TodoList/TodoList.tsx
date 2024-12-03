@@ -23,7 +23,7 @@ export function TodoList({ onClose }: TodoListProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div 
         className="flex justify-between items-center px-4 py-2"
@@ -67,7 +67,7 @@ export function TodoList({ onClose }: TodoListProps) {
 
       {/* Stats */}
       <div 
-        className="px-4 py-3 border-t border-gray-800"
+        className="px-4 py-3 border-t border-gray-700/50"
         style={{ backgroundColor: themeColors.menuBg }}
       >
         <div className="text-sm text-gray-400">
