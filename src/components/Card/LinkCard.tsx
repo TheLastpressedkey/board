@@ -41,9 +41,7 @@ export function LinkCardContent({ content, metadata }: LinkCardContentProps) {
             {metadata.description}
           </p>
         )}
-        <span 
-          className="text-sm text-pink-500 hover:text-pink-600 truncate mt-auto"
-        >
+        <span className="text-sm text-pink-500 hover:text-pink-600 truncate mt-auto">
           {content}
         </span>
       </div>
