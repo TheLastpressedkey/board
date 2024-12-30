@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { X, Code, Eye } from 'lucide-react';
+import React, { useMemo, useState, useCallback } from 'react';
+import { X, Code, Eye, Pencil } from 'lucide-react';
 import { Card as CardType } from '../../types';
 import { useDraggable } from '../../hooks/useDraggable';
 import { useResizable } from '../../hooks/useResizable';
@@ -7,6 +7,7 @@ import { TextCardContent } from './TextCard';
 import { LinkCardContent } from './LinkCard';
 import { AppCardContent } from './AppCard';
 import { UserAppContent } from './UserAppContent';
+import { LinkEditForm } from './LinkEditForm';
 
 interface CardProps {
   card: CardType;
@@ -27,9 +28,9 @@ export function Card({
   onMetadataChange,
   isMobile = false
 }: CardProps) {
+  const [isEditing, setIsEditing] = useState(false);
   const defaultPosition = useMemo(() => ({ x: 0, y: 0 }), []);
   const defaultDimensions = useMemo(() => ({ width: 300, height: 200 }), []);
-  const [isEditing, setIsEditing] = React.useState(false);
 
   const { position, isDragging, handleMouseDown } = useDraggable(
     card.position || defaultPosition,
@@ -41,13 +42,14 @@ export function Card({
     (newDimensions) => onDimensionsChange?.(card.id, newDimensions)
   );
 
-  const handleContentChange = (content: string) => {
-    onContentChange(card.id, content);
-  };
-
   const handleMetadataChange = (metadata: any) => {
     onMetadataChange?.(card.id, metadata);
+    setIsEditing(false);
   };
+
+  const handleContentChange = useCallback((content: string) => {
+    onContentChange(card.id, content);
+  }, [card.id, onContentChange]);
 
   const displayTitle = card.type === 'link' && card.metadata?.title 
     ? card.metadata.title 
@@ -57,6 +59,7 @@ export function Card({
 
   const isAppCard = card.type.startsWith('app-');
   const isUserApp = card.type === 'userapp';
+  const isLinkCard = card.type === 'link';
 
   const cardStyle = isMobile ? {
     width: '80%',
@@ -114,68 +117,87 @@ export function Card({
   };
 
   return (
-    <div
-      className={`card bg-white rounded-lg shadow-lg select-none flex flex-col overflow-hidden
-        ${!isMobile && isDragging ? 'cursor-grabbing shadow-xl z-50' : 'cursor-grab shadow-lg z-10'}
-        ${!isMobile && isResizing ? 'cursor-nwse-resize' : ''}
-        ${isAppCard || isUserApp ? 'app-card' : ''}`}
-      style={cardStyle as any}
-      onMouseDown={!isMobile ? handleMouseDown : undefined}
-    >
-      {!isAppCard && (
-        <div className="flex-shrink-0 flex justify-between items-center px-4 py-2 bg-gray-50 border-b border-gray-200">
-          <div className="text-sm font-medium text-gray-600 truncate flex-1 mr-2">
-            {displayTitle}
-          </div>
-          <div className="flex items-center gap-2">
-            {isUserApp && (
+    <>
+      <div
+        className={`card bg-white rounded-lg shadow-lg select-none flex flex-col overflow-hidden
+          ${!isMobile && isDragging ? 'cursor-grabbing shadow-xl z-50' : 'cursor-grab shadow-lg z-10'}
+          ${!isMobile && isResizing ? 'cursor-nwse-resize' : ''}
+          ${isAppCard || isUserApp ? 'app-card' : ''}`}
+        style={cardStyle as any}
+        onMouseDown={!isMobile ? handleMouseDown : undefined}
+      >
+        {!isAppCard && (
+          <div className="flex-shrink-0 flex justify-between items-center px-4 py-2 bg-gray-50 border-b border-gray-200">
+            <div className="text-sm font-medium text-gray-600 truncate flex-1 mr-2">
+              {displayTitle}
+            </div>
+            <div className="flex items-center gap-2">
+              {isUserApp && (
+                <button
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  {isEditing ? (
+                    <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                  ) : (
+                    <Code className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                  )}
+                </button>
+              )}
+              {isLinkCard && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  <Pencil className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                </button>
+              )}
               <button
-                onClick={() => setIsEditing(!isEditing)}
+                onClick={() => onDelete(card.id)}
                 className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
                 onMouseDown={(e) => e.stopPropagation()}
               >
-                {isEditing ? (
-                  <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                ) : (
-                  <Code className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                )}
+                <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
               </button>
-            )}
-            <button
-              onClick={() => onDelete(card.id)}
-              className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-            </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="flex-1 overflow-hidden min-h-0">
-        {renderContent()}
+        <div className="flex-1 overflow-hidden min-h-0">
+          {renderContent()}
+        </div>
+
+        {!isMobile && (
+          <>
+            <div
+              className="resize-handle se"
+              onMouseDown={(e) => handleResizeStart(e, 'se')}
+            />
+            <div
+              className="resize-handle sw"
+              onMouseDown={(e) => handleResizeStart(e, 'sw')}
+            />
+            <div
+              className="resize-handle ne"
+              onMouseDown={(e) => handleResizeStart(e, 'ne')}
+            />
+            <div
+              className="resize-handle nw"
+              onMouseDown={(e) => handleResizeStart(e, 'nw')}
+            />
+          </>
+        )}
       </div>
 
-      {!isMobile && (
-        <>
-          <div
-            className="resize-handle se"
-            onMouseDown={(e) => handleResizeStart(e, 'se')}
-          />
-          <div
-            className="resize-handle sw"
-            onMouseDown={(e) => handleResizeStart(e, 'sw')}
-          />
-          <div
-            className="resize-handle ne"
-            onMouseDown={(e) => handleResizeStart(e, 'ne')}
-          />
-          <div
-            className="resize-handle nw"
-            onMouseDown={(e) => handleResizeStart(e, 'nw')}
-          />
-        </>
+      {isLinkCard && isEditing && (
+        <LinkEditForm
+          metadata={card.metadata || {}}
+          onSubmit={handleMetadataChange}
+          onClose={() => setIsEditing(false)}
+        />
       )}
-    </div>
+    </>
   );
 }
