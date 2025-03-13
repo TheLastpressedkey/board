@@ -1,205 +1,116 @@
-import React, { useMemo, useState, useCallback } from 'react';
-import { X, Code, Eye, Pencil } from 'lucide-react';
-import { Card as CardType } from '../../types';
-import { useDraggable } from '../../hooks/useDraggable';
-import { useResizable } from '../../hooks/useResizable';
-import { TextCardContent } from './TextCard';
-import { LinkCardContent } from './LinkCard';
-import { AppCardContent } from './AppCard';
-import { UserAppContent } from './UserAppContent';
-import { CardEditForm } from './CardEditForm';
+import React, { useState } from 'react';
+import { X } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 
-interface CardProps {
-  card: CardType;
-  onDelete: (id: string) => void;
-  onPositionChange: (position: { x: number; y: number }) => void;
-  onContentChange: (id: string, content: string) => void;
-  onDimensionsChange?: (id: string, dimensions: { width: number; height: number }) => void;
-  onMetadataChange?: (id: string, metadata: any) => void;
-  isMobile?: boolean;
+interface CardEditFormProps {
+  type: string;
+  metadata?: {
+    title?: string;
+    description?: string;
+    image?: string;
+  };
+  onSubmit: (metadata: { title: string; description?: string; image?: string }) => void;
+  onClose: () => void;
 }
 
-export function Card({ 
-  card, 
-  onDelete, 
-  onPositionChange, 
-  onContentChange,
-  onDimensionsChange,
-  onMetadataChange,
-  isMobile = false
-}: CardProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [isEditingMetadata, setIsEditingMetadata] = useState(false);
-  const defaultPosition = useMemo(() => ({ x: 0, y: 0 }), []);
-  const defaultDimensions = useMemo(() => ({ width: 300, height: 200 }), []);
+export function CardEditForm({ type, metadata, onSubmit, onClose }: CardEditFormProps) {
+  const [title, setTitle] = useState(metadata?.title || '');
+  const [description, setDescription] = useState(metadata?.description || '');
+  const [image, setImage] = useState(metadata?.image || '');
+  const { themeColors } = useTheme();
 
-  const { position, isDragging, handleMouseDown } = useDraggable(
-    card.position || defaultPosition,
-    onPositionChange
-  );
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newMetadata: { title: string; description?: string; image?: string } = {
+      title: title.trim()
+    };
 
-  const { isResizing, dimensions, handleResizeStart } = useResizable(
-    card.dimensions || defaultDimensions,
-    (newDimensions) => onDimensionsChange?.(card.id, newDimensions)
-  );
-
-  const isAppCard = card.type.startsWith('app-');
-  const isUserApp = card.type === 'userapp';
-  const isLinkCard = card.type === 'link';
-  const isTextCard = card.type === 'text';
-
-  const handleMetadataSubmit = useCallback((metadata: any) => {
-    if (onMetadataChange) {
-      onMetadataChange(card.id, metadata);
-    }
-  }, [card.id, onMetadataChange]);
-
-  const cardStyle = isMobile ? {
-    width: '80%',
-    height: isAppCard || isUserApp ? '400px' : card.type === 'link' ? 'auto' : '150px',
-    margin: '0 auto'
-  } : {
-    position: 'absolute',
-    left: position.x,
-    top: position.y,
-    width: dimensions.width,
-    height: dimensions.height,
-    transform: isDragging ? 'translate(0, 0) scale(1.02)' : 'translate(0, 0)',
-    transition: isDragging ? 'none' : 'transform 0.2s ease, box-shadow 0.2s ease'
-  };
-
-  const renderContent = () => {
-    if (isAppCard) {
-      return (
-        <AppCardContent
-          appType={card.type.replace('app-', '')}
-          onClose={() => onDelete(card.id)}
-          isMobile={isMobile}
-          metadata={card.metadata}
-          onDataChange={onMetadataChange}
-          onDragStart={handleMouseDown}
-        />
-      );
+    if (type === 'link') {
+      newMetadata.description = description.trim();
+      newMetadata.image = image.trim();
     }
 
-    switch (card.type) {
-      case 'text':
-        return (
-          <TextCardContent
-            content={card.content}
-            onChange={onContentChange}
-          />
-        );
-      case 'link':
-        return (
-          <LinkCardContent
-            content={card.content}
-            metadata={card.metadata}
-          />
-        );
-      case 'userapp':
-        return (
-          <UserAppContent
-            content={card.content}
-            onChange={onContentChange}
-            isEditing={isEditing}
-          />
-        );
-      default:
-        return null;
-    }
+    onSubmit(newMetadata);
+    onClose();
   };
 
   return (
-    <>
-      <div
-        className={`card bg-white rounded-lg shadow-lg select-none flex flex-col overflow-hidden
-          ${!isMobile && isDragging ? 'cursor-grabbing shadow-xl z-50' : 'cursor-default shadow-lg z-10'}
-          ${!isMobile && isResizing ? 'cursor-nwse-resize' : ''}
-          ${isAppCard || isUserApp ? 'app-card' : ''}`}
-        style={cardStyle as any}
-        onMouseDown={!isMobile && !isAppCard ? handleMouseDown : undefined}
-      >
-        {!isAppCard && (
-          <div 
-            className="flex-shrink-0 flex justify-between items-center px-4 py-2 bg-gray-50 border-b border-gray-200"
-            onMouseDown={!isMobile ? handleMouseDown : undefined}
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="w-full max-w-md bg-white rounded-lg p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Edit {type === 'link' ? 'Link Card' : 'Text Card'}
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-100 rounded-full"
           >
-            <div className="text-sm font-medium text-gray-600 truncate flex-1 mr-2">
-              {(isTextCard || isLinkCard) && card.metadata?.title 
-                ? card.metadata.title 
-                : card.type === 'userapp' 
-                ? 'Custom App' 
-                : `${card.id.slice(0, 8)}`}
-            </div>
-            <div className="flex items-center gap-2">
-              {isUserApp && (
-                <button
-                  onClick={() => setIsEditing(!isEditing)}
-                  className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
-                  onMouseDown={(e) => e.stopPropagation()}
-                >
-                  {isEditing ? (
-                    <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                  ) : (
-                    <Code className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                  )}
-                </button>
-              )}
-              {(isLinkCard || isTextCard) && (
-                <button
-                  onClick={() => setIsEditingMetadata(true)}
-                  className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
-                  onMouseDown={(e) => e.stopPropagation()}
-                >
-                  <Pencil className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                </button>
-              )}
-              <button
-                onClick={() => onDelete(card.id)}
-                className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
-                onMouseDown={(e) => e.stopPropagation()}
-              >
-                <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="flex-1 overflow-hidden min-h-0">
-          {renderContent()}
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
         </div>
 
-        {!isMobile && (
-          <>
-            <div
-              className="resize-handle se"
-              onMouseDown={(e) => handleResizeStart(e, 'se')}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Title
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
+              style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
+              required
             />
-            <div
-              className="resize-handle sw"
-              onMouseDown={(e) => handleResizeStart(e, 'sw')}
-            />
-            <div
-              className="resize-handle ne"
-              onMouseDown={(e) => handleResizeStart(e, 'ne')}
-            />
-            <div
-              className="resize-handle nw"
-              onMouseDown={(e) => handleResizeStart(e, 'nw')}
-            />
-          </>
-        )}
-      </div>
+          </div>
 
-      {isEditingMetadata && (
-        <CardEditForm
-          type={card.type}
-          metadata={card.metadata}
-          onSubmit={handleMetadataSubmit}
-          onClose={() => setIsEditingMetadata(false)}
-        />
-      )}
-    </>
+          {type === 'link' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 resize-none h-24"
+                  style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Image URL
+                </label>
+                <input
+                  type="url"
+                  value={image}
+                  onChange={(e) => setImage(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
+                  style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
+                />
+              </div>
+            </>
+          )}
+
+          <div className="flex justify-end gap-2 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 text-sm text-white rounded-lg"
+              style={{ backgroundColor: themeColors.primary }}
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
