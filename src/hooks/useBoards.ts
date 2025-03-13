@@ -110,7 +110,18 @@ export function useBoards() {
       ) || []
     })));
     setUnsavedChanges(true);
-  }, []);
+
+    // Auto-save after metadata update
+    const currentBoardData = boards.find(b => b.id === currentBoard);
+    if (currentBoardData?.cards) {
+      const updatedCards = currentBoardData.cards.map(card =>
+        card.id === cardId ? { ...card, metadata } : card
+      );
+      database.saveCards(currentBoard!, updatedCards)
+        .then(() => setUnsavedChanges(false))
+        .catch(error => console.error('Error saving card metadata:', error));
+    }
+  }, [boards, currentBoard]);
 
   const updateCardPosition = useCallback((cardId: string, position: { x: number; y: number }) => {
     setBoards(prevBoards => prevBoards.map(board => ({
