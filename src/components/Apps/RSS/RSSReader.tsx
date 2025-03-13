@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Settings, RefreshCcw } from 'lucide-react';
+import { Settings, RefreshCcw } from 'lucide-react';
 import { RSSFeed } from './types';
 import { RSSSettings } from './RSSSettings';
 import { RSSFeedList } from './RSSFeedList';
@@ -45,13 +45,9 @@ export function RSSReader({ onClose, metadata, onDataChange }: RSSReaderProps) {
 
   return (
     <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
-      {/* Header */}
-      <div 
-        className="flex justify-between items-center px-4 py-2"
-        style={{ backgroundColor: themeColors.menuBg }}
-      >
-        <span className="text-sm font-medium text-gray-300">RSS Reader</span>
-        <div className="flex items-center gap-2">
+      {/* Content */}
+      <div className="flex-1 overflow-hidden">
+        <div className="flex justify-end gap-2 p-2">
           <button
             onClick={handleRefresh}
             className={`p-1 hover:bg-gray-700 rounded-full ${isLoading ? 'animate-spin' : ''}`}
@@ -65,17 +61,8 @@ export function RSSReader({ onClose, metadata, onDataChange }: RSSReaderProps) {
           >
             <Settings className="w-4 h-4 text-gray-400" />
           </button>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-gray-700 rounded-full"
-          >
-            <X className="w-4 h-4 text-gray-400" />
-          </button>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-hidden">
         <RSSFeedList 
           feeds={feeds}
           themeColors={themeColors}
