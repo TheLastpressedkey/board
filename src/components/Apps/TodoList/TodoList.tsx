@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
 import { TodoItem } from './TodoItem';
 import { TodoInput } from './TodoInput';
 import { useTodoList } from './useTodoList';
@@ -24,20 +23,6 @@ export function TodoList({ onClose }: TodoListProps) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div 
-        className="flex justify-between items-center px-4 py-2"
-        style={{ backgroundColor: themeColors.menuBg }}
-      >
-        <span className="text-sm font-medium text-gray-300">Todo List</span>
-        <button
-          onClick={onClose}
-          className="p-1 hover:bg-gray-700 rounded-full"
-        >
-          <X className="w-4 h-4 text-gray-400" />
-        </button>
-      </div>
-
       {/* Todo Input */}
       <TodoInput
         value={newTodo}
