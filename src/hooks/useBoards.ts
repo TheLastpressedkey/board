@@ -109,7 +109,6 @@ export function useBoards() {
         card.id === cardId ? { ...card, metadata } : card
       ) || []
     })));
-    setUnsavedChanges(true);
 
     // Auto-save after metadata update
     const currentBoardData = boards.find(b => b.id === currentBoard);
