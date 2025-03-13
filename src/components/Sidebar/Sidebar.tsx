@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Layout, LogOut, X, Search } from 'lucide-react';
+import { Layout, LogOut, X, Search, Bot } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { SearchModal } from './SearchModal';
+import { Chatbot } from '../Chatbot/Chatbot';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface SidebarProps {
@@ -22,6 +23,7 @@ export function Sidebar({
   onSignOut 
 }: SidebarProps) {
   const [showSearch, setShowSearch] = useState(false);
+  const [showChatbot, setShowChatbot] = useState(false);
   const { themeColors } = useTheme();
 
   const activeButtonStyle = `bg-[${themeColors.primary}] text-white`;
@@ -62,6 +64,19 @@ export function Sidebar({
           </div>
         ))}
 
+        {/* AI Chatbot Button */}
+        <button
+          onClick={() => setShowChatbot(true)}
+          className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-200 transition-colors"
+          title="AI Assistant"
+          style={{
+            backgroundColor: showChatbot ? themeColors.primary : undefined,
+            color: showChatbot ? 'white' : undefined
+          }}
+        >
+          <Bot className="w-4 h-4" />
+        </button>
+
         <button
           onClick={onSignOut}
           className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-200 mt-auto"
@@ -78,6 +93,10 @@ export function Sidebar({
           onClose={() => setShowSearch(false)}
           onBoardSelect={onBoardSelect}
         />
+      )}
+
+      {showChatbot && (
+        <Chatbot onClose={() => setShowChatbot(false)} />
       )}
     </>
   );
