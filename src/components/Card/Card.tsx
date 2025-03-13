@@ -7,7 +7,7 @@ import { TextCardContent } from './TextCard';
 import { LinkCardContent } from './LinkCard';
 import { AppCardContent } from './AppCard';
 import { UserAppContent } from './UserAppContent';
-import { CardEditForm } from './CardEditForm';
+import { CardEditForm } from './LinkEditForm';
 
 interface CardProps {
   card: CardType;
