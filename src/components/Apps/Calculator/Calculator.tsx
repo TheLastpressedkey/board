@@ -1,5 +1,4 @@
 import React from 'react';
-import { X } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 
 interface CalculatorProps {
@@ -75,20 +74,6 @@ export function Calculator({ onClose }: CalculatorProps) {
 
   return (
     <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
-      {/* Header */}
-      <div 
-        className="flex justify-between items-center px-4 py-2"
-        style={{ backgroundColor: themeColors.menuBg }}
-      >
-        <span className="text-sm font-medium text-gray-300">Calculator</span>
-        <button
-          onClick={onClose}
-          className="p-1 hover:bg-gray-700 rounded-full"
-        >
-          <X className="w-4 h-4 text-gray-400" />
-        </button>
-      </div>
-
       {/* Display */}
       <div className="bg-gray-800 p-4">
         <div className="bg-gray-900 p-4 rounded-lg">
