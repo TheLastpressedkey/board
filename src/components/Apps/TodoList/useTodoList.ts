@@ -30,15 +30,14 @@ export function useTodoList() {
   }, [todos, hasChanges]);
 
   const addTodo = useCallback((text: string) => {
-    setTodos(prev => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        text,
-        completed: false,
-        createdAt: new Date()
-      }
-    ]);
+    const newTodo: Todo = {
+      id: crypto.randomUUID(),
+      text,
+      completed: false,
+      createdAt: new Date()
+    };
+    
+    setTodos(prev => [...prev, newTodo]);
     setHasChanges(true);
   }, []);
 
