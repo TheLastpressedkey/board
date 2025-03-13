@@ -7,7 +7,7 @@ import { TextCardContent } from './TextCard';
 import { LinkCardContent } from './LinkCard';
 import { AppCardContent } from './AppCard';
 import { UserAppContent } from './UserAppContent';
-import { LinkEditForm } from './LinkEditForm';
+import { CardEditForm } from './CardEditForm';
 
 interface CardProps {
   card: CardType;
@@ -29,6 +29,7 @@ export function Card({
   isMobile = false
 }: CardProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingMetadata, setIsEditingMetadata] = useState(false);
   const defaultPosition = useMemo(() => ({ x: 0, y: 0 }), []);
   const defaultDimensions = useMemo(() => ({ width: 300, height: 200 }), []);
 
@@ -42,24 +43,16 @@ export function Card({
     (newDimensions) => onDimensionsChange?.(card.id, newDimensions)
   );
 
-  const handleMetadataChange = (metadata: any) => {
-    onMetadataChange?.(card.id, metadata);
-    setIsEditing(false);
-  };
-
-  const handleContentChange = useCallback((content: string) => {
-    onContentChange(card.id, content);
-  }, [card.id, onContentChange]);
-
-  const displayTitle = card.type === 'link' && card.metadata?.title 
-    ? card.metadata.title 
-    : card.type === 'userapp' 
-    ? 'Custom App' 
-    : `${card.id.slice(0, 8)}`;
-
   const isAppCard = card.type.startsWith('app-');
   const isUserApp = card.type === 'userapp';
   const isLinkCard = card.type === 'link';
+  const isTextCard = card.type === 'text';
+
+  const handleMetadataSubmit = useCallback((metadata: any) => {
+    if (onMetadataChange) {
+      onMetadataChange(card.id, metadata);
+    }
+  }, [card.id, onMetadataChange]);
 
   const cardStyle = isMobile ? {
     width: '80%',
@@ -83,7 +76,8 @@ export function Card({
           onClose={() => onDelete(card.id)}
           isMobile={isMobile}
           metadata={card.metadata}
-          onDataChange={handleMetadataChange}
+          onDataChange={onMetadataChange}
+          onDragStart={handleMouseDown}
         />
       );
     }
@@ -93,7 +87,7 @@ export function Card({
         return (
           <TextCardContent
             content={card.content}
-            onChange={handleContentChange}
+            onChange={onContentChange}
           />
         );
       case 'link':
@@ -107,7 +101,7 @@ export function Card({
         return (
           <UserAppContent
             content={card.content}
-            onChange={handleContentChange}
+            onChange={onContentChange}
             isEditing={isEditing}
           />
         );
@@ -120,16 +114,23 @@ export function Card({
     <>
       <div
         className={`card bg-white rounded-lg shadow-lg select-none flex flex-col overflow-hidden
-          ${!isMobile && isDragging ? 'cursor-grabbing shadow-xl z-50' : 'cursor-grab shadow-lg z-10'}
+          ${!isMobile && isDragging ? 'cursor-grabbing shadow-xl z-50' : 'cursor-default shadow-lg z-10'}
           ${!isMobile && isResizing ? 'cursor-nwse-resize' : ''}
           ${isAppCard || isUserApp ? 'app-card' : ''}`}
         style={cardStyle as any}
-        onMouseDown={!isMobile ? handleMouseDown : undefined}
+        onMouseDown={!isMobile && !isAppCard ? handleMouseDown : undefined}
       >
         {!isAppCard && (
-          <div className="flex-shrink-0 flex justify-between items-center px-4 py-2 bg-gray-50 border-b border-gray-200">
+          <div 
+            className="flex-shrink-0 flex justify-between items-center px-4 py-2 bg-gray-50 border-b border-gray-200"
+            onMouseDown={!isMobile ? handleMouseDown : undefined}
+          >
             <div className="text-sm font-medium text-gray-600 truncate flex-1 mr-2">
-              {displayTitle}
+              {(isTextCard || isLinkCard) && card.metadata?.title 
+                ? card.metadata.title 
+                : card.type === 'userapp' 
+                ? 'Custom App' 
+                : `${card.id.slice(0, 8)}`}
             </div>
             <div className="flex items-center gap-2">
               {isUserApp && (
@@ -145,9 +146,9 @@ export function Card({
                   )}
                 </button>
               )}
-              {isLinkCard && (
+              {(isLinkCard || isTextCard) && (
                 <button
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => setIsEditingMetadata(true)}
                   className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
                   onMouseDown={(e) => e.stopPropagation()}
                 >
@@ -191,11 +192,12 @@ export function Card({
         )}
       </div>
 
-      {isLinkCard && isEditing && (
-        <LinkEditForm
-          metadata={card.metadata || {}}
-          onSubmit={handleMetadataChange}
-          onClose={() => setIsEditing(false)}
+      {isEditingMetadata && (
+        <CardEditForm
+          type={card.type}
+          metadata={card.metadata}
+          onSubmit={handleMetadataSubmit}
+          onClose={() => setIsEditingMetadata(false)}
         />
       )}
     </>
