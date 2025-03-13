@@ -53,6 +53,7 @@ export function Card({
       onMetadataChange(card.id, metadata);
     }
   }, [card.id, onMetadataChange]);
+  
 
   const cardStyle = isMobile ? {
     width: '80%',
