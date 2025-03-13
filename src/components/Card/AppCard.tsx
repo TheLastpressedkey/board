@@ -1,4 +1,5 @@
 import React from 'react';
+import { X } from 'lucide-react';
 import { Calculator } from '../Apps/Calculator/Calculator';
 import { Clock } from '../Apps/Clock/Clock';
 import { TodoList } from '../Apps/TodoList/TodoList';
@@ -12,6 +13,7 @@ interface AppCardContentProps {
   isMobile?: boolean;
   metadata?: any;
   onDataChange?: (data: any) => void;
+  onDragStart?: (e: React.MouseEvent) => void;
 }
 
 export function AppCardContent({ 
@@ -19,11 +21,11 @@ export function AppCardContent({
   onClose, 
   isMobile = false,
   metadata,
-  onDataChange 
+  onDataChange,
+  onDragStart
 }: AppCardContentProps) {
   const { themeColors } = useTheme();
 
-  // Expose metadata and change handler to app components
   React.useEffect(() => {
     window.cardMetadata = metadata;
     window.onCardDataChange = onDataChange;
@@ -40,6 +42,25 @@ export function AppCardContent({
     borderRadius: '0.5rem',
     overflow: 'hidden'
   };
+
+  const renderHeader = () => (
+    <div 
+      className="flex justify-between items-center px-4 py-2 cursor-grab"
+      style={{ backgroundColor: themeColors.menuBg }}
+      onMouseDown={onDragStart}
+    >
+      <span className="text-sm font-medium text-gray-300">
+        {appType.charAt(0).toUpperCase() + appType.slice(1)}
+      </span>
+      <button
+        onClick={onClose}
+        className="p-1 hover:bg-gray-700 rounded-full"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <X className="w-4 h-4 text-gray-400" />
+      </button>
+    </div>
+  );
 
   const renderApp = () => {
     switch (appType) {
@@ -64,7 +85,10 @@ export function AppCardContent({
 
   return (
     <div style={containerStyle}>
-      {renderApp()}
+      {renderHeader()}
+      <div className="h-[calc(100%-40px)]">
+        {renderApp()}
+      </div>
     </div>
   );
 }
