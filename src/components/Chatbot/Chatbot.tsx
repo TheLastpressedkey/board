@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Bot, User, Loader2 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { getChatCompletion } from '../../services/openai';
+import { getChatCompletion } from '../../lib/openai';
 
 interface Message {
   id: string;
