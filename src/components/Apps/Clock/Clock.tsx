@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Clock as ClockIcon } from 'lucide-react';
+import { Clock as ClockIcon } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 
 interface ClockProps {
@@ -27,20 +27,6 @@ export function Clock({ onClose }: ClockProps) {
 
   return (
     <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
-      {/* Header */}
-      <div 
-        className="flex justify-between items-center px-4 py-2"
-        style={{ backgroundColor: themeColors.menuBg }}
-      >
-        <span className="text-sm font-medium text-gray-300">Clock</span>
-        <button
-          onClick={onClose}
-          className="p-1 hover:bg-gray-700 rounded-full"
-        >
-          <X className="w-4 h-4 text-gray-400" />
-        </button>
-      </div>
-
       {/* Clock Display */}
       <div className="flex-1 flex flex-col items-center justify-center p-8">
         <div className="mb-8">
