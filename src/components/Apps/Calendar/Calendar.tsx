@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X } from 'lucide-react';
 import { CalendarHeader } from './CalendarHeader';
 import { CalendarGrid } from './CalendarGrid';
 import { EventForm } from './EventForm';
@@ -82,20 +81,6 @@ export function Calendar({ onClose, metadata, onDataChange }: CalendarProps) {
       className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden" 
       ref={containerRef}
     >
-      {/* Header */}
-      <div 
-        className="flex justify-between items-center px-4 py-2"
-        style={{ backgroundColor: themeColors.menuBg }}
-      >
-        <span className="text-sm font-medium text-gray-300">Calendar</span>
-        <button
-          onClick={onClose}
-          className="p-1 hover:bg-gray-700 rounded-full"
-        >
-          <X className="w-4 h-4 text-gray-400" />
-        </button>
-      </div>
-
       {/* Calendar Content */}
       <div className="flex-1 flex gap-4 p-4 min-h-0">
         <div 
