@@ -9,6 +9,7 @@ import { AppCardContent } from './AppCard';
 import { UserAppContent } from './UserAppContent';
 import { CardEditForm } from './CardEditForm';
 import { Analytics } from '../Apps/Analytics/Analytics';
+import { KanbanApp } from '../Apps/Kanban/KanbanApp';
 
 interface CardProps {
   card: CardType;
@@ -79,6 +80,17 @@ export function Card({
       
       if (appType === 'analytics') {
         return <Analytics onClose={() => onDelete(card.id)} onDragStart={handleMouseDown} />;
+      }
+
+      if (appType === 'kanban') {
+        return (
+          <KanbanApp 
+            onClose={() => onDelete(card.id)} 
+            onDragStart={handleMouseDown}
+            metadata={card.metadata}
+            onDataChange={onMetadataChange}
+          />
+        );
       }
 
       return (
