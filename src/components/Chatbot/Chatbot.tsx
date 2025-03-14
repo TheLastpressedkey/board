@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Bot, User, Loader2, Pencil } from 'lucide-react';
+import { X, Send, Bot, User, Loader2, Pencil, Plus } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getChatCompletion } from '../../lib/openai';
-import { createCard } from '../../utils/cardUtils';
 
 interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'bot';
+  sender: 'user' | 'bot' | 'system';
   timestamp: Date;
+  showCreateCard?: boolean;
 }
 
 interface ChatbotProps {
@@ -16,11 +16,41 @@ interface ChatbotProps {
   onCreateCard?: (position: { x: number; y: number }, type: string, content: string) => void;
 }
 
+const SYSTEM_PROMPT = `You are Angel, an advanced AI assistant with expertise in software development, design, and creative problem-solving. Your personality traits include:
+
+- Friendly and approachable, always maintaining a positive and encouraging tone
+- Professional yet warm in your communication style
+- Patient and thorough in your explanations
+- Proactive in suggesting improvements or alternatives
+- Creative in finding solutions to complex problems
+
+Your core responsibilities:
+1. Help users with software development questions and challenges
+2. Provide guidance on best practices and design patterns
+3. Assist with debugging and problem-solving
+4. Offer creative suggestions for UI/UX improvements
+5. Support users in learning new technologies and concepts
+
+Guidelines:
+- Always provide clear, actionable advice
+- Break down complex topics into understandable steps
+- Use examples when helpful
+- Be honest about limitations
+- Maintain a consistent, helpful demeanor
+
+Remember: You're not just an AI, you're a trusted development partner named Angel.`;
+
 export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
+      id: 'system',
+      text: SYSTEM_PROMPT,
+      sender: 'system',
+      timestamp: new Date()
+    },
+    {
       id: '1',
-      text: "Hello! I'm your AI assistant. How can I help you today?",
+      text: "Hello! I'm Angel, your AI assistant. How can I help you today?",
       sender: 'bot',
       timestamp: new Date()
     }
@@ -39,6 +69,22 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
     scrollToBottom();
   }, [messages]);
 
+  const handleCreateCard = (messageId: string) => {
+    const message = messages.find(m => m.id === messageId);
+    if (message && onCreateCard) {
+      const position = {
+        x: Math.random() * 500 + 100,
+        y: Math.random() * 300 + 100
+      };
+      onCreateCard(position, 'text', message.text);
+      
+      // Update message to hide the create card button
+      setMessages(prev => prev.map(m => 
+        m.id === messageId ? { ...m, showCreateCard: false } : m
+      ));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -55,15 +101,16 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
     setIsLoading(true);
 
     try {
-      const chatMessages = messages.map(msg => ({
-        role: msg.sender === 'user' ? 'user' as const : 'assistant' as const,
-        content: msg.text
-      }));
-
-      chatMessages.push({
-        role: 'user',
-        content: input
-      });
+      const chatMessages = [
+        { role: 'system' as const, content: SYSTEM_PROMPT },
+        ...messages
+          .filter(msg => msg.sender !== 'system')
+          .map(msg => ({
+            role: msg.sender === 'user' ? 'user' as const : 'assistant' as const,
+            content: msg.text
+          })),
+        { role: 'user' as const, content: input }
+      ];
 
       const response = await getChatCompletion(chatMessages);
 
@@ -71,18 +118,17 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
         id: crypto.randomUUID(),
         text: response || "I'm sorry, I couldn't process your request.",
         sender: 'bot',
-        timestamp: new Date()
+        timestamp: new Date(),
+        showCreateCard: true
       };
 
       setMessages(prev => [...prev, botMessage]);
 
-      // Create a text card if in edit mode
+      // Create a text card automatically if in edit mode
       if (isEditMode && onCreateCard && response) {
-        // Calculate a position for the new card
-        // This is just an example - you might want to adjust these values
         const position = {
-          x: Math.random() * 500 + 100, // Random X between 100 and 600
-          y: Math.random() * 300 + 100  // Random Y between 100 and 400
+          x: Math.random() * 500 + 100,
+          y: Math.random() * 300 + 100
         };
         onCreateCard(position, 'text', response);
       }
@@ -118,8 +164,8 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
             <Bot className="w-5 h-5" style={{ color: themeColors.primary }} />
           </div>
           <div>
-            <span className="font-medium text-white">AI Assistant</span>
-            <div className="text-xs text-gray-400">Always here to help</div>
+            <span className="font-medium text-white">Angel</span>
+            <div className="text-xs text-gray-400">AI Development Assistant</div>
           </div>
         </div>
         <button
@@ -132,7 +178,7 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
+        {messages.filter(msg => msg.sender !== 'system').map((message) => (
           <div
             key={message.id}
             className={`flex items-start gap-3 ${
@@ -161,9 +207,21 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
               style={{ backdropFilter: 'blur(8px)' }}
             >
               <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.text}</p>
-              <span className="text-[10px] text-gray-400 mt-1.5 block">
-                {message.timestamp.toLocaleTimeString()}
-              </span>
+              <div className="mt-2 flex items-center justify-between">
+                <span className="text-[10px] text-gray-400">
+                  {message.timestamp.toLocaleTimeString()}
+                </span>
+                {message.sender === 'bot' && message.showCreateCard && (
+                  <button
+                    onClick={() => handleCreateCard(message.id)}
+                    className="flex items-center gap-1 text-xs hover:bg-gray-700/50 px-2 py-1 rounded transition-colors"
+                    style={{ color: themeColors.primary }}
+                  >
+                    <Plus className="w-3 h-3" />
+                    Create Card
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -174,7 +232,7 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
               <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
               <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
             </div>
-            <span className="text-sm">AI is thinking...</span>
+            <span className="text-sm">Angel is thinking...</span>
           </div>
         )}
         <div ref={messagesEndRef} />
@@ -204,7 +262,7 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={isEditMode ? "Edit your message..." : "Type your message..."}
+              placeholder={isEditMode ? "Ask Angel to create content..." : "Ask Angel anything..."}
               className="w-full px-4 py-2 bg-gray-700/50 text-white rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 pr-12"
               style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
               disabled={isLoading}
