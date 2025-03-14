@@ -59,6 +59,11 @@ export function useBoards() {
 
     const newCard = createCard(type, position, initialContent || '', dimensions);
     
+    // Initialize metadata for specific app types
+    if (type === 'app-kanban') {
+      newCard.metadata = { boardId: currentBoard };
+    }
+    
     setBoards(prevBoards => prevBoards.map(board => 
       board.id === currentBoard
         ? { ...board, cards: [...(board.cards || []), newCard] }
