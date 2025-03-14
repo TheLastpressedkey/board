@@ -1,90 +1,104 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Bot, User, Loader2, Pencil, Plus } from 'lucide-react';
+import { X, Send, Bot, User, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getChatCompletion } from '../../lib/openai';
 import { analytics } from '../../services/analytics';
-
-interface Message {
-  id: string;
-  text: string;
-  sender: 'user' | 'bot' | 'system';
-  timestamp: Date;
-  showCreateCard?: boolean;
-}
+import { chat, ChatMessage } from '../../services/chat';
 
 interface ChatbotProps {
   onClose: () => void;
   onCreateCard?: (position: { x: number; y: number }, type: string, content: string) => void;
 }
 
-const SYSTEM_PROMPT = `You are Angel, an advanced AI assistant with expertise in software development, design, and creative problem-solving. Your personality traits include:
+const SYSTEM_PROMPT = `Vous êtes Angel, un assistant IA expert avec une expertise en développement logiciel, design et résolution créative de problèmes.
 
-- Friendly and approachable, always maintaining a positive and encouraging tone
-- Professional yet warm in your communication style
-- Patient and thorough in your explanations
-- Proactive in suggesting improvements or alternatives
-- Creative in finding solutions to complex problems
+Instructions spéciales pour les questions relatives aux tableaux :
+1. Pour les questions sur les tableaux, cartes ou tâches :
+   - Soyez direct et concis dans vos réponses
+   - Commencez par "À partir des données à ma disposition, je constate que..." ou toute autre phrase qui s'en rapproche de manière professionnelle
+   - Fournissez les chiffres ou statistiques exactes demandées
+   - N'expliquez pas votre processus de calcul sauf si on vous le demande
+   - Maintenez un ton professionnel et courtois
 
-Special Instructions for Board-Related Questions:
-1. When answering questions about boards, cards, or tasks:
-   - Be direct and concise in your responses
-   - Start with "À partir des données à ma disposition, je constate que..." ou toute autre phrase qui s'en rapproche de maniere professionel.
-   - Provide the exact numbers or statistics requested
-   - Do not explain your calculation process unless specifically asked
-   - Maintain a professional and courteous tone
+2. Pour toutes les autres questions :
+   - Fournissez des explications détaillées
+   - Utilisez des exemples quand c'est utile
+   - Décomposez les sujets complexes en étapes
 
-2. For all other questions:
-   - Provide detailed explanations
-   - Use examples when helpful
-   - Break down complex topics into steps
+N'oubliez pas :
+- Vous communiquez en français
+- Vous êtes un partenaire de développement de confiance nommé Angel
+- Soyez honnête sur vos limites
+- Maintenez une attitude serviable et cohérente`;
 
-Remember:
-- You communicate in French
-- You're a trusted development partner named Angel
-- Be honest about limitations
-- Maintain a consistent, helpful demeanor`;
+const WELCOME_MESSAGE = "Bonjour ! Je suis Angel, votre assistant IA. Comment puis-je vous aider aujourd'hui ?";
 
 export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'system',
-      text: SYSTEM_PROMPT,
-      sender: 'system',
-      timestamp: new Date()
-    },
-    {
-      id: '1',
-      text: "Bonjour ! Je suis Angel, votre assistant IA. Comment puis-je vous aider aujourd'hui ?",
-      sender: 'bot',
-      timestamp: new Date()
-    }
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { themeColors } = useTheme();
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
+    loadChatHistory();
+  }, []);
+
+  useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const handleCreateCard = (messageId: string) => {
+  const loadChatHistory = async () => {
+    try {
+      const history = await chat.getHistory();
+      setMessages(history);
+
+      // Si l'historique est vide, ajouter le message de bienvenue
+      if (history.length === 0 && !isInitialized) {
+        const welcomeMessage = await chat.saveMessage(WELCOME_MESSAGE, 'bot');
+        setMessages([welcomeMessage]);
+        setIsInitialized(true);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement de l\'historique:', error);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  const handleCreateCard = async (messageId: string) => {
     const message = messages.find(m => m.id === messageId);
     if (message && onCreateCard) {
       const position = {
         x: Math.random() * 500 + 100,
         y: Math.random() * 300 + 100
       };
-      onCreateCard(position, 'text', message.text);
-      
-      setMessages(prev => prev.map(m => 
-        m.id === messageId ? { ...m, showCreateCard: false } : m
-      ));
+      onCreateCard(position, 'text', message.content);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      await chat.deleteMessage(messageId);
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+    } catch (error) {
+      console.error('Erreur lors de la suppression du message:', error);
+    }
+  };
+
+  const handleDeleteAllMessages = async () => {
+    try {
+      await chat.deleteAllMessages();
+      setMessages([]);
+    } catch (error) {
+      console.error('Erreur lors de la suppression des messages:', error);
     }
   };
 
@@ -137,18 +151,14 @@ ${JSON.stringify({
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      text: input,
-      sender: 'user',
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
-
     try {
+      setIsLoading(true);
+
+      // Save user message
+      const userMessage = await chat.saveMessage(input, 'user');
+      setMessages(prev => [...prev, userMessage]);
+      setInput('');
+
       const enrichedMessage = await enrichMessageWithBoardData(input);
       
       const chatMessages = [
@@ -157,23 +167,22 @@ ${JSON.stringify({
           .filter(msg => msg.sender !== 'system')
           .map(msg => ({
             role: msg.sender === 'user' ? 'user' as const : 'assistant' as const,
-            content: msg.text
+            content: msg.content
           })),
         { role: 'user' as const, content: enrichedMessage }
       ];
 
       const response = await getChatCompletion(chatMessages);
 
-      const botMessage: Message = {
-        id: crypto.randomUUID(),
-        text: response || "Je suis désolé, je n'ai pas pu traiter votre demande.",
-        sender: 'bot',
-        timestamp: new Date(),
-        showCreateCard: true
-      };
+      // Save bot response
+      const botMessage = await chat.saveMessage(
+        response || "Je suis désolé, je n'ai pas pu traiter votre demande.",
+        'bot'
+      );
 
       setMessages(prev => [...prev, botMessage]);
 
+      // Create a text card automatically if in edit mode
       if (isEditMode && onCreateCard && response) {
         const position = {
           x: Math.random() * 500 + 100,
@@ -183,12 +192,10 @@ ${JSON.stringify({
       }
     } catch (error) {
       console.error('Erreur lors de la réponse IA:', error);
-      const errorMessage: Message = {
-        id: crypto.randomUUID(),
-        text: "Je suis désolé, j'ai rencontré une erreur. Veuillez réessayer.",
-        sender: 'bot',
-        timestamp: new Date()
-      };
+      const errorMessage = await chat.saveMessage(
+        "Je suis désolé, j'ai rencontré une erreur. Veuillez réessayer.",
+        'bot'
+      );
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -217,63 +224,87 @@ ${JSON.stringify({
             <div className="text-xs text-gray-400">Assistant IA</div>
           </div>
         </div>
-        <button
-          onClick={onClose}
-          className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
-        >
-          <X className="w-5 h-5 text-gray-400" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleDeleteAllMessages}
+            className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+            title="Effacer l'historique"
+          >
+            <Trash2 className="w-4 h-4 text-gray-400" />
+          </button>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5 text-gray-400" />
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.filter(msg => msg.sender !== 'system').map((message) => (
-          <div
-            key={message.id}
-            className={`flex items-start gap-3 ${
-              message.sender === 'user' ? 'flex-row-reverse' : ''
-            }`}
-          >
-            <div 
-              className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                message.sender === 'bot' 
-                  ? 'bg-gradient-to-br from-pink-500/20 to-purple-500/20' 
-                  : 'bg-gradient-to-br from-gray-700 to-gray-600'
-              }`}
-            >
-              {message.sender === 'bot' ? (
-                <Bot className="w-4 h-4" style={{ color: themeColors.primary }} />
-              ) : (
-                <User className="w-4 h-4 text-white" />
-              )}
-            </div>
+        {isLoadingHistory ? (
+          <div className="flex items-center justify-center h-full">
+            <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+          </div>
+        ) : (
+          messages.filter(msg => msg.sender !== 'system').map((message) => (
             <div
-              className={`px-4 py-3 rounded-lg max-w-[80%] ${
-                message.sender === 'user'
-                  ? 'bg-gray-700/50 text-white rounded-br-none'
-                  : 'bg-gray-800/50 text-gray-100 rounded-bl-none'
+              key={message.id}
+              className={`flex items-start gap-3 ${
+                message.sender === 'user' ? 'flex-row-reverse' : ''
               }`}
-              style={{ backdropFilter: 'blur(8px)' }}
             >
-              <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.text}</p>
-              <div className="mt-2 flex items-center justify-between">
-                <span className="text-[10px] text-gray-400">
-                  {message.timestamp.toLocaleTimeString()}
-                </span>
-                {message.sender === 'bot' && message.showCreateCard && (
-                  <button
-                    onClick={() => handleCreateCard(message.id)}
-                    className="flex items-center gap-1 text-xs hover:bg-gray-700/50 px-2 py-1 rounded transition-colors"
-                    style={{ color: themeColors.primary }}
-                  >
-                    <Plus className="w-3 h-3" />
-                    Créer une carte
-                  </button>
+              <div 
+                className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                  message.sender === 'bot' 
+                    ? 'bg-gradient-to-br from-pink-500/20 to-purple-500/20' 
+                    : 'bg-gradient-to-br from-gray-700 to-gray-600'
+                }`}
+              >
+                {message.sender === 'bot' ? (
+                  <Bot className="w-4 h-4" style={{ color: themeColors.primary }} />
+                ) : (
+                  <User className="w-4 h-4 text-white" />
                 )}
               </div>
+              <div
+                className={`group px-4 py-3 rounded-lg max-w-[80%] ${
+                  message.sender === 'user'
+                    ? 'bg-gray-700/50 text-white rounded-br-none'
+                    : 'bg-gray-800/50 text-gray-100 rounded-bl-none'
+                }`}
+                style={{ backdropFilter: 'blur(8px)' }}
+              >
+                <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="text-[10px] text-gray-400">
+                    {message.createdAt.toLocaleTimeString()}
+                  </span>
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {message.sender === 'bot' && (
+                      <button
+                        onClick={() => handleCreateCard(message.id)}
+                        className="flex items-center gap-1 text-xs hover:bg-gray-700/50 px-2 py-1 rounded transition-colors"
+                        style={{ color: themeColors.primary }}
+                      >
+                        <Plus className="w-3 h-3" />
+                        Créer une carte
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDeleteMessage(message.id)}
+                      className="flex items-center gap-1 text-xs hover:bg-gray-700/50 px-2 py-1 rounded transition-colors text-red-400"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
         {isLoading && (
           <div className="flex items-center gap-2 text-gray-400">
             <div className="flex items-center gap-1">
