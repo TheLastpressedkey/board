@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss } from 'lucide-react';
+import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppStoreProps {
@@ -58,6 +58,14 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
       description: 'Stay updated with your favorite news sources and blogs',
       icon: Rss,
       category: 'News',
+      author: 'Core Apps'
+    },
+    {
+      id: 'analytics',
+      name: 'Analytics',
+      description: 'View detailed statistics and insights about your workspace',
+      icon: Activity,
+      category: 'Analytics',
       author: 'Core Apps'
     }
   ];
