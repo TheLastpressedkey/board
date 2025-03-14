@@ -48,12 +48,15 @@ export function Card({
   const isLinkCard = card.type === 'link';
   const isTextCard = card.type === 'text';
 
+  const handleContentChange = useCallback((content: string) => {
+    onContentChange(card.id, content);
+  }, [card.id, onContentChange]);
+
   const handleMetadataSubmit = useCallback((metadata: any) => {
     if (onMetadataChange) {
       onMetadataChange(card.id, metadata);
     }
   }, [card.id, onMetadataChange]);
-  
 
   const cardStyle = isMobile ? {
     width: '80%',
@@ -88,7 +91,7 @@ export function Card({
         return (
           <TextCardContent
             content={card.content}
-            onChange={onContentChange}
+            onChange={handleContentChange}
           />
         );
       case 'link':
@@ -102,7 +105,7 @@ export function Card({
         return (
           <UserAppContent
             content={card.content}
-            onChange={onContentChange}
+            onChange={handleContentChange}
             isEditing={isEditing}
           />
         );
