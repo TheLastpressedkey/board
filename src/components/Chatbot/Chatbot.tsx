@@ -31,7 +31,7 @@ N'oubliez pas :
 - Soyez honnête sur vos limites
 - Maintenez une attitude serviable et cohérente`;
 
-const WELCOME_MESSAGE = "Bonjour ! Je suis Angel O1, votre assistant IA. Comment puis-je vous aider aujourd'hui ?";
+const WELCOME_MESSAGE = "Bonjour ! Je suis Angel, votre assistant IA. Comment puis-je vous aider aujourd'hui ?";
 
 export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -204,7 +204,7 @@ ${JSON.stringify({
 
   return (
     <div 
-      className="fixed right-4 bottom-20 w-96 h-[600px] bg-gray-900 rounded-lg shadow-xl flex flex-col overflow-hidden z-50 border border-gray-700/50"
+      className="fixed inset-x-4 bottom-20 md:right-4 md:left-auto md:w-96 h-[80vh] md:h-[600px] bg-gray-900 rounded-lg shadow-xl flex flex-col overflow-hidden z-50 border border-gray-700/50"
       style={{ backdropFilter: 'blur(12px)' }}
     >
       {/* En-tête */}
@@ -242,7 +242,7 @@ ${JSON.stringify({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 analytics-scrollbar">
         {isLoadingHistory ? (
           <div className="flex items-center justify-center h-full">
             <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
@@ -269,19 +269,19 @@ ${JSON.stringify({
                 )}
               </div>
               <div
-                className={`group px-4 py-3 rounded-lg max-w-[80%] ${
+                className={`group px-4 py-3 rounded-lg w-full md:max-w-[80%] ${
                   message.sender === 'user'
                     ? 'bg-gray-700/50 text-white rounded-br-none'
                     : 'bg-gray-800/50 text-gray-100 rounded-bl-none'
                 }`}
                 style={{ backdropFilter: 'blur(8px)' }}
               >
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                <p className="text-sm whitespace-pre-wrap leading-relaxed break-words">{message.content}</p>
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-[10px] text-gray-400">
                     {message.createdAt.toLocaleTimeString()}
                   </span>
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
                     {message.sender === 'bot' && (
                       <button
                         onClick={() => handleCreateCard(message.id)}
@@ -289,7 +289,7 @@ ${JSON.stringify({
                         style={{ color: themeColors.primary }}
                       >
                         <Plus className="w-3 h-3" />
-                        Créer une carte
+                        <span className="hidden md:inline">Créer une carte</span>
                       </button>
                     )}
                     <button
@@ -297,7 +297,7 @@ ${JSON.stringify({
                       className="flex items-center gap-1 text-xs hover:bg-gray-700/50 px-2 py-1 rounded transition-colors text-red-400"
                     >
                       <Trash2 className="w-3 h-3" />
-                      Supprimer
+                      <span className="hidden md:inline">Supprimer</span>
                     </button>
                   </div>
                 </div>
@@ -328,7 +328,7 @@ ${JSON.stringify({
           <button
             type="button"
             onClick={() => setIsEditMode(!isEditMode)}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`hidden md:flex p-2 rounded-lg transition-colors ${
               isEditMode 
                 ? 'bg-gray-700/80 text-white' 
                 : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
