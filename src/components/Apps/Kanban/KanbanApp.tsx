@@ -29,7 +29,7 @@ export function KanbanApp({ onClose, onDragStart, metadata, onDataChange }: Kanb
 
   const loadBoard = async () => {
     if (!metadata?.boardId) {
-      setError('No board ID provided');
+      setError('ID du tableau non fourni');
       setLoading(false);
       return;
     }
@@ -40,8 +40,8 @@ export function KanbanApp({ onClose, onDragStart, metadata, onDataChange }: Kanb
       const data = await kanban.getKanbanBoard(metadata.boardId);
       setBoard(data);
     } catch (err) {
-      console.error('Error loading kanban board:', err);
-      setError('Failed to load kanban board');
+      console.error('Erreur lors du chargement du tableau Kanban:', err);
+      setError('Échec du chargement du tableau Kanban');
     } finally {
       setLoading(false);
     }
@@ -58,7 +58,7 @@ export function KanbanApp({ onClose, onDragStart, metadata, onDataChange }: Kanb
       } : null);
       setShowTaskForm(false);
     } catch (err) {
-      console.error('Error adding task:', err);
+      console.error('Erreur lors de l\'ajout de la tâche:', err);
     }
   };
 
@@ -74,7 +74,7 @@ export function KanbanApp({ onClose, onDragStart, metadata, onDataChange }: Kanb
         )
       } : null);
     } catch (err) {
-      console.error('Error updating task:', err);
+      console.error('Erreur lors de la mise à jour de la tâche:', err);
     }
   };
 
@@ -88,41 +88,33 @@ export function KanbanApp({ onClose, onDragStart, metadata, onDataChange }: Kanb
         tasks: prev.tasks.filter(task => task.id !== taskId)
       } : null);
     } catch (err) {
-      console.error('Error deleting task:', err);
+      console.error('Erreur lors de la suppression de la tâche:', err);
     }
   };
 
   const handleDragEnd = async (result: DropResult) => {
     const { source, destination, draggableId } = result;
 
-    // Dropped outside a valid droppable
     if (!destination || !board) return;
 
-    // No actual movement
     if (
       source.droppableId === destination.droppableId &&
       source.index === destination.index
     ) return;
 
-    // Get all tasks in the destination column
     const destinationTasks = board.tasks
       .filter(t => t.status === destination.droppableId)
       .sort((a, b) => a.position - b.position);
 
-    // Calculate new position
     let newPosition: number;
 
     if (destinationTasks.length === 0) {
-      // If the column is empty, use 0 as position
       newPosition = 0;
     } else if (destination.index === 0) {
-      // If dropping at the start, use half of first task's position
       newPosition = destinationTasks[0].position / 2;
     } else if (destination.index >= destinationTasks.length) {
-      // If dropping at the end, use last position + 1
       newPosition = destinationTasks[destinationTasks.length - 1].position + 1;
     } else {
-      // If dropping between tasks, use average of surrounding positions
       newPosition = (
         destinationTasks[destination.index - 1].position +
         destinationTasks[destination.index].position
@@ -130,14 +122,12 @@ export function KanbanApp({ onClose, onDragStart, metadata, onDataChange }: Kanb
     }
 
     try {
-      // Update task in database
       await kanban.moveTask(
         draggableId,
         destination.droppableId as 'todo' | 'inProgress' | 'done',
         newPosition
       );
 
-      // Update local state
       setBoard(prev => {
         if (!prev) return null;
 
@@ -151,8 +141,7 @@ export function KanbanApp({ onClose, onDragStart, metadata, onDataChange }: Kanb
         };
       });
     } catch (err) {
-      console.error('Error moving task:', err);
-      // Optionally reload the board to ensure consistency
+      console.error('Erreur lors du déplacement de la tâche:', err);
       loadBoard();
     }
   };
@@ -171,7 +160,7 @@ export function KanbanApp({ onClose, onDragStart, metadata, onDataChange }: Kanb
     return (
       <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
         <div className="flex-1 flex items-center justify-center text-red-400">
-          {error || 'Failed to load kanban board'}
+          {error || 'Impossible de charger le tableau Kanban'}
         </div>
       </div>
     );
@@ -180,21 +169,21 @@ export function KanbanApp({ onClose, onDragStart, metadata, onDataChange }: Kanb
   const columns = [
     {
       id: 'todo' as const,
-      title: board.customTodoTitle,
+      title: 'À faire',
       tasks: board.tasks
         .filter(task => task.status === 'todo')
         .sort((a, b) => a.position - b.position)
     },
     {
       id: 'inProgress' as const,
-      title: board.customInProgressTitle,
+      title: 'En cours',
       tasks: board.tasks
         .filter(task => task.status === 'inProgress')
         .sort((a, b) => a.position - b.position)
     },
     {
       id: 'done' as const,
-      title: board.customDoneTitle,
+      title: 'Terminé',
       tasks: board.tasks
         .filter(task => task.status === 'done')
         .sort((a, b) => a.position - b.position)
@@ -203,7 +192,7 @@ export function KanbanApp({ onClose, onDragStart, metadata, onDataChange }: Kanb
 
   return (
     <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
-      {/* Header */}
+      {/* En-tête */}
       <div 
         className="p-4 border-b border-gray-700/50"
         style={{ backgroundColor: themeColors.menuBg }}
@@ -218,7 +207,7 @@ export function KanbanApp({ onClose, onDragStart, metadata, onDataChange }: Kanb
               className="w-5 h-5"
               style={{ color: themeColors.primary }}
             />
-            <h2 className="text-lg font-semibold text-white">Kanban Board</h2>
+            <h2 className="text-lg font-semibold text-white">Tableau Kanban</h2>
           </div>
           <button
             onClick={onClose}
@@ -230,7 +219,7 @@ export function KanbanApp({ onClose, onDragStart, metadata, onDataChange }: Kanb
         </div>
       </div>
 
-      {/* Content */}
+      {/* Contenu */}
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="flex-1 overflow-x-auto analytics-scrollbar">
           <div className="flex gap-4 p-4 h-full min-h-[400px]">
