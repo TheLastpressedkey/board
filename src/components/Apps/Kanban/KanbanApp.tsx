@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, GripHorizontal, Loader2 } from 'lucide-react';
+import { Layout, GripHorizontal, Loader2, X } from 'lucide-react';
 import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { kanban, KanbanBoard, KanbanTask } from '../../../services/kanban';
@@ -205,17 +205,28 @@ export function KanbanApp({ onClose, onDragStart, metadata, onDataChange }: Kanb
     <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
       {/* Header */}
       <div 
-        className="p-4 border-b border-gray-700/50 cursor-grab active:cursor-grabbing"
+        className="p-4 border-b border-gray-700/50"
         style={{ backgroundColor: themeColors.menuBg }}
-        onMouseDown={onDragStart}
       >
-        <div className="flex items-center gap-2">
-          <GripHorizontal className="w-5 h-5 text-gray-500" />
-          <Layout 
-            className="w-5 h-5"
-            style={{ color: themeColors.primary }}
-          />
-          <h2 className="text-lg font-semibold text-white">Kanban Board</h2>
+        <div className="flex items-center justify-between">
+          <div 
+            className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
+            onMouseDown={onDragStart}
+          >
+            <GripHorizontal className="w-5 h-5 text-gray-500" />
+            <Layout 
+              className="w-5 h-5"
+              style={{ color: themeColors.primary }}
+            />
+            <h2 className="text-lg font-semibold text-white">Kanban Board</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-700/50 rounded-lg transition-colors"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <X className="w-5 h-5 text-gray-400" />
+          </button>
         </div>
       </div>
 
