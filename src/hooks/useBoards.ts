@@ -52,11 +52,12 @@ export function useBoards() {
   const addCard = useCallback((
     position: { x: number; y: number }, 
     type: ContentType,
-    dimensions?: { width: number; height: number }
+    dimensions?: { width: number; height: number },
+    initialContent?: string
   ) => {
     if (!currentBoard) return;
 
-    const newCard = createCard(type, position, '', dimensions);
+    const newCard = createCard(type, position, initialContent || '', dimensions);
     
     setBoards(prevBoards => prevBoards.map(board => 
       board.id === currentBoard
