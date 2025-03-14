@@ -50,7 +50,6 @@ export default function App() {
   useEffect(() => {
     const handlePaste = async (e: ClipboardEvent) => {
       const text = e.clipboardData?.getData('text');
-      // Check if an input or textarea is focused
       const activeElement = document.activeElement;
       const isInputActive = activeElement instanceof HTMLInputElement || 
                           activeElement instanceof HTMLTextAreaElement;
@@ -83,6 +82,10 @@ export default function App() {
     }
   };
 
+  const handleCreateCard = (position: { x: number; y: number }, type: string, content: string) => {
+    addCard(position, type as ContentType, undefined, content);
+  };
+
   if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -105,6 +108,7 @@ export default function App() {
           onBoardDelete={deleteBoard}
           user={user}
           onSignOut={signOut}
+          onCreateCard={handleCreateCard}
         />
 
         {currentBoardData && (
