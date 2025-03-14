@@ -12,6 +12,7 @@ interface SidebarProps {
   onBoardDelete?: (id: string) => void;
   user: User;
   onSignOut: () => void;
+  onCreateCard?: (position: { x: number; y: number }, type: string, content: string) => void;
 }
 
 export function Sidebar({ 
@@ -20,7 +21,8 @@ export function Sidebar({
   onBoardSelect, 
   onBoardDelete,
   user, 
-  onSignOut 
+  onSignOut,
+  onCreateCard
 }: SidebarProps) {
   const [showSearch, setShowSearch] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
@@ -96,7 +98,10 @@ export function Sidebar({
       )}
 
       {showChatbot && (
-        <Chatbot onClose={() => setShowChatbot(false)} />
+        <Chatbot 
+          onClose={() => setShowChatbot(false)} 
+          onCreateCard={onCreateCard}
+        />
       )}
     </>
   );
