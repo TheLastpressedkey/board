@@ -11,7 +11,6 @@ interface KanbanColumnProps {
   onAddTask: () => void;
   onUpdateTask: (taskId: string, updates: Partial<KanbanTask>) => void;
   onDeleteTask: (taskId: string) => void;
-  onMoveTask: (taskId: string, newStatus: 'todo' | 'inProgress' | 'done', newPosition: number) => void;
   themeColors: any;
 }
 
@@ -22,7 +21,6 @@ export function KanbanColumn({
   onAddTask,
   onUpdateTask,
   onDeleteTask,
-  onMoveTask,
   themeColors
 }: KanbanColumnProps) {
   return (
@@ -30,7 +28,7 @@ export function KanbanColumn({
       className="flex-1 min-w-[300px] flex flex-col rounded-lg"
       style={{ backgroundColor: themeColors.menuBg }}
     >
-      {/* Header */}
+      {/* En-tête */}
       <div className="p-4 border-b border-gray-700/50">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-lg font-semibold text-white">{title}</h3>
@@ -42,11 +40,11 @@ export function KanbanColumn({
           style={{ backgroundColor: `${themeColors.primary}20` }}
         >
           <Plus className="w-4 h-4" style={{ color: themeColors.primary }} />
-          <span style={{ color: themeColors.primary }}>Add Task</span>
+          <span style={{ color: themeColors.primary }}>Ajouter une tâche</span>
         </button>
       </div>
 
-      {/* Tasks */}
+      {/* Tâches */}
       <Droppable droppableId={id}>
         {(provided, snapshot) => (
           <div
