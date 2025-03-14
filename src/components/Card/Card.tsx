@@ -8,6 +8,7 @@ import { LinkCardContent } from './LinkCard';
 import { AppCardContent } from './AppCard';
 import { UserAppContent } from './UserAppContent';
 import { CardEditForm } from './CardEditForm';
+import { Analytics } from '../Apps/Analytics/Analytics';
 
 interface CardProps {
   card: CardType;
@@ -74,9 +75,15 @@ export function Card({
 
   const renderContent = () => {
     if (isAppCard) {
+      const appType = card.type.replace('app-', '');
+      
+      if (appType === 'analytics') {
+        return <Analytics onClose={() => onDelete(card.id)} onDragStart={handleMouseDown} />;
+      }
+
       return (
         <AppCardContent
-          appType={card.type.replace('app-', '')}
+          appType={appType}
           onClose={() => onDelete(card.id)}
           isMobile={isMobile}
           metadata={card.metadata}
