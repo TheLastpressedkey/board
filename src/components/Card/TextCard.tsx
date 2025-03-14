@@ -11,10 +11,6 @@ export function TextCardContent({ content, onChange }: TextCardContentProps) {
     onChange(e.target.value);
   }, [onChange]);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-  }, []);
-
   return (
     <div className="h-full flex flex-col">
       <textarea
@@ -23,13 +19,14 @@ export function TextCardContent({ content, onChange }: TextCardContentProps) {
           bg-white card-scrollbar"
         value={content}
         onChange={handleChange}
-        onMouseDown={handleMouseDown}
         placeholder="Enter your text here..."
         style={{ 
           minHeight: '100%',
           lineHeight: '1.5',
           fontSize: '0.95rem'
         }}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       />
     </div>
   );
