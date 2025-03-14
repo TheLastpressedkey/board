@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Bot, User, Loader2, Pencil, Plus } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getChatCompletion } from '../../lib/openai';
+import { analytics } from '../../services/analytics';
 
 interface Message {
   id: string;
@@ -24,21 +25,24 @@ const SYSTEM_PROMPT = `You are Angel, an advanced AI assistant with expertise in
 - Proactive in suggesting improvements or alternatives
 - Creative in finding solutions to complex problems
 
-Your core responsibilities:
-1. Help users with software development questions and challenges
-2. Provide guidance on best practices and design patterns
-3. Assist with debugging and problem-solving
-4. Offer creative suggestions for UI/UX improvements
-5. Support users in learning new technologies and concepts
+Special Instructions for Board-Related Questions:
+1. When answering questions about boards, cards, or tasks:
+   - Be direct and concise in your responses
+   - Start with "À partir des données à ma disposition, je constate que..." ou toute autre phrase qui s'en rapproche de maniere professionel.
+   - Provide the exact numbers or statistics requested
+   - Do not explain your calculation process unless specifically asked
+   - Maintain a professional and courteous tone
 
-Guidelines:
-- Always provide clear, actionable advice
-- Break down complex topics into understandable steps
-- Use examples when helpful
+2. For all other questions:
+   - Provide detailed explanations
+   - Use examples when helpful
+   - Break down complex topics into steps
+
+Remember:
+- You communicate in French
+- You're a trusted development partner named Angel
 - Be honest about limitations
-- Maintain a consistent, helpful demeanor
-
-Remember: You're not just an AI, you're a trusted development partner named Angel.`;
+- Maintain a consistent, helpful demeanor`;
 
 export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([
@@ -50,7 +54,7 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
     },
     {
       id: '1',
-      text: "Hello! I'm Angel, your AI assistant. How can I help you today?",
+      text: "Bonjour ! Je suis Angel, votre assistant IA. Comment puis-je vous aider aujourd'hui ?",
       sender: 'bot',
       timestamp: new Date()
     }
@@ -78,11 +82,55 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
       };
       onCreateCard(position, 'text', message.text);
       
-      // Update message to hide the create card button
       setMessages(prev => prev.map(m => 
         m.id === messageId ? { ...m, showCreateCard: false } : m
       ));
     }
+  };
+
+  const enrichMessageWithBoardData = async (message: string): Promise<string> => {
+    if (message.toLowerCase().includes('board') || 
+        message.toLowerCase().includes('tableau') || 
+        message.toLowerCase().includes('lien') || 
+        message.toLowerCase().includes('weboard') || 
+        message.toLowerCase().includes('tâche')) {
+      try {
+        const stats = await analytics.getBoardsStats();
+        return `voici la question de l'utilisateur : "${message}"
+
+voici les données du tableau :
+${JSON.stringify({
+  boards: stats.boards.map(board => ({
+    id: board.id,
+    name: board.name,
+    cardsCount: board.cards?.length || 0,
+    cardTypes: board.cards?.reduce((acc, card) => {
+      const type = card.type.replace('app-', '');
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>)
+  })),
+  kanbanBoards: stats.kanbanBoards.map(board => ({
+    id: board.id,
+    tasksCount: board.kanban_tasks?.length || 0,
+    tasksByStatus: board.kanban_tasks?.reduce((acc, task) => {
+      acc[task.status] = (acc[task.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>),
+    tasksByPriority: board.kanban_tasks?.reduce((acc, task) => {
+      acc[task.priority] = (acc[task.priority] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>)
+  }))
+}, null, 2)}
+
+à partir des données, réponds à la demande de l'utilisateur :`;
+      } catch (error) {
+        console.error('Erreur lors de la récupération des statistiques:', error);
+        return message;
+      }
+    }
+    return message;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,6 +149,8 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
     setIsLoading(true);
 
     try {
+      const enrichedMessage = await enrichMessageWithBoardData(input);
+      
       const chatMessages = [
         { role: 'system' as const, content: SYSTEM_PROMPT },
         ...messages
@@ -109,14 +159,14 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
             role: msg.sender === 'user' ? 'user' as const : 'assistant' as const,
             content: msg.text
           })),
-        { role: 'user' as const, content: input }
+        { role: 'user' as const, content: enrichedMessage }
       ];
 
       const response = await getChatCompletion(chatMessages);
 
       const botMessage: Message = {
         id: crypto.randomUUID(),
-        text: response || "I'm sorry, I couldn't process your request.",
+        text: response || "Je suis désolé, je n'ai pas pu traiter votre demande.",
         sender: 'bot',
         timestamp: new Date(),
         showCreateCard: true
@@ -124,7 +174,6 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
 
       setMessages(prev => [...prev, botMessage]);
 
-      // Create a text card automatically if in edit mode
       if (isEditMode && onCreateCard && response) {
         const position = {
           x: Math.random() * 500 + 100,
@@ -133,10 +182,10 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
         onCreateCard(position, 'text', response);
       }
     } catch (error) {
-      console.error('Error getting AI response:', error);
+      console.error('Erreur lors de la réponse IA:', error);
       const errorMessage: Message = {
         id: crypto.randomUUID(),
-        text: "I'm sorry, I encountered an error. Please try again.",
+        text: "Je suis désolé, j'ai rencontré une erreur. Veuillez réessayer.",
         sender: 'bot',
         timestamp: new Date()
       };
@@ -151,7 +200,7 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
       className="fixed right-4 bottom-20 w-96 h-[600px] bg-gray-900 rounded-lg shadow-xl flex flex-col overflow-hidden z-50 border border-gray-700/50"
       style={{ backdropFilter: 'blur(12px)' }}
     >
-      {/* Header */}
+      {/* En-tête */}
       <div 
         className="flex items-center justify-between px-4 py-3 border-b border-gray-700/50"
         style={{ backgroundColor: themeColors.menuBg }}
@@ -165,7 +214,7 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
           </div>
           <div>
             <span className="font-medium text-white">Angel</span>
-            <div className="text-xs text-gray-400">AI Development Assistant</div>
+            <div className="text-xs text-gray-400">Assistant IA</div>
           </div>
         </div>
         <button
@@ -218,7 +267,7 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
                     style={{ color: themeColors.primary }}
                   >
                     <Plus className="w-3 h-3" />
-                    Create Card
+                    Créer une carte
                   </button>
                 )}
               </div>
@@ -232,7 +281,7 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
               <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
               <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
             </div>
-            <span className="text-sm">Angel is thinking...</span>
+            <span className="text-sm">Angel réfléchit...</span>
           </div>
         )}
         <div ref={messagesEndRef} />
@@ -253,7 +302,7 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
                 ? 'bg-gray-700/80 text-white' 
                 : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
             }`}
-            title={isEditMode ? 'Edit mode enabled - Responses will create text cards' : 'Edit mode disabled'}
+            title={isEditMode ? 'Mode édition activé - Les réponses créeront des cartes texte' : 'Mode édition désactivé'}
           >
             <Pencil className="w-4 h-4" />
           </button>
@@ -262,7 +311,7 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={isEditMode ? "Ask Angel to create content..." : "Ask Angel anything..."}
+              placeholder={isEditMode ? "Demandez à Angel de créer du contenu..." : "Posez votre question à Angel..."}
               className="w-full px-4 py-2 bg-gray-700/50 text-white rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 pr-12"
               style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
               disabled={isLoading}
