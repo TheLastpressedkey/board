@@ -31,7 +31,7 @@ N'oubliez pas :
 - Soyez honnête sur vos limites
 - Maintenez une attitude serviable et cohérente`;
 
-const WELCOME_MESSAGE = "Bonjour ! Je suis Angel, votre assistant IA. Comment puis-je vous aider aujourd'hui ?";
+const WELCOME_MESSAGE = "Bonjour ! Je suis Angel O1, votre assistant IA. Comment puis-je vous aider aujourd'hui ?";
 
 export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
