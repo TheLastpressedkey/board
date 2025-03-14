@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Bot, User, Loader2 } from 'lucide-react';
+import { X, Send, Bot, User, Loader2, Pencil } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getChatCompletion } from '../../lib/openai';
+import { createCard } from '../../utils/cardUtils';
 
 interface Message {
   id: string;
@@ -12,9 +13,10 @@ interface Message {
 
 interface ChatbotProps {
   onClose: () => void;
+  onCreateCard?: (position: { x: number; y: number }, type: string, content: string) => void;
 }
 
-export function Chatbot({ onClose }: ChatbotProps) {
+export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -25,6 +27,7 @@ export function Chatbot({ onClose }: ChatbotProps) {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { themeColors } = useTheme();
 
@@ -52,19 +55,16 @@ export function Chatbot({ onClose }: ChatbotProps) {
     setIsLoading(true);
 
     try {
-      // Convert messages to OpenAI format
       const chatMessages = messages.map(msg => ({
         role: msg.sender === 'user' ? 'user' as const : 'assistant' as const,
         content: msg.text
       }));
 
-      // Add the new user message
       chatMessages.push({
         role: 'user',
         content: input
       });
 
-      // Get AI response
       const response = await getChatCompletion(chatMessages);
 
       const botMessage: Message = {
@@ -75,6 +75,17 @@ export function Chatbot({ onClose }: ChatbotProps) {
       };
 
       setMessages(prev => [...prev, botMessage]);
+
+      // Create a text card if in edit mode
+      if (isEditMode && onCreateCard && response) {
+        // Calculate a position for the new card
+        // This is just an example - you might want to adjust these values
+        const position = {
+          x: Math.random() * 500 + 100, // Random X between 100 and 600
+          y: Math.random() * 300 + 100  // Random Y between 100 and 400
+        };
+        onCreateCard(position, 'text', response);
+      }
     } catch (error) {
       console.error('Error getting AI response:', error);
       const errorMessage: Message = {
@@ -90,19 +101,30 @@ export function Chatbot({ onClose }: ChatbotProps) {
   };
 
   return (
-    <div className="fixed right-4 bottom-20 w-96 h-[600px] bg-gray-900 rounded-lg shadow-xl flex flex-col overflow-hidden z-50 border border-gray-700">
+    <div 
+      className="fixed right-4 bottom-20 w-96 h-[600px] bg-gray-900 rounded-lg shadow-xl flex flex-col overflow-hidden z-50 border border-gray-700/50"
+      style={{ backdropFilter: 'blur(12px)' }}
+    >
       {/* Header */}
       <div 
-        className="flex items-center justify-between px-4 py-3 border-b border-gray-700"
+        className="flex items-center justify-between px-4 py-3 border-b border-gray-700/50"
         style={{ backgroundColor: themeColors.menuBg }}
       >
         <div className="flex items-center gap-2">
-          <Bot className="w-5 h-5 text-gray-300" />
-          <span className="font-medium text-gray-300">AI Assistant</span>
+          <div 
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ backgroundColor: `${themeColors.primary}20` }}
+          >
+            <Bot className="w-5 h-5" style={{ color: themeColors.primary }} />
+          </div>
+          <div>
+            <span className="font-medium text-white">AI Assistant</span>
+            <div className="text-xs text-gray-400">Always here to help</div>
+          </div>
         </div>
         <button
           onClick={onClose}
-          className="p-1 hover:bg-gray-700 rounded-full"
+          className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
         >
           <X className="w-5 h-5 text-gray-400" />
         </button>
@@ -118,24 +140,28 @@ export function Chatbot({ onClose }: ChatbotProps) {
             }`}
           >
             <div 
-              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: message.sender === 'bot' ? themeColors.primary : 'rgb(55, 65, 81)' }}
+              className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                message.sender === 'bot' 
+                  ? 'bg-gradient-to-br from-pink-500/20 to-purple-500/20' 
+                  : 'bg-gradient-to-br from-gray-700 to-gray-600'
+              }`}
             >
               {message.sender === 'bot' ? (
-                <Bot className="w-4 h-4 text-white" />
+                <Bot className="w-4 h-4" style={{ color: themeColors.primary }} />
               ) : (
                 <User className="w-4 h-4 text-white" />
               )}
             </div>
             <div
-              className={`px-4 py-2 rounded-lg max-w-[80%] ${
+              className={`px-4 py-3 rounded-lg max-w-[80%] ${
                 message.sender === 'user'
-                  ? 'bg-gray-700 text-white'
-                  : 'bg-gray-800 text-gray-100'
+                  ? 'bg-gray-700/50 text-white rounded-br-none'
+                  : 'bg-gray-800/50 text-gray-100 rounded-bl-none'
               }`}
+              style={{ backdropFilter: 'blur(8px)' }}
             >
-              <p className="text-sm whitespace-pre-wrap">{message.text}</p>
-              <span className="text-xs text-gray-400 mt-1 block">
+              <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.text}</p>
+              <span className="text-[10px] text-gray-400 mt-1.5 block">
                 {message.timestamp.toLocaleTimeString()}
               </span>
             </div>
@@ -143,7 +169,11 @@ export function Chatbot({ onClose }: ChatbotProps) {
         ))}
         {isLoading && (
           <div className="flex items-center gap-2 text-gray-400">
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+              <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+              <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
             <span className="text-sm">AI is thinking...</span>
           </div>
         )}
@@ -153,31 +183,45 @@ export function Chatbot({ onClose }: ChatbotProps) {
       {/* Input */}
       <form 
         onSubmit={handleSubmit}
-        className="p-4 border-t border-gray-700"
+        className="p-4 border-t border-gray-700/50"
         style={{ backgroundColor: themeColors.menuBg }}
       >
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2"
-            style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
-            disabled={isLoading}
-          />
+        <div className="flex items-center gap-2">
           <button
-            type="submit"
-            disabled={!input.trim() || isLoading}
-            className="p-2 rounded-lg text-white transition-colors disabled:opacity-50"
-            style={{ backgroundColor: themeColors.primary }}
+            type="button"
+            onClick={() => setIsEditMode(!isEditMode)}
+            className={`p-2 rounded-lg transition-colors ${
+              isEditMode 
+                ? 'bg-gray-700/80 text-white' 
+                : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+            }`}
+            title={isEditMode ? 'Edit mode enabled - Responses will create text cards' : 'Edit mode disabled'}
           >
-            {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
+            <Pencil className="w-4 h-4" />
           </button>
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={isEditMode ? "Edit your message..." : "Type your message..."}
+              className="w-full px-4 py-2 bg-gray-700/50 text-white rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 pr-12"
+              style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
+              disabled={isLoading}
+            />
+            <button
+              type="submit"
+              disabled={!input.trim() || isLoading}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-white transition-colors disabled:opacity-50 hover:bg-gray-600/50"
+              style={{ color: themeColors.primary }}
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </button>
+          </div>
         </div>
       </form>
     </div>
