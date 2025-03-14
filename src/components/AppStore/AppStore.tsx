@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity } from 'lucide-react';
+import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppStoreProps {
@@ -66,6 +66,14 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
       description: 'View detailed statistics and insights about your workspace',
       icon: Activity,
       category: 'Analytics',
+      author: 'Core Apps'
+    },
+    {
+      id: 'kanban',
+      name: 'Kanban Board',
+      description: 'Organize and track tasks with a flexible Kanban board',
+      icon: Layout,
+      category: 'Productivity',
       author: 'Core Apps'
     }
   ];
