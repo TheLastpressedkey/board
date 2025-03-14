@@ -16,6 +16,12 @@ export function KanbanTaskCard({ task, onUpdate, onDelete, themeColors }: Kanban
     high: 'bg-red-500'
   };
 
+  const priorityLabels = {
+    low: 'Basse',
+    medium: 'Moyenne',
+    high: 'Haute'
+  };
+
   return (
     <div className="bg-gray-800/50 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow group">
       <div className="flex items-start justify-between mb-2">
@@ -47,19 +53,19 @@ export function KanbanTaskCard({ task, onUpdate, onDelete, themeColors }: Kanban
 
       <div className="flex items-center gap-3 text-xs text-gray-400">
         {task.dueDate && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1" title="Date d'échéance">
             <Calendar className="w-3 h-3" />
             <span>{new Date(task.dueDate).toLocaleDateString()}</span>
           </div>
         )}
         
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1" title={`Priorité ${priorityLabels[task.priority]}`}>
           <Flag className="w-3 h-3" />
           <span className={`w-2 h-2 rounded-full ${priorityColors[task.priority]}`} />
         </div>
 
         {task.labels.length > 0 && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1" title="Étiquettes">
             <Tag className="w-3 h-3" />
             <span>{task.labels.length}</span>
           </div>
