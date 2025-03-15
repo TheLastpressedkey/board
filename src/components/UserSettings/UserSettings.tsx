@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { X, Bell, Shield, Globe, Keyboard, Mail, Palette, Monitor, Lock, Building2 } from 'lucide-react';
+import { ThemeType, useTheme } from '../../contexts/ThemeContext';
 
 interface UserSettingsProps {
   username: string;
@@ -8,72 +9,431 @@ interface UserSettingsProps {
   onClose: () => void;
 }
 
-export function UserSettings({ username, email, onUpdateUsername, onClose }: UserSettingsProps) {
-  const [newUsername, setNewUsername] = useState(username);
+interface ThemeOption {
+  id: ThemeType;
+  name: string;
+  description: string;
+  colors: string[];
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newUsername.trim()) {
-      onUpdateUsername(newUsername.trim());
+interface AppThemeOption {
+  id: string;
+  name: string;
+  description: string;
+  preview: string;
+  colors: {
+    background: string;
+    menuBg: string;
+    statusBar: string;
+    accent: string;
+  };
+}
+
+interface SettingsState {
+  username: string;
+  theme: ThemeType;
+  appTheme: string;
+}
+
+const themes: ThemeOption[] = [
+  {
+    id: 'default',
+    name: 'Default',
+    description: 'Classic dark theme with pink accents',
+    colors: ['rgb(236, 72, 153)']
+  },
+  {
+    id: 'ocean',
+    name: 'Ocean',
+    description: 'Calming blue theme inspired by the sea',
+    colors: ['rgb(56, 189, 248)']
+  },
+  {
+    id: 'sunset',
+    name: 'Sunset',
+    description: 'Warm orange theme inspired by dusk',
+    colors: ['rgb(251, 146, 60)']
+  }
+];
+
+const appThemes: AppThemeOption[] = [
+  {
+    id: 'default',
+    name: 'Classic Dark',
+    description: 'Modern dark theme with subtle gradients',
+    preview: 'https://images.unsplash.com/photo-1557683311-eac922347aa1?w=400&q=80',
+    colors: {
+      background: '#1a1a1a',
+      menuBg: 'rgba(31, 41, 55, 0.4)',
+      statusBar: 'rgba(17, 24, 39, 0.8)',
+      accent: '#ec4899'
+    }
+  },
+  {
+    id: 'firefox-proton',
+    name: 'Proton',
+    description: 'Inspired by Firefox Proton design',
+    preview: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=400&q=80',
+    colors: {
+      background: '#17171f',
+      menuBg: 'rgba(66, 65, 77, 0.4)',
+      statusBar: 'rgba(42, 42, 46, 0.8)',
+      accent: '#00ddff'
+    }
+  },
+  {
+    id: 'nord',
+    name: 'Nord',
+    description: 'Arctic-inspired color palette',
+    preview: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=400&q=80',
+    colors: {
+      background: '#2e3440',
+      menuBg: 'rgba(67, 76, 94, 0.4)',
+      statusBar: 'rgba(46, 52, 64, 0.8)',
+      accent: '#88c0d0'
+    }
+  }
+];
+
+export function UserSettings({ username, email, onUpdateUsername, onClose }: UserSettingsProps) {
+  const { theme: currentTheme, setTheme, themeColors } = useTheme();
+  const [activeSection, setActiveSection] = useState('profile');
+  const [showSavePrompt, setShowSavePrompt] = useState(false);
+  
+  // Track settings state
+  const [settings, setSettings] = useState<SettingsState>({
+    username,
+    theme: currentTheme,
+    appTheme: 'default'
+  });
+
+  // Track if settings have changed
+  const hasChanges = useCallback(() => {
+    return settings.username !== username ||
+           settings.theme !== currentTheme ||
+           settings.appTheme !== 'default';
+  }, [settings, username, currentTheme]);
+
+  // Handle close attempt
+  const handleCloseAttempt = () => {
+    if (hasChanges()) {
+      setShowSavePrompt(true);
+    } else {
       onClose();
     }
   };
 
+  // Handle save and close
+  const handleSave = () => {
+    if (settings.username !== username) {
+      onUpdateUsername(settings.username);
+    }
+    if (settings.theme !== currentTheme) {
+      setTheme(settings.theme);
+    }
+    onClose();
+  };
+
+  const sections = [
+    { id: 'profile', name: 'Profile', icon: Shield },
+    { id: 'organization', name: 'Organization', icon: Building2 },
+    { id: 'appearance', name: 'Appearance', icon: Palette },
+    { id: 'notifications', name: 'Notifications', icon: Bell },
+    { id: 'privacy', name: 'Privacy', icon: Lock },
+    { id: 'language', name: 'Language', icon: Globe },
+    { id: 'shortcuts', name: 'Shortcuts', icon: Keyboard },
+    { id: 'display', name: 'Display', icon: Monitor },
+    { id: 'email', name: 'Email Settings', icon: Mail }
+  ];
+
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" onClick={onClose} />
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-800 rounded-lg p-6 shadow-xl z-50 w-96">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-white">User Settings</h2>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-gray-700 rounded-full"
-          >
-            <X className="w-5 h-5 text-gray-400" />
-          </button>
-        </div>
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" onClick={handleCloseAttempt} />
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-900 rounded-xl shadow-2xl z-50 w-[900px] h-[700px] max-h-[90vh] overflow-hidden">
+        <div className="flex h-full">
+          {/* Sidebar */}
+          <div className="w-64 border-r border-gray-800 p-4">
+            <div className="flex items-center gap-3 px-4 py-3 mb-6">
+              <div 
+                className="w-10 h-10 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: `${themeColors.primary}20` }}
+              >
+                <span className="text-lg font-semibold" style={{ color: themeColors.primary }}>
+                  {settings.username[0].toUpperCase()}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-white font-medium truncate">{settings.username}</h3>
+                <p className="text-sm text-gray-400 truncate">{email}</p>
+              </div>
+            </div>
 
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-300 mb-1">
-            Email
-          </label>
-          <div className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-300">
-            {email}
+            <nav className="space-y-1">
+              {sections.map(section => (
+                <button
+                  key={section.id}
+                  onClick={() => setActiveSection(section.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === section.id
+                      ? 'bg-gray-800 text-white'
+                      : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                  }`}
+                >
+                  <section.icon className="w-5 h-5" />
+                  <span className="font-medium">{section.name}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 flex flex-col">
+            {/* Header */}
+            <div className="flex justify-between items-center p-6 border-b border-gray-800">
+              <h2 className="text-xl font-semibold text-white">
+                {sections.find(s => s.id === activeSection)?.name}
+              </h2>
+              <div className="flex items-center gap-2">
+                {hasChanges() && (
+                  <button
+                    onClick={handleSave}
+                    className="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
+                    style={{ backgroundColor: themeColors.primary }}
+                  >
+                    Save Changes
+                  </button>
+                )}
+                <button
+                  onClick={handleCloseAttempt}
+                  className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+            </div>
+
+            {/* Section Content */}
+            <div className="flex-1 overflow-y-auto settings-scrollbar p-6">
+              {activeSection === 'profile' && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-medium text-white mb-4">Basic Information</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
+                          Email
+                        </label>
+                        <div className="px-4 py-3 bg-gray-800 rounded-lg text-gray-300 font-mono text-sm">
+                          {email}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-1">
+                          Display Name
+                        </label>
+                        <input
+                          type="text"
+                          id="username"
+                          value={settings.username}
+                          onChange={(e) => setSettings({ ...settings, username: e.target.value })}
+                          className="w-full px-4 py-3 bg-gray-800 rounded-lg text-white focus:outline-none focus:ring-2 font-medium"
+                          style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
+                          placeholder="Enter display name"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-medium text-white mb-4">Account Security</h3>
+                    <div className="space-y-4">
+                      <button className="w-full px-4 py-3 bg-gray-800 rounded-lg text-left hover:bg-gray-700/50 transition-colors group">
+                        <div className="flex justify-between items-center text-gray-300 group-hover:text-white">
+                          <span>Change Password</span>
+                          <span className="text-sm text-gray-500">Coming soon</span>
+                        </div>
+                      </button>
+                      <button className="w-full px-4 py-3 bg-gray-800 rounded-lg text-left hover:bg-gray-700/50 transition-colors group">
+                        <div className="flex justify-between items-center text-gray-300 group-hover:text-white">
+                          <span>Two-Factor Authentication</span>
+                          <span className="text-sm text-gray-500">Coming soon</span>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSection === 'organization' && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-medium text-white mb-4">Organization Settings</h3>
+                    <div className="space-y-4">
+                      <button className="w-full px-4 py-3 bg-gray-800 rounded-lg text-left hover:bg-gray-700/50 transition-colors group">
+                        <div className="flex justify-between items-center text-gray-300 group-hover:text-white">
+                          <span>Create Organization</span>
+                          <span className="text-sm text-gray-500">Coming soon</span>
+                        </div>
+                      </button>
+                      <button className="w-full px-4 py-3 bg-gray-800 rounded-lg text-left hover:bg-gray-700/50 transition-colors group">
+                        <div className="flex justify-between items-center text-gray-300 group-hover:text-white">
+                          <span>Join Organization</span>
+                          <span className="text-sm text-gray-500">Coming soon</span>
+                        </div>
+                      </button>
+                      <button className="w-full px-4 py-3 bg-gray-800 rounded-lg text-left hover:bg-gray-700/50 transition-colors group">
+                        <div className="flex justify-between items-center text-gray-300 group-hover:text-white">
+                          <span>Manage Teams</span>
+                          <span className="text-sm text-gray-500">Coming soon</span>
+                        </div>
+                      </button>
+                      <button className="w-full px-4 py-3 bg-gray-800 rounded-lg text-left hover:bg-gray-700/50 transition-colors group">
+                        <div className="flex justify-between items-center text-gray-300 group-hover:text-white">
+                          <span>Billing & Subscriptions</span>
+                          <span className="text-sm text-gray-500">Coming soon</span>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSection === 'appearance' && (
+                <div className="space-y-8">
+                  {/* Interface Theme */}
+                  <div>
+                    <h3 className="text-lg font-medium text-white mb-4">Interface Theme</h3>
+                    <div className="space-y-3">
+                      {themes.map((themeOption) => (
+                        <button
+                          key={themeOption.id}
+                          onClick={() => setSettings({ ...settings, theme: themeOption.id })}
+                          className={`w-full p-4 rounded-lg transition-all ${
+                            settings.theme === themeOption.id
+                              ? 'bg-gray-800 ring-2'
+                              : 'hover:bg-gray-800/50'
+                          }`}
+                          style={{ 
+                            '--tw-ring-color': themeOption.colors[0],
+                            '--tw-ring-opacity': 0.5
+                          } as React.CSSProperties}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden">
+                              <div
+                                className="w-full h-full"
+                                style={{ backgroundColor: themeOption.colors[0] }}
+                              />
+                            </div>
+                            <div className="text-left">
+                              <h3 className="text-white font-medium">{themeOption.name}</h3>
+                              <p className="text-sm text-gray-400">{themeOption.description}</p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* App Theme */}
+                  <div>
+                    <h3 className="text-lg font-medium text-white mb-4">App Theme</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      {appThemes.map((theme) => (
+                        <button
+                          key={theme.id}
+                          onClick={() => setSettings({ ...settings, appTheme: theme.id })}
+                          className={`relative group rounded-lg overflow-hidden transition-all ${
+                            settings.appTheme === theme.id
+                              ? 'ring-2'
+                              : 'hover:ring-2 hover:ring-opacity-50'
+                          }`}
+                          style={{ 
+                            '--tw-ring-color': theme.colors.accent,
+                            aspectRatio: '16/10'
+                          } as React.CSSProperties}
+                        >
+                          <img 
+                            src={theme.preview} 
+                            alt={theme.name}
+                            className="w-full h-full object-cover"
+                          />
+                          <div 
+                            className="absolute inset-0 flex flex-col justify-end p-3 text-left"
+                            style={{ 
+                              background: `linear-gradient(transparent, ${theme.colors.background})`
+                            }}
+                          >
+                            <div 
+                              className="rounded-lg p-3"
+                              style={{ backgroundColor: theme.colors.menuBg }}
+                            >
+                              <h4 className="text-white font-medium text-sm mb-1">{theme.name}</h4>
+                              <p className="text-xs text-gray-400 line-clamp-2">{theme.description}</p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(activeSection === 'notifications' || 
+                activeSection === 'privacy' || 
+                activeSection === 'language' || 
+                activeSection === 'shortcuts' || 
+                activeSection === 'display' || 
+                activeSection === 'email') && (
+                <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                  <p className="text-lg">This section is coming soon</p>
+                  <p className="text-sm mt-2">Stay tuned for updates!</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-1">
-              Display Name
-            </label>
-            <input
-              type="text"
-              id="username"
-              value={newUsername}
-              onChange={(e) => setNewUsername(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
-              placeholder="Enter display name"
-            />
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm text-gray-300 hover:text-white"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 text-sm bg-pink-500 text-white rounded-lg hover:bg-pink-600"
-            >
-              Save Changes
-            </button>
-          </div>
-        </form>
       </div>
+
+      {/* Save Changes Prompt */}
+      {showSavePrompt && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center">
+          <div className="bg-gray-900 rounded-lg p-6 w-[400px]">
+            <h3 className="text-lg font-semibold text-white mb-4">Save Changes?</h3>
+            <p className="text-gray-300 mb-6">
+              You have unsaved changes. Would you like to save them before closing?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowSavePrompt(false);
+                  onClose();
+                }}
+                className="px-4 py-2 text-sm text-gray-300 hover:text-white"
+              >
+                Discard
+              </button>
+              <button
+                onClick={() => setShowSavePrompt(false)}
+                className="px-4 py-2 text-sm text-gray-300 hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleSave();
+                  setShowSavePrompt(false);
+                }}
+                className="px-4 py-2 text-sm text-white rounded-lg"
+                style={{ backgroundColor: themeColors.primary }}
+              >
+                Save & Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
