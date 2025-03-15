@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { X, Bell, Shield, Globe, Keyboard, Mail, Palette, Monitor, Lock, Building2, ChevronLeft } from 'lucide-react';
+import { X, Bell, Shield, Globe, Keyboard, Mail, Palette, Monitor, Lock, Building2, ChevronLeft, Webhook } from 'lucide-react';
 import { ThemeType, useTheme } from '../../contexts/ThemeContext';
 
 interface UserSettingsProps {
@@ -95,6 +95,39 @@ const appThemes: AppThemeOption[] = [
   }
 ];
 
+const apiServices = [
+  {
+    id: 'openai',
+    name: 'OpenAI',
+    description: 'Add your OpenAI API key to use AI features',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg'
+  },
+  {
+    id: 'github',
+    name: 'GitHub',
+    description: 'Connect your GitHub account for repository integration',
+    icon: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'
+  },
+  {
+    id: 'slack',
+    name: 'Slack',
+    description: 'Enable Slack notifications and workspace integration',
+    icon: 'https://a.slack-edge.com/80588/marketing/img/icons/icon_slack_hash_colored.png'
+  },
+  {
+    id: 'notion',
+    name: 'Notion',
+    description: 'Sync your notes and documents with Notion',
+    icon: 'https://www.notion.so/images/favicon.ico'
+  },
+  {
+    id: 'uploadthing',
+    name: 'UploadThing',
+    description: 'Configure file uploads and storage settings',
+    icon: 'https://uploadthing.com/favicon.ico'
+  }
+];
+
 export function UserSettings({ username, email, onUpdateUsername, onClose }: UserSettingsProps) {
   const { theme: currentTheme, setTheme, themeColors } = useTheme();
   const [activeSection, setActiveSection] = useState('profile');
@@ -143,6 +176,7 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
     { id: 'profile', name: 'Profile', icon: Shield },
     { id: 'organization', name: 'Organization', icon: Building2 },
     { id: 'appearance', name: 'Appearance', icon: Palette },
+    { id: 'api', name: 'API & Integrations', icon: Webhook },
     { id: 'notifications', name: 'Notifications', icon: Bell },
     { id: 'privacy', name: 'Privacy', icon: Lock },
     { id: 'language', name: 'Language', icon: Globe },
@@ -430,6 +464,55 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
                           </button>
                         ))}
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeSection === 'api' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-medium text-white mb-2">API Keys & Service Connections</h3>
+                      <p className="text-sm text-gray-400 mb-6">
+                        Connect your favorite services to enhance your workspace capabilities.
+                      </p>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {apiServices.map((service) => (
+                          <div
+                            key={service.id}
+                            className="bg-gray-800/50 rounded-lg p-4 hover:bg-gray-800 transition-colors"
+                          >
+                            <div className="flex items-center gap-4">
+                              <img
+                                src={service.icon}
+                                alt={service.name}
+                                className="w-12 h-12 rounded-lg object-cover"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-white font-medium mb-1">{service.name}</h4>
+                                <p className="text-sm text-gray-400 line-clamp-2">{service.description}</p>
+                              </div>
+                              <div className="flex items-center">
+                                <span className="text-xs text-gray-500">Coming soon</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-medium text-white mb-2">Webhooks</h3>
+                      <p className="text-sm text-gray-400 mb-6">
+                        Set up webhooks to automate your workflow and integrate with external services.
+                      </p>
+
+                      <button className="w-full px-4 py-3 bg-gray-800 rounded-lg text-left hover:bg-gray-700/50 transition-colors group">
+                        <div className="flex justify-between items-center text-gray-300 group-hover:text-white">
+                          <span>Configure Webhooks</span>
+                          <span className="text-sm text-gray-500">Coming soon</span>
+                        </div>
+                      </button>
                     </div>
                   </div>
                 )}
