@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import { X, Code, Eye, Pencil } from 'lucide-react';
+import { X, Code, Eye, Pencil, Settings } from 'lucide-react';
 import { Card as CardType } from '../../types';
 import { useDraggable } from '../../hooks/useDraggable';
 import { useResizable } from '../../hooks/useResizable';
@@ -7,9 +7,9 @@ import { TextCardContent } from './TextCard';
 import { LinkCardContent } from './LinkCard';
 import { AppCardContent } from './AppCard';
 import { UserAppContent } from './UserAppContent';
+import { WebEmbedContent } from './WebEmbedContent';
+import { WebEmbedSettings } from './WebEmbedSettings';
 import { CardEditForm } from './CardEditForm';
-import { Analytics } from '../Apps/Analytics/Analytics';
-import { KanbanApp } from '../Apps/Kanban/KanbanApp';
 
 interface CardProps {
   card: CardType;
@@ -32,6 +32,7 @@ export function Card({
 }: CardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingMetadata, setIsEditingMetadata] = useState(false);
+  const [showWebEmbedSettings, setShowWebEmbedSettings] = useState(false);
   const defaultPosition = useMemo(() => ({ x: 0, y: 0 }), []);
   const defaultDimensions = useMemo(() => ({ width: 300, height: 200 }), []);
 
@@ -49,6 +50,7 @@ export function Card({
   const isUserApp = card.type === 'userapp';
   const isLinkCard = card.type === 'link';
   const isTextCard = card.type === 'text';
+  const isWebEmbed = card.type === 'embed';
 
   const handleContentChange = useCallback((content: string) => {
     onContentChange(card.id, content);
@@ -76,26 +78,9 @@ export function Card({
 
   const renderContent = () => {
     if (isAppCard) {
-      const appType = card.type.replace('app-', '');
-      
-      if (appType === 'analytics') {
-        return <Analytics onClose={() => onDelete(card.id)} onDragStart={handleMouseDown} />;
-      }
-
-      if (appType === 'kanban') {
-        return (
-          <KanbanApp 
-            onClose={() => onDelete(card.id)} 
-            onDragStart={handleMouseDown}
-            metadata={card.metadata}
-            onDataChange={onMetadataChange}
-          />
-        );
-      }
-
       return (
         <AppCardContent
-          appType={appType}
+          appType={card.type.replace('app-', '')}
           onClose={() => onDelete(card.id)}
           isMobile={isMobile}
           metadata={card.metadata}
@@ -128,6 +113,12 @@ export function Card({
             isEditing={isEditing}
           />
         );
+      case 'embed':
+        return (
+          <WebEmbedContent
+            url={card.content}
+          />
+        );
       default:
         return null;
     }
@@ -149,10 +140,12 @@ export function Card({
             onMouseDown={!isMobile ? handleMouseDown : undefined}
           >
             <div className="text-sm font-medium text-gray-600 truncate flex-1 mr-2">
-              {(isTextCard || isLinkCard) && card.metadata?.title 
+              {(isTextCard || isLinkCard || isWebEmbed) && card.metadata?.title 
                 ? card.metadata.title 
                 : card.type === 'userapp' 
                 ? 'Custom App' 
+                : isWebEmbed
+                ? 'Web Embed'
                 : `${card.id.slice(0, 8)}`}
             </div>
             <div className="flex items-center gap-2">
@@ -169,13 +162,22 @@ export function Card({
                   )}
                 </button>
               )}
-              {(isLinkCard || isTextCard) && (
+              {(isLinkCard || isTextCard || isWebEmbed) && (
                 <button
                   onClick={() => setIsEditingMetadata(true)}
                   className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
                   onMouseDown={(e) => e.stopPropagation()}
                 >
                   <Pencil className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                </button>
+              )}
+              {isWebEmbed && (
+                <button
+                  onClick={() => setShowWebEmbedSettings(true)}
+                  className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  <Settings className="w-4 h-4 text-gray-400 hover:text-gray-600" />
                 </button>
               )}
               <button
@@ -221,6 +223,21 @@ export function Card({
           metadata={card.metadata}
           onSubmit={handleMetadataSubmit}
           onClose={() => setIsEditingMetadata(false)}
+        />
+      )}
+
+      {showWebEmbedSettings && (
+        <WebEmbedSettings
+          currentUrl={card.content}
+          currentTitle={card.metadata?.title}
+          onSubmit={(url, title) => {
+            handleContentChange(url);
+            if (onMetadataChange) {
+              onMetadataChange(card.id, { ...card.metadata, title });
+            }
+            setShowWebEmbedSettings(false);
+          }}
+          onClose={() => setShowWebEmbedSettings(false)}
         />
       )}
     </>
