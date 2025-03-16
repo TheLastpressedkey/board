@@ -118,6 +118,18 @@ export function Board({
     return `Web Embed ${webEmbeds}`;
   };
 
+  useEffect(() => {
+    if (isDraggingBoard) {
+      window.addEventListener('mousemove', handleBoardMouseMove);
+      window.addEventListener('mouseup', handleBoardMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleBoardMouseMove);
+      window.removeEventListener('mouseup', handleBoardMouseUp);
+    };
+  }, [isDraggingBoard, startDragPos]);
+
   return (
     <div
       ref={boardRef}
