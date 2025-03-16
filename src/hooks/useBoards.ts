@@ -1,12 +1,17 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Board, Card, ContentType } from '../types';
 import { createCard } from '../utils/cardUtils';
 import { fetchLinkMetadata } from '../utils/linkUtils';
 import { database } from '../services/database';
 
+const CURRENT_BOARD_KEY = 'weboard_current_board';
+
 export function useBoards() {
   const [boards, setBoards] = useState<Board[]>([]);
-  const [currentBoard, setCurrentBoard] = useState<string | null>(null);
+  const [currentBoard, setCurrentBoard] = useState<string | null>(() => {
+    // Restaurer le board actuel depuis le localStorage
+    return localStorage.getItem(CURRENT_BOARD_KEY) || null;
+  });
   const [unsavedChanges, setUnsavedChanges] = useState(false);
 
   const loadBoards = useCallback(async () => {
@@ -14,17 +19,31 @@ export function useBoards() {
       const boardsData = await database.getBoards();
       if (boardsData && boardsData.length > 0) {
         setBoards(boardsData);
-        setCurrentBoard(boardsData[0].id);
+        // Si pas de board actuel ou si le board actuel n'existe plus, utiliser le premier
+        const savedBoard = localStorage.getItem(CURRENT_BOARD_KEY);
+        const boardExists = boardsData.some(b => b.id === savedBoard);
+        if (!savedBoard || !boardExists) {
+          setCurrentBoard(boardsData[0].id);
+          localStorage.setItem(CURRENT_BOARD_KEY, boardsData[0].id);
+        }
       } else {
         const newBoard = await database.createBoard('Main Board', true);
         setBoards([newBoard]);
         setCurrentBoard(newBoard.id);
+        localStorage.setItem(CURRENT_BOARD_KEY, newBoard.id);
       }
       setUnsavedChanges(false);
     } catch (error) {
       console.error('Error loading boards:', error);
     }
   }, []);
+
+  // Persister le board actuel quand il change
+  useEffect(() => {
+    if (currentBoard) {
+      localStorage.setItem(CURRENT_BOARD_KEY, currentBoard);
+    }
+  }, [currentBoard]);
 
   const createBoard = useCallback(async () => {
     try {
@@ -42,7 +61,13 @@ export function useBoards() {
       await database.deleteBoard(boardId);
       setBoards(prev => prev.filter(board => board.id !== boardId));
       if (currentBoard === boardId) {
-        setCurrentBoard(boards[0]?.id || null);
+        const firstBoard = boards[0]?.id;
+        setCurrentBoard(firstBoard || null);
+        if (firstBoard) {
+          localStorage.setItem(CURRENT_BOARD_KEY, firstBoard);
+        } else {
+          localStorage.removeItem(CURRENT_BOARD_KEY);
+        }
       }
     } catch (error) {
       console.error('Error deleting board:', error);
