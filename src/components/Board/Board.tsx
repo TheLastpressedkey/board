@@ -4,6 +4,7 @@ import { Board as BoardType, ContentType } from '../../types';
 import { useScrollProgress } from '../../hooks/useScrollProgress';
 import { useSelectionZone } from '../../hooks/useSelectionZone';
 import { SelectionZone } from '../SelectionZone/SelectionZone';
+import { WebEmbedInput } from '../Card/WebEmbedInput';
 
 interface BoardProps {
   board: BoardType;
@@ -31,7 +32,7 @@ export function Board({
   const [startDragPos, setStartDragPos] = React.useState({ x: 0, y: 0 });
   const [scrollPos, setScrollPos] = React.useState({ x: 0, y: 0 });
   const [showContextMenu, setShowContextMenu] = React.useState(false);
-  const [showLinkInput, setShowLinkInput] = React.useState(false);
+  const [showWebEmbedInput, setShowWebEmbedInput] = React.useState(false);
   const [contextMenuPosition, setContextMenuPosition] = React.useState({ x: 0, y: 0 });
   const [selectedZone, setSelectedZone] = React.useState<{
     position: { x: number; y: number };
@@ -101,8 +102,8 @@ export function Board({
 
   const handleCardTypeSelect = (type: ContentType) => {
     if (selectedZone) {
-      if (type === 'link') {
-        setShowLinkInput(true);
+      if (type === 'embed') {
+        setShowWebEmbedInput(true);
         setShowContextMenu(false);
       } else {
         onAddCard(type, selectedZone.position, selectedZone.dimensions);
@@ -112,17 +113,10 @@ export function Board({
     }
   };
 
-  useEffect(() => {
-    if (isDraggingBoard) {
-      window.addEventListener('mousemove', handleBoardMouseMove);
-      window.addEventListener('mouseup', handleBoardMouseUp);
-    }
-
-    return () => {
-      window.removeEventListener('mousemove', handleBoardMouseMove);
-      window.removeEventListener('mouseup', handleBoardMouseUp);
-    };
-  }, [isDraggingBoard, startDragPos]);
+  const generateWebEmbedId = () => {
+    const webEmbeds = board.cards.filter(card => card.type === 'embed').length + 1;
+    return `Web Embed ${webEmbeds}`;
+  };
 
   return (
     <div
@@ -170,6 +164,26 @@ export function Board({
         </div>
 
         {isSelecting && selectionZone && <SelectionZone zone={selectionZone} />}
+
+        {showWebEmbedInput && selectedZone && (
+          <WebEmbedInput
+            position={contextMenuPosition}
+            onSubmit={(url, title) => {
+              onAddCard('embed', selectedZone.position, selectedZone.dimensions);
+              const newCard = board.cards[board.cards.length - 1];
+              onContentChange(newCard.id, url);
+              onUpdateCardMetadata(newCard.id, { 
+                title: title || generateWebEmbedId()
+              });
+              setShowWebEmbedInput(false);
+              setSelectedZone(null);
+            }}
+            onClose={() => {
+              setShowWebEmbedInput(false);
+              setSelectedZone(null);
+            }}
+          />
+        )}
       </div>
     </div>
   );
