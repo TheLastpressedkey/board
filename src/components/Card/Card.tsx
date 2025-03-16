@@ -10,6 +10,8 @@ import { UserAppContent } from './UserAppContent';
 import { WebEmbedContent } from './WebEmbedContent';
 import { WebEmbedSettings } from './WebEmbedSettings';
 import { CardEditForm } from './CardEditForm';
+import { Analytics } from '../Apps/Analytics/Analytics';
+import { KanbanApp } from '../Apps/Kanban/KanbanApp';
 
 interface CardProps {
   card: CardType;
@@ -78,9 +80,26 @@ export function Card({
 
   const renderContent = () => {
     if (isAppCard) {
+      const appType = card.type.replace('app-', '');
+      
+      if (appType === 'analytics') {
+        return <Analytics onClose={() => onDelete(card.id)} onDragStart={handleMouseDown} />;
+      }
+
+      if (appType === 'kanban') {
+        return (
+          <KanbanApp 
+            onClose={() => onDelete(card.id)} 
+            onDragStart={handleMouseDown}
+            metadata={card.metadata}
+            onDataChange={onMetadataChange}
+          />
+        );
+      }
+
       return (
         <AppCardContent
-          appType={card.type.replace('app-', '')}
+          appType={appType}
           onClose={() => onDelete(card.id)}
           isMobile={isMobile}
           metadata={card.metadata}
