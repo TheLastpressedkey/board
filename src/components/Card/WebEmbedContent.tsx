@@ -1,5 +1,4 @@
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
 
 interface WebEmbedContentProps {
   url: string;
@@ -8,7 +7,7 @@ interface WebEmbedContentProps {
 export function WebEmbedContent({ url }: WebEmbedContentProps) {
   return (
     <div className="h-full overflow-hidden">
-      <div className="w-full h-full overflow-auto settings-scrollbar">
+      <div className="w-full h-full overflow-auto card-scrollbar">
         <iframe
           src={url}
           className="w-full h-full border-0"
