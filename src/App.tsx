@@ -34,7 +34,8 @@ export default function App() {
     currentBoardData,
     loadBoards,
     saveBoards,
-    hasUnsavedChanges
+    hasUnsavedChanges,
+    autoArrangeCards
   } = useBoards();
   
   const { contextMenu, setContextMenu, handleContextMenu } = useContextMenu();
@@ -121,6 +122,7 @@ export default function App() {
             onAddCard={handleCardTypeSelect}
             onUpdateCardDimensions={updateCardDimensions}
             onUpdateCardMetadata={updateCardMetadata}
+            onAutoArrange={autoArrangeCards}
           />
         )}
 
@@ -156,6 +158,7 @@ export default function App() {
           email={user.email || ''}
           hasUnsavedChanges={hasUnsavedChanges}
           onUpdateUsername={updateUsername}
+          onAutoArrange={autoArrangeCards}
         />
       </div>
     </ThemeProvider>
