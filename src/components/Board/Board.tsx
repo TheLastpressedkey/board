@@ -15,6 +15,7 @@ interface BoardProps {
   onAddCard: (type: ContentType, position: { x: number; y: number }, dimensions?: { width: number; height: number }) => void;
   onUpdateCardDimensions: (id: string, dimensions: { width: number; height: number }) => void;
   onUpdateCardMetadata: (id: string, metadata: any) => void;
+  onAutoArrange?: () => void;
 }
 
 export function Board({ 
@@ -25,7 +26,8 @@ export function Board({
   onScrollProgress,
   onAddCard,
   onUpdateCardDimensions,
-  onUpdateCardMetadata
+  onUpdateCardMetadata,
+  onAutoArrange
 }: BoardProps) {
   const boardRef = useRef<HTMLDivElement>(null);
   const [isDraggingBoard, setIsDraggingBoard] = React.useState(false);
