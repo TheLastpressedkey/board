@@ -3,14 +3,15 @@ import { X, Send, Bot, User, Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext';
 import { getChatCompletion } from '../../lib/openai';
 import { analytics } from '../../services/analytics';
-import { chat, ChatMessage } from '../../services/chat';
+import { chat } from '../../services/chat';
+import { ai } from '../../services/ai';
 
 interface ChatbotProps {
   onClose: () => void;
   onCreateCard?: (position: { x: number; y: number }, type: string, content: string) => void;
 }
 
-const SYSTEM_PROMPT = `Vous êtes Angel, un assistant IA expert avec une expertise en développement logiciel, design et résolution créative de problèmes.
+const DEFAULT_SYSTEM_PROMPT = `Vous êtes Angel, un assistant IA expert avec une expertise en développement logiciel, design et résolution créative de problèmes.
 
 Instructions spéciales pour les questions relatives aux tableaux :
 1. Pour les questions sur les tableaux, cartes ou tâches :
@@ -39,6 +40,7 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [systemPrompt, setSystemPrompt] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { themeColors } = useTheme();
   const [isInitialized, setIsInitialized] = useState(false);
@@ -49,25 +51,34 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
 
   useEffect(() => {
     loadChatHistory();
+    loadSystemPrompt();
   }, []);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
+  const loadSystemPrompt = async () => {
+    try {
+      const customPrompt = await ai.getSystemPrompt();
+      setSystemPrompt(customPrompt);
+    } catch (error) {
+      console.error('Error loading system prompt:', error);
+    }
+  };
+
   const loadChatHistory = async () => {
     try {
       const history = await chat.getHistory();
       setMessages(history);
 
-      // Si l'historique est vide, ajouter le message de bienvenue
       if (history.length === 0 && !isInitialized) {
         const welcomeMessage = await chat.saveMessage(WELCOME_MESSAGE, 'bot');
         setMessages([welcomeMessage]);
         setIsInitialized(true);
       }
     } catch (error) {
-      console.error('Erreur lors du chargement de l\'historique:', error);
+      console.error('Error loading chat history:', error);
     } finally {
       setIsLoadingHistory(false);
     }
@@ -89,7 +100,7 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
       await chat.deleteMessage(messageId);
       setMessages(prev => prev.filter(m => m.id !== messageId));
     } catch (error) {
-      console.error('Erreur lors de la suppression du message:', error);
+      console.error('Error deleting message:', error);
     }
   };
 
@@ -98,7 +109,7 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
       await chat.deleteAllMessages();
       setMessages([]);
     } catch (error) {
-      console.error('Erreur lors de la suppression des messages:', error);
+      console.error('Error deleting all messages:', error);
     }
   };
 
@@ -140,7 +151,7 @@ ${JSON.stringify({
 
 à partir des données, réponds à la demande de l'utilisateur :`;
       } catch (error) {
-        console.error('Erreur lors de la récupération des statistiques:', error);
+        console.error('Error getting board stats:', error);
         return message;
       }
     }
@@ -154,7 +165,6 @@ ${JSON.stringify({
     try {
       setIsLoading(true);
 
-      // Save user message
       const userMessage = await chat.saveMessage(input, 'user');
       setMessages(prev => [...prev, userMessage]);
       setInput('');
@@ -162,7 +172,10 @@ ${JSON.stringify({
       const enrichedMessage = await enrichMessageWithBoardData(input);
       
       const chatMessages = [
-        { role: 'system' as const, content: SYSTEM_PROMPT },
+        { 
+          role: 'system' as const, 
+          content: systemPrompt || DEFAULT_SYSTEM_PROMPT
+        },
         ...messages
           .filter(msg => msg.sender !== 'system')
           .map(msg => ({
@@ -174,7 +187,6 @@ ${JSON.stringify({
 
       const response = await getChatCompletion(chatMessages);
 
-      // Save bot response
       const botMessage = await chat.saveMessage(
         response || "Je suis désolé, je n'ai pas pu traiter votre demande.",
         'bot'
@@ -182,7 +194,6 @@ ${JSON.stringify({
 
       setMessages(prev => [...prev, botMessage]);
 
-      // Create a text card automatically if in edit mode
       if (isEditMode && onCreateCard && response) {
         const position = {
           x: Math.random() * 500 + 100,
@@ -191,7 +202,7 @@ ${JSON.stringify({
         onCreateCard(position, 'text', response);
       }
     } catch (error) {
-      console.error('Erreur lors de la réponse IA:', error);
+      console.error('Error getting AI response:', error);
       const errorMessage = await chat.saveMessage(
         "Je suis désolé, j'ai rencontré une erreur. Veuillez réessayer.",
         'bot'
@@ -207,7 +218,7 @@ ${JSON.stringify({
       className="fixed inset-x-4 bottom-20 md:right-4 md:left-auto md:w-96 h-[80vh] md:h-[600px] bg-gray-900 rounded-lg shadow-xl flex flex-col overflow-hidden z-50 border border-gray-700/50"
       style={{ backdropFilter: 'blur(12px)' }}
     >
-      {/* En-tête */}
+      {/* Header */}
       <div 
         className="flex items-center justify-between px-4 py-3 border-b border-gray-700/50"
         style={{ backgroundColor: themeColors.menuBg }}
