@@ -849,5 +849,3 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
     </>
   );
 }
-
-export { UserSettings }
