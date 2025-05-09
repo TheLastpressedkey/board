@@ -83,7 +83,7 @@ export function useBoards() {
   ) => {
     if (!currentBoard) return;
 
-    const newCard = createCard(type, position, initialContent || '', {
+    const newCard = createCard(type, position, initialContent || '', dimensions || {
       width: FIXED_CARD_WIDTH,
       height: FIXED_CARD_HEIGHT
     });
@@ -171,13 +171,7 @@ export function useBoards() {
     setBoards(prevBoards => prevBoards.map(board => ({
       ...board,
       cards: board.cards?.map(card => 
-        card.id === cardId ? { 
-          ...card, 
-          dimensions: {
-            width: FIXED_CARD_WIDTH,
-            height: FIXED_CARD_HEIGHT
-          }
-        } : card
+        card.id === cardId ? { ...card, dimensions } : card
       ) || []
     })));
     setUnsavedChanges(true);
