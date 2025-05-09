@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import { X, Bell, Shield, Globe, Keyboard, Mail, Palette, Monitor, Lock, Building2, ChevronLeft, Webhook } from 'lucide-react';
+import { X, Bell, Shield, Globe, Keyboard, Mail, Palette, Monitor, Lock, Building2, ChevronLeft, Webhook, Bot } from 'lucide-react';
 import { ThemeType, useTheme } from '../../contexts/ThemeContext';
+import { ai } from '../../services/ai';
 
 interface UserSettingsProps {
   username: string;
@@ -33,6 +34,8 @@ interface SettingsState {
   username: string;
   theme: ThemeType;
   appTheme: string;
+  systemPrompt: string;
+  useCustomPrompt: boolean;
 }
 
 const themes: ThemeOption[] = [
@@ -121,6 +124,18 @@ const apiServices = [
     icon: 'https://www.notion.so/images/favicon.ico'
   },
   {
+    id: 'figma',
+    name: 'Figma',
+    description: 'Import designs and assets from Figma',
+    icon: 'https://www.figma.com/favicon.ico'
+  },
+  {
+    id: 'google',
+    name: 'Google Workspace',
+    description: 'Connect with Google Drive, Calendar, and more',
+    icon: 'https://workspace.google.com/static/img/favicon.ico'
+  },
+  {
     id: 'uploadthing',
     name: 'UploadThing',
     description: 'Configure file uploads and storage settings',
@@ -128,16 +143,41 @@ const apiServices = [
   }
 ];
 
+const DEFAULT_SYSTEM_PROMPT = `You are Angel, an AI assistant expert with expertise in software development, design and creative problem solving.
+
+Instructions for board-related questions:
+1. For questions about boards, cards, or tasks:
+   - Be direct and concise in your responses
+   - Start with "Based on the data available, I can see that..." or similar
+   - Provide exact numbers or statistics when asked
+   - Don't explain your calculation process unless asked
+   - Maintain a professional and courteous tone
+
+2. For all other questions:
+   - Provide detailed explanations
+   - Use examples when helpful
+   - Break down complex topics into steps
+
+Remember:
+- You communicate in French
+- You are a trusted development partner named Angel
+- Be honest about your limitations
+- Maintain a helpful and consistent attitude`;
+
 export function UserSettings({ username, email, onUpdateUsername, onClose }: UserSettingsProps) {
   const { theme: currentTheme, setTheme, themeColors } = useTheme();
   const [activeSection, setActiveSection] = useState('profile');
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [isMobileView, setIsMobileView] = useState(window.innerWidth < 768);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const [settings, setSettings] = useState<SettingsState>({
     username,
     theme: currentTheme,
-    appTheme: 'default'
+    appTheme: 'default',
+    systemPrompt: '',
+    useCustomPrompt: false
   });
 
   React.useEffect(() => {
@@ -146,6 +186,24 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  React.useEffect(() => {
+    async function loadSystemPrompt() {
+      try {
+        const prompt = await ai.getSystemPrompt();
+        if (prompt) {
+          setSettings(prev => ({ 
+            ...prev, 
+            systemPrompt: prompt,
+            useCustomPrompt: true
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading system prompt:', error);
+      }
+    }
+    loadSystemPrompt();
   }, []);
 
   const hasChanges = useCallback(() => {
@@ -177,6 +235,7 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
     { id: 'organization', name: 'Organization', icon: Building2 },
     { id: 'appearance', name: 'Appearance', icon: Palette },
     { id: 'api', name: 'API & Integrations', icon: Webhook },
+    { id: 'ai', name: 'AI Settings', icon: Bot },
     { id: 'notifications', name: 'Notifications', icon: Bell },
     { id: 'privacy', name: 'Privacy', icon: Lock },
     { id: 'language', name: 'Language', icon: Globe },
@@ -184,6 +243,17 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
     { id: 'display', name: 'Display', icon: Monitor },
     { id: 'email', name: 'Email Settings', icon: Mail }
   ];
+
+  const showMessage = (success: boolean, message: string) => {
+    if (success) {
+      setShowSuccessMessage(true);
+      setErrorMessage(null);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+    } else {
+      setErrorMessage(message);
+      setTimeout(() => setErrorMessage(null), 3000);
+    }
+  };
 
   return (
     <>
@@ -196,7 +266,6 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
           }`}
       >
         <div className={`flex h-full ${isMobileView ? 'flex-col' : ''}`}>
-          {/* Mobile Header */}
           {isMobileView && (
             <div className="flex items-center justify-between p-4 border-b border-gray-800">
               <div className="flex items-center gap-3">
@@ -232,7 +301,6 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
             </div>
           )}
 
-          {/* Sidebar or Main Menu for Mobile */}
           {(!isMobileView || activeSection === 'main') && (
             <div className={`${isMobileView ? 'flex-1 overflow-y-auto' : 'w-64 border-r border-gray-800'} p-4`}>
               {!isMobileView && (
@@ -271,10 +339,8 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
             </div>
           )}
 
-          {/* Content */}
           {(!isMobileView || activeSection !== 'main') && (
             <div className="flex-1 flex flex-col min-h-0">
-              {/* Desktop Header */}
               {!isMobileView && (
                 <div className="flex justify-between items-center p-6 border-b border-gray-800">
                   <h2 className="text-xl font-semibold text-white">
@@ -300,7 +366,6 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
                 </div>
               )}
 
-              {/* Section Content */}
               <div className="flex-1 overflow-y-auto settings-scrollbar p-6">
                 {activeSection === 'profile' && (
                   <div className="space-y-6">
@@ -389,7 +454,6 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
 
                 {activeSection === 'appearance' && (
                   <div className="space-y-8">
-                    {/* Interface Theme */}
                     <div>
                       <h3 className="text-lg font-medium text-white mb-4">Interface Theme</h3>
                       <div className="space-y-3">
@@ -424,7 +488,6 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
                       </div>
                     </div>
 
-                    {/* App Theme */}
                     <div>
                       <h3 className="text-lg font-medium text-white mb-4">App Theme</h3>
                       <div className="grid grid-cols-2 gap-4">
@@ -517,6 +580,97 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
                   </div>
                 )}
 
+                {activeSection === 'ai' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-medium text-white mb-4">AI Assistant Settings</h3>
+                      <div className="space-y-4">
+                        <div className="flex items-center mb-4">
+                          <input
+                            type="checkbox"
+                            id="useCustomPrompt"
+                            checked={settings.useCustomPrompt}
+                            onChange={(e) => setSettings(prev => ({ 
+                              ...prev, 
+                              useCustomPrompt: e.target.checked,
+                              systemPrompt: e.target.checked ? prev.systemPrompt || DEFAULT_SYSTEM_PROMPT : ''
+                            }))}
+                            className="w-4 h-4 rounded border-gray-300 text-pink-500 focus:ring-pink-500"
+                          />
+                          <label htmlFor="useCustomPrompt" className="ml-2 text-sm text-gray-300">
+                            Use custom system prompt
+                          </label>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-1">
+                            System Prompt
+                          </label>
+                          <textarea
+                            value={settings.useCustomPrompt ? settings.systemPrompt : DEFAULT_SYSTEM_PROMPT}
+                            onChange={(e) => setSettings({ ...settings, systemPrompt: e.target.value })}
+                            disabled={!settings.useCustomPrompt}
+                            className={`w-full h-48 px-4 py-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 resize-none font-mono text-sm ${
+                              !settings.useCustomPrompt ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                            style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
+                            placeholder="Enter custom system prompt for the AI assistant..."
+                          />
+                          <p className="mt-2 text-sm text-gray-400">
+                            Define how the AI assistant should behave and what role it should take. This prompt will be used as context for all conversations.
+                          </p>
+                        </div>
+
+                        {showSuccessMessage && (
+                          <div className="px-4 py-2 bg-green-500/10 text-green-400 rounded-lg">
+                            Settings saved successfully!
+                          </div>
+                        )}
+                        {errorMessage && (
+                          <div className="px-4 py-2 bg-red-500/10 text-red-400 rounded-lg">
+                            {errorMessage}
+                          </div>
+                        )}
+
+                        <div className="pt-4 flex justify-end gap-2">
+                          <button
+                            onClick={() => {
+                              setSettings(prev => ({
+                                ...prev,
+                                systemPrompt: DEFAULT_SYSTEM_PROMPT,
+                                useCustomPrompt: false
+                              }));
+                            }}
+                            className="px-4 py-2 text-sm text-gray-300 hover:text-white"
+                          >
+                            Reset to Default
+                          </button>
+                          <button
+                            onClick={async () => {
+                              try {
+                                if (settings.useCustomPrompt) {
+                                  await ai.saveSystemPrompt(settings.systemPrompt);
+                                  showMessage(true, 'System prompt saved successfully!');
+                                } else {
+                                  await ai.saveSystemPrompt('');
+                                  showMessage(true, 'Reset to default system prompt!');
+                                }
+                              } catch (error) {
+                                console.error('Error saving system prompt:', error);
+                                showMessage(false, 'Failed to save system prompt');
+                              }
+                            }}
+                            className="px-4 py-2 text-sm text-white rounded-lg"
+                            style={{ backgroundColor: themeColors.primary }}
+                          >
+                            Save Changes
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {(activeSection === 'notifications' || 
                   activeSection === 'privacy' || 
                   activeSection === 'language' || 
@@ -534,7 +688,6 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
         </div>
       </div>
 
-      {/* Save Changes Prompt */}
       {showSavePrompt && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
           <div className="bg-gray-900 rounded-lg p-6 w-full max-w-[400px]">
@@ -570,6 +723,7 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
               </button>
             </div>
           </div>
+        
         </div>
       )}
     </>
