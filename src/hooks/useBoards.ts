@@ -5,21 +5,23 @@ import { fetchLinkMetadata } from '../utils/linkUtils';
 import { database } from '../services/database';
 
 const CURRENT_BOARD_KEY = 'weboard_current_board';
+const CARD_MARGIN = 20; // Space between cards
+const FIXED_CARD_WIDTH = 300; // Fixed width for all cards
+const FIXED_CARD_HEIGHT = 200; // Fixed height for all cards
+const ROWS = 3; // Number of rows for auto-arrange
 
 export function useBoards() {
   const [boards, setBoards] = useState<Board[]>([]);
   const [currentBoard, setCurrentBoard] = useState<string | null>(() => {
-    // Restaurer le board actuel depuis le localStorage
     return localStorage.getItem(CURRENT_BOARD_KEY) || null;
   });
-  const [unsavedChanges, setUnsavedChanges] = useState(false);
+  const [hasUnsavedChanges, setUnsavedChanges] = useState(false);
 
   const loadBoards = useCallback(async () => {
     try {
       const boardsData = await database.getBoards();
       if (boardsData && boardsData.length > 0) {
         setBoards(boardsData);
-        // Si pas de board actuel ou si le board actuel n'existe plus, utiliser le premier
         const savedBoard = localStorage.getItem(CURRENT_BOARD_KEY);
         const boardExists = boardsData.some(b => b.id === savedBoard);
         if (!savedBoard || !boardExists) {
@@ -38,7 +40,6 @@ export function useBoards() {
     }
   }, []);
 
-  // Persister le board actuel quand il change
   useEffect(() => {
     if (currentBoard) {
       localStorage.setItem(CURRENT_BOARD_KEY, currentBoard);
@@ -82,9 +83,11 @@ export function useBoards() {
   ) => {
     if (!currentBoard) return;
 
-    const newCard = createCard(type, position, initialContent || '', dimensions);
+    const newCard = createCard(type, position, initialContent || '', {
+      width: FIXED_CARD_WIDTH,
+      height: FIXED_CARD_HEIGHT
+    });
     
-    // Initialize metadata for specific app types
     if (type === 'app-kanban') {
       newCard.metadata = { boardId: currentBoard };
     }
@@ -102,7 +105,10 @@ export function useBoards() {
 
     try {
       const metadata = await fetchLinkMetadata(url);
-      const newCard = createCard('link', position, url);
+      const newCard = createCard('link', position, url, {
+        width: FIXED_CARD_WIDTH,
+        height: FIXED_CARD_HEIGHT
+      });
       newCard.metadata = metadata;
 
       setBoards(prevBoards => prevBoards.map(board => 
@@ -111,7 +117,6 @@ export function useBoards() {
           : board
       ));
       
-      // Auto-save after adding a link card
       const updatedBoard = boards.find(b => b.id === currentBoard);
       if (updatedBoard) {
         const updatedCards = [...(updatedBoard.cards || []), newCard];
@@ -141,7 +146,6 @@ export function useBoards() {
       ) || []
     })));
 
-    // Auto-save after metadata update
     const currentBoardData = boards.find(b => b.id === currentBoard);
     if (currentBoardData?.cards) {
       const updatedCards = currentBoardData.cards.map(card =>
@@ -167,7 +171,13 @@ export function useBoards() {
     setBoards(prevBoards => prevBoards.map(board => ({
       ...board,
       cards: board.cards?.map(card => 
-        card.id === cardId ? { ...card, dimensions } : card
+        card.id === cardId ? { 
+          ...card, 
+          dimensions: {
+            width: FIXED_CARD_WIDTH,
+            height: FIXED_CARD_HEIGHT
+          }
+        } : card
       ) || []
     })));
     setUnsavedChanges(true);
@@ -180,6 +190,39 @@ export function useBoards() {
     })));
     setUnsavedChanges(true);
   }, []);
+
+  const autoArrangeCards = useCallback(() => {
+    if (!currentBoard) return;
+
+    setBoards(prevBoards => prevBoards.map(board => {
+      if (board.id !== currentBoard) return board;
+
+      const cards = [...(board.cards || [])];
+      const totalCards = cards.length;
+      const cardsPerRow = Math.ceil(totalCards / ROWS);
+
+      const arrangedCards = cards.map((card, index) => {
+        const row = Math.floor(index / cardsPerRow);
+        const col = index % cardsPerRow;
+
+        return {
+          ...card,
+          position: {
+            x: CARD_MARGIN + col * (FIXED_CARD_WIDTH + CARD_MARGIN),
+            y: CARD_MARGIN + row * (FIXED_CARD_HEIGHT + CARD_MARGIN)
+          },
+          dimensions: {
+            width: FIXED_CARD_WIDTH,
+            height: FIXED_CARD_HEIGHT
+          }
+        };
+      });
+
+      return { ...board, cards: arrangedCards };
+    }));
+
+    setUnsavedChanges(true);
+  }, [currentBoard]);
 
   const saveBoards = useCallback(async () => {
     if (!currentBoard) return;
@@ -211,7 +254,8 @@ export function useBoards() {
     updateCardMetadata,
     loadBoards,
     saveBoards,
-    hasUnsavedChanges: unsavedChanges,
-    currentBoardData: currentBoard ? boards.find(b => b.id === currentBoard) : null
+    hasUnsavedChanges,
+    currentBoardData: currentBoard ? boards.find(b => b.id === currentBoard) : null,
+    autoArrangeCards
   };
 }
