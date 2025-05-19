@@ -1,5 +1,5 @@
-import React from 'react';
-import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppStoreProps {
@@ -74,6 +74,14 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
       description: 'Organize and track tasks with a flexible Kanban board',
       icon: Layout,
       category: 'Productivity',
+      author: 'Core Apps'
+    },
+    {
+      id: 'email',
+      name: 'Email',
+      description: 'Send emails using your configured SMTP settings',
+      icon: Mail,
+      category: 'Communication',
       author: 'Core Apps'
     }
   ];
