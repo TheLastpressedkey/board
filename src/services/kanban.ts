@@ -42,7 +42,7 @@ export const kanban = {
         return this.createKanbanBoard(boardId);
       }
 
-      const board = boards[0]; // Use the first board if multiple exist
+      const board = boards[0];
 
       // Get tasks for the board
       const { data: tasks, error: tasksError } = await supabase
