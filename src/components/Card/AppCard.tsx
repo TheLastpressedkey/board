@@ -5,6 +5,9 @@ import { Clock } from '../Apps/Clock/Clock';
 import { TodoList } from '../Apps/TodoList/TodoList';
 import { Calendar } from '../Apps/Calendar/Calendar';
 import { RSSReader } from '../Apps/RSS/RSSReader';
+import { Analytics } from '../Apps/Analytics/Analytics';
+import { KanbanApp } from '../Apps/Kanban/KanbanApp';
+import { EmailApp } from '../Apps/Email/EmailApp';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppCardContentProps {
@@ -26,15 +29,6 @@ export function AppCardContent({
 }: AppCardContentProps) {
   const { themeColors } = useTheme();
 
-  React.useEffect(() => {
-    window.cardMetadata = metadata;
-    window.onCardDataChange = onDataChange;
-    return () => {
-      window.cardMetadata = undefined;
-      window.onCardDataChange = undefined;
-    };
-  }, [metadata, onDataChange]);
-
   const containerStyle = {
     width: '100%',
     height: '100%',
@@ -43,25 +37,6 @@ export function AppCardContent({
     overflow: 'hidden'
   };
 
-  const renderHeader = () => (
-    <div 
-      className="flex justify-between items-center px-4 py-2 cursor-grab"
-      style={{ backgroundColor: themeColors.menuBg }}
-      onMouseDown={onDragStart}
-    >
-      <span className="text-sm font-medium text-gray-300">
-        {appType.charAt(0).toUpperCase() + appType.slice(1)}
-      </span>
-      <button
-        onClick={onClose}
-        className="p-1 hover:bg-gray-700 rounded-full"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
-        <X className="w-4 h-4 text-gray-400" />
-      </button>
-    </div>
-  );
-
   const renderApp = () => {
     switch (appType) {
       case 'calculator':
@@ -69,11 +44,17 @@ export function AppCardContent({
       case 'clock':
         return <Clock onClose={onClose} />;
       case 'todolist':
-        return <TodoList onClose={onClose} />;
+        return <TodoList onClose={onClose} metadata={metadata} onDataChange={onDataChange} />;
       case 'calendar':
         return <Calendar onClose={onClose} metadata={metadata} onDataChange={onDataChange} />;
       case 'rss':
         return <RSSReader onClose={onClose} metadata={metadata} onDataChange={onDataChange} />;
+      case 'analytics':
+        return <Analytics onClose={onClose} onDragStart={onDragStart} />;
+      case 'kanban':
+        return <KanbanApp onClose={onClose} onDragStart={onDragStart} metadata={metadata} onDataChange={onDataChange} />;
+      case 'email':
+        return <EmailApp onClose={onClose} onDragStart={onDragStart} />;
       default:
         return (
           <div className="h-full flex items-center justify-center text-gray-500">
@@ -85,8 +66,7 @@ export function AppCardContent({
 
   return (
     <div style={containerStyle}>
-      {renderHeader()}
-      <div className="h-[calc(100%-40px)]">
+      <div className="h-full">
         {renderApp()}
       </div>
     </div>
