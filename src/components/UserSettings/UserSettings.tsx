@@ -3,6 +3,7 @@ import { X, Bell, Shield, Globe, Keyboard, Mail, Palette, Monitor, Lock, Buildin
 import { ThemeType, useTheme } from '../../contexts/ThemeContext';
 import { ai } from '../../services/ai';
 import { uploadthing } from '../../services/uploadthing';
+import { SMTPForm } from './SMTPForm';
 
 interface UserSettingsProps {
   username: string;
@@ -202,6 +203,13 @@ const apiServices = [
     comingSoon: true
   },
   {
+    id: 'smtp',
+    name: 'SMTP Settings',
+    description: 'Configure email sending capabilities',
+    icon: 'https://cdn-icons-png.flaticon.com/512/732/732200.png',
+    comingSoon: false
+  },
+  {
     id: 'github',
     name: 'GitHub',
     description: 'Connect your GitHub account for repository integration',
@@ -372,6 +380,28 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
             <UploadThingForm
               onSave={() => {
                 showMessage('UploadThing configuration saved successfully');
+                setSelectedService(null);
+              }}
+              onError={(message) => showMessage(message, true)}
+              themeColors={themeColors}
+            />
+          </div>
+        );
+      case 'smtp':
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium text-white">SMTP Configuration</h3>
+              <button
+                onClick={() => setSelectedService(null)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <SMTPForm
+              onSave={() => {
+                showMessage('SMTP configuration saved successfully');
                 setSelectedService(null);
               }}
               onError={(message) => showMessage(message, true)}
