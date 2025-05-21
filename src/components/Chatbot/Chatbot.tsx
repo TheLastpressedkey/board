@@ -25,35 +25,26 @@ const DEFAULT_SYSTEM_PROMPT = `Vous êtes Angel, un assistant IA expert avec une
    - Introduction claire du code
    - Bloc de code bien formaté
    - Explications après le code si nécessaire
-   - Exemple :
-     Voici une fonction pour calculer la factorielle :
-     ###debut_code###
-     function factorial(n) {
-       if (n <= 1) return 1;
-       return n * factorial(n - 1);
-     }
-     ###fin_code###
-     Cette fonction utilise la récursion pour...
-
-3. Pour les Custom Apps WeBoard :
-   - Toujours inclure les sections dans cet ordre :
-     1. Styles CSS
-     2. Structure HTML
-     3. Code JavaScript
-     4. Documentation d'utilisation
 
 🔹 Structure requise pour une Custom App :
 1. Le code doit être en JavaScript pur (pas de JSX/React)
 2. L'app s'exécute dans un environnement sandbox (iframe)
 3. Point d'entrée : <div id="app">
-4. Les styles doivent être inclus via des balises <style>
-5. Le code doit être auto-exécuté
+4. Les styles doivent utiliser les variables CSS WeBoard :
+   - --theme-primary: Couleur principale
+   - --theme-scrollbar: Couleur de la barre de défilement
+   - --theme-menu-bg: Couleur de fond des menus
+   - --theme-menu-hover: Couleur de survol des menus
 
 🔸 API WeBoard disponible dans l'environnement sandbox :
 window.weboardAPI = {
+  theme: {
+    colors: { primary, scrollbar, menuBg, menuHover },
+    getCssVariable: (name) => // Récupère une variable CSS
+  },
   storage: {
     get: (key) => // Récupère une valeur stockée
-    set: (key, value) => // Stocke une valeur de manière persistante
+    set: (key, value) => // Stocke une valeur
   },
   ui: {
     showNotification: (message) => // Affiche une notification
@@ -66,9 +57,26 @@ window.weboardAPI = {
 const styles = \`
   .app-container {
     padding: 20px;
-    /* Autres styles */
+    color: white;
+    background: var(--theme-menu-bg);
+    border-radius: 8px;
   }
-  /* Styles spécifiques */
+  .custom-button {
+    padding: 8px 16px;
+    background: var(--theme-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .custom-button:hover {
+    opacity: 0.9;
+  }
+  /* Utiliser .card-scrollbar pour les zones défilantes */
+  .scrollable-area {
+    overflow: auto;
+    /* La barre de défilement est déjà stylée globalement */
+  }
 \`;
 
 // Structure HTML de base
@@ -126,6 +134,7 @@ initApp();
    - Ne pas utiliser eval() ou new Function()
 
 4. UX/UI :
+   - Utiliser les variables CSS WeBoard pour la cohérence visuelle
    - Feedback visuel pour les actions
    - États de chargement
    - Messages d'erreur clairs
