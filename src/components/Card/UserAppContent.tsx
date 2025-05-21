@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
+import Editor from "@monaco-editor/react";
 import { useUserApp } from '../../hooks/useUserApp';
 
 interface UserAppContentProps {
@@ -8,37 +9,113 @@ interface UserAppContentProps {
 }
 
 export function UserAppContent({ content, onChange, isEditing }: UserAppContentProps) {
-  const { renderedContent } = useUserApp(content);
+  const { renderedContent, error } = useUserApp(content);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    e.stopPropagation();
-    onChange(e.target.value);
+  const handleEditorChange = useCallback((value: string | undefined) => {
+    if (value !== undefined) {
+      onChange(value);
+    }
   }, [onChange]);
+
+  // Fonction pour créer un environnement d'exécution sécurisé
+  const createSandbox = useCallback(() => {
+    if (!iframeRef.current) return;
+
+    const sandbox = iframeRef.current;
+    const sandboxContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { 
+              margin: 0; 
+              font-family: system-ui, sans-serif;
+              background: transparent;
+            }
+            #app {
+              height: 100vh;
+              width: 100vw;
+              overflow: auto;
+            }
+          </style>
+        </head>
+        <body>
+          <div id="app"></div>
+          <script>
+            // API sécurisée exposée à l'application
+            window.weboardAPI = {
+              storage: {
+                get: (key) => localStorage.getItem(key),
+                set: (key, value) => localStorage.setItem(key, value)
+              },
+              ui: {
+                showNotification: (message) => {
+                  const notification = document.createElement('div');
+                  notification.textContent = message;
+                  notification.style.cssText = 'position:fixed;top:1rem;right:1rem;padding:1rem;background:white;border-radius:0.5rem;box-shadow:0 2px 4px rgba(0,0,0,0.1);z-index:9999;';
+                  document.body.appendChild(notification);
+                  setTimeout(() => notification.remove(), 3000);
+                }
+              }
+            };
+
+            // Exécution sécurisée du code utilisateur
+            try {
+              ${content}
+            } catch (error) {
+              console.error('Error in user app:', error);
+              weboardAPI.ui.showNotification('Error: ' + error.message);
+            }
+          </script>
+        </body>
+      </html>
+    `;
+
+    sandbox.srcdoc = sandboxContent;
+  }, [content]);
+
+  useEffect(() => {
+    if (!isEditing) {
+      createSandbox();
+    }
+  }, [isEditing, createSandbox]);
 
   return (
     <div className="h-full flex flex-col">
       {isEditing ? (
-        /* Code Editor */
-        <textarea
-          className="w-full h-full resize-none p-4 font-mono text-sm text-gray-700
-            focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50
-            bg-gray-50 card-scrollbar"
+        <Editor
+          height="100%"
+          defaultLanguage="javascript"
           value={content}
-          onChange={handleChange}
-          placeholder="Enter your HTML code here..."
-          spellCheck={false}
-          onMouseDown={(e) => e.stopPropagation()}
+          onChange={handleEditorChange}
+          theme="vs-dark"
+          options={{
+            minimap: { enabled: false },
+            fontSize: 14,
+            lineNumbers: 'on',
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            tabSize: 2,
+            wordWrap: 'on'
+          }}
         />
       ) : (
-        /* Preview */
-        <div 
-          className="w-full h-full overflow-auto card-scrollbar"
-          style={{ padding: '16px' }}
-        >
-          <div 
-            className="preview-container w-full h-full"
-            dangerouslySetInnerHTML={{ __html: renderedContent }}
-          />
+        <div className="w-full h-full overflow-hidden">
+          {error ? (
+            <div className="p-4 text-red-500">
+              Error: {error}
+            </div>
+          ) : (
+            <iframe
+              ref={iframeRef}
+              className="w-full h-full border-0"
+              sandbox="allow-scripts"
+              title="User App Preview"
+            />
+          )}
         </div>
       )}
     </div>
