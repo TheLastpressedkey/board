@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail } from 'lucide-react';
+import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail, FileText } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppStoreProps {
@@ -82,6 +82,14 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
       description: 'Send emails using your configured SMTP settings',
       icon: Mail,
       category: 'Communication',
+      author: 'Core Apps'
+    },
+    {
+      id: 'document-editor',
+      name: 'Document Editor',
+      description: 'Create and edit documents with advanced formatting and markdown support',
+      icon: FileText,
+      category: 'Productivity',
       author: 'Core Apps'
     }
   ];
