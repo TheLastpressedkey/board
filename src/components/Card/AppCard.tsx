@@ -8,6 +8,7 @@ import { RSSReader } from '../Apps/RSS/RSSReader';
 import { Analytics } from '../Apps/Analytics/Analytics';
 import { KanbanApp } from '../Apps/Kanban/KanbanApp';
 import { EmailApp } from '../Apps/Email/EmailApp';
+import { DocumentManager } from '../Apps/DocumentEditor/DocumentManager';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppCardContentProps {
@@ -55,6 +56,8 @@ export function AppCardContent({
         return <KanbanApp onClose={onClose} onDragStart={onDragStart} metadata={metadata} onDataChange={onDataChange} />;
       case 'email':
         return <EmailApp onClose={onClose} onDragStart={onDragStart} />;
+      case 'document-editor':
+        return <DocumentManager onClose={onClose} onDragStart={onDragStart} />;
       default:
         return (
           <div className="h-full flex items-center justify-center text-gray-500">
