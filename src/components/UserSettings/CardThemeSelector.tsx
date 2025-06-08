@@ -12,7 +12,7 @@ export function CardThemeSelector() {
       <div>
         <h3 className="text-lg font-medium text-white mb-4">Thèmes de Cartes</h3>
         <p className="text-sm text-gray-400 mb-6">
-          Personnalisez l'apparence des barres d'état de vos cartes avec des styles uniques.
+          Personnalisez l'apparence des barres d'état de vos cartes avec des effets de transparence comme le menu horizontal.
         </p>
       </div>
 
@@ -30,15 +30,18 @@ export function CardThemeSelector() {
               '--tw-ring-color': themeColors.primary
             } as React.CSSProperties}
           >
-            {/* Preview Card */}
+            {/* Preview Card avec effet de transparence */}
             <div className="bg-white rounded-xl overflow-hidden shadow-lg">
-              {/* Card Header with Theme */}
+              {/* Card Header with Theme et transparence comme le menu horizontal */}
               <div 
-                className="px-4 py-3 border-b border-gray-200 flex items-center justify-between"
+                className="px-4 py-3 flex items-center justify-between"
                 style={{
                   ...theme.headerStyle,
                   backgroundSize: 'cover',
-                  backgroundPosition: 'center'
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                  WebkitBackdropFilter: theme.headerStyle.backdropFilter,
+                  border: 'none'
                 }}
               >
                 <div 
@@ -95,6 +98,9 @@ export function CardThemeSelector() {
       <div className="bg-gray-800/50 rounded-lg p-4">
         <h4 className="text-white font-medium mb-2">Thème Actuel : {currentCardTheme.name}</h4>
         <p className="text-gray-400 text-sm">{currentCardTheme.description}</p>
+        <p className="text-gray-500 text-xs mt-1">
+          Effet de transparence identique au menu horizontal pour une cohérence visuelle parfaite.
+        </p>
       </div>
     </div>
   );
