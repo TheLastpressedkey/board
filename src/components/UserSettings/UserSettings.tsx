@@ -17,6 +17,7 @@ interface ThemeOption {
   name: string;
   description: string;
   colors: string[];
+  gradient?: string;
 }
 
 interface AppThemeOption {
@@ -137,21 +138,73 @@ function UploadThingForm({ onSave, onError, themeColors }: UploadThingFormProps)
 const themes: ThemeOption[] = [
   {
     id: 'default',
-    name: 'Default',
-    description: 'Classic dark theme with pink accents',
-    colors: ['rgb(236, 72, 153)']
+    name: 'Rose Classique',
+    description: 'Thème sombre classique avec des accents roses',
+    colors: ['rgb(236, 72, 153)'],
+    gradient: 'linear-gradient(135deg, rgb(236, 72, 153), rgb(219, 39, 119))'
   },
   {
     id: 'ocean',
-    name: 'Ocean',
-    description: 'Calming blue theme inspired by the sea',
-    colors: ['rgb(56, 189, 248)']
+    name: 'Océan',
+    description: 'Thème bleu apaisant inspiré de la mer',
+    colors: ['rgb(56, 189, 248)'],
+    gradient: 'linear-gradient(135deg, rgb(56, 189, 248), rgb(14, 165, 233))'
   },
   {
     id: 'sunset',
-    name: 'Sunset',
-    description: 'Warm orange theme inspired by dusk',
-    colors: ['rgb(251, 146, 60)']
+    name: 'Coucher de Soleil',
+    description: 'Thème orange chaleureux inspiré du crépuscule',
+    colors: ['rgb(251, 146, 60)'],
+    gradient: 'linear-gradient(135deg, rgb(251, 146, 60), rgb(249, 115, 22))'
+  },
+  {
+    id: 'forest',
+    name: 'Forêt',
+    description: 'Thème vert naturel et rafraîchissant',
+    colors: ['rgb(34, 197, 94)'],
+    gradient: 'linear-gradient(135deg, rgb(34, 197, 94), rgb(22, 163, 74))'
+  },
+  {
+    id: 'purple',
+    name: 'Violet Royal',
+    description: 'Thème violet élégant et mystérieux',
+    colors: ['rgb(168, 85, 247)'],
+    gradient: 'linear-gradient(135deg, rgb(168, 85, 247), rgb(147, 51, 234))'
+  },
+  {
+    id: 'cyberpunk',
+    name: 'Cyberpunk',
+    description: 'Thème futuriste cyan néon',
+    colors: ['rgb(0, 255, 255)'],
+    gradient: 'linear-gradient(135deg, rgb(0, 255, 255), rgb(6, 182, 212))'
+  },
+  {
+    id: 'minimal',
+    name: 'Minimal',
+    description: 'Thème épuré et professionnel',
+    colors: ['rgb(75, 85, 99)'],
+    gradient: 'linear-gradient(135deg, rgb(75, 85, 99), rgb(55, 65, 81))'
+  },
+  {
+    id: 'dark-blue',
+    name: 'Bleu Profond',
+    description: 'Thème bleu foncé professionnel',
+    colors: ['rgb(59, 130, 246)'],
+    gradient: 'linear-gradient(135deg, rgb(59, 130, 246), rgb(37, 99, 235))'
+  },
+  {
+    id: 'emerald',
+    name: 'Émeraude',
+    description: 'Thème vert émeraude sophistiqué',
+    colors: ['rgb(16, 185, 129)'],
+    gradient: 'linear-gradient(135deg, rgb(16, 185, 129), rgb(5, 150, 105))'
+  },
+  {
+    id: 'rose',
+    name: 'Rose Moderne',
+    description: 'Thème rose contemporain et vibrant',
+    colors: ['rgb(244, 63, 94)'],
+    gradient: 'linear-gradient(135deg, rgb(244, 63, 94), rgb(225, 29, 72))'
   }
 ];
 
@@ -632,33 +685,30 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
                     {/* Interface Theme */}
                     <div>
                       <h3 className="text-lg font-medium text-white mb-4">Interface Theme</h3>
-                      <div className="space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {themes.map((themeOption) => (
                           <button
                             key={themeOption.id}
                             onClick={() => setSettings({ ...settings, theme: themeOption.id })}
-                            className={`w-full p-4 rounded-lg transition-all ${
+                            className={`relative p-4 rounded-xl transition-all duration-200 ${
                               settings.theme === themeOption.id
-                                ? 'bg-gray-800 ring-2'
-                                : 'hover:bg-gray-800/50'
+                                ? 'ring-2 ring-offset-2 ring-offset-gray-900 transform scale-105'
+                                : 'hover:scale-102 hover:shadow-lg'
                             }`}
                             style={{ 
-                              '--tw-ring-color': themeOption.colors[0],
-                              '--tw-ring-opacity': 0.5
+                              background: themeOption.gradient || `linear-gradient(135deg, ${themeOption.colors[0]}, ${themeOption.colors[0]}dd)`,
+                              '--tw-ring-color': themeOption.colors[0]
                             } as React.CSSProperties}
                           >
-                            <div className="flex items-start gap-3">
-                              <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden">
-                                <div
-                                  className="w-full h-full"
-                                  style={{ backgroundColor: themeOption.colors[0] }}
-                                />
-                              </div>
-                              <div className="text-left">
-                                <h3 className="text-white font-medium">{themeOption.name}</h3>
-                                <p className="text-sm text-gray-400">{themeOption.description}</p>
-                              </div>
+                            <div className="text-left">
+                              <h4 className="text-white font-semibold mb-1">{themeOption.name}</h4>
+                              <p className="text-white/80 text-sm">{themeOption.description}</p>
                             </div>
+                            {settings.theme === themeOption.id && (
+                              <div className="absolute top-2 right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                                <div className="w-3 h-3 bg-green-500 rounded-full" />
+                              </div>
+                            )}
                           </button>
                         ))}
                       </div>
