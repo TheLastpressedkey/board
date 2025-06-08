@@ -36,7 +36,7 @@ export function Card({
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingMetadata, setIsEditingMetadata] = useState(false);
   const [showWebEmbedSettings, setShowWebEmbedSettings] = useState(false);
-  const { currentCardTheme } = useCardTheme();
+  const { currentCardTheme, cardTransparency } = useCardTheme();
   
   const defaultPosition = useMemo(() => ({ x: 0, y: 0 }), []);
   const defaultDimensions = useMemo(() => ({ width: 300, height: 200 }), []);
@@ -81,19 +81,79 @@ export function Card({
     transition: isDragging ? 'none' : 'transform 0.2s ease, box-shadow 0.2s ease'
   };
 
-  // Apply card theme styles
+  // Apply card theme styles with user-controlled transparency
   const headerStyle = {
     ...currentCardTheme.headerStyle,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat'
+    backgroundRepeat: 'no-repeat',
+    // Apply user-controlled transparency to background
+    background: currentCardTheme.headerStyle.background?.replace(
+      /rgba?\([^)]+\)/g, 
+      (match) => {
+        const rgba = match.match(/rgba?\(([^)]+)\)/);
+        if (rgba) {
+          const values = rgba[1].split(',').map(v => v.trim());
+          if (values.length === 3) {
+            // RGB to RGBA with user transparency
+            return `rgba(${values[0]}, ${values[1]}, ${values[2]}, ${cardTransparency * 0.4})`;
+          } else if (values.length === 4) {
+            // Update existing alpha with user transparency
+            return `rgba(${values[0]}, ${values[1]}, ${values[2]}, ${cardTransparency * parseFloat(values[3])})`;
+          }
+        }
+        return match;
+      }
+    ),
+    // Apply user-controlled transparency to backdrop filter
+    backdropFilter: currentCardTheme.headerStyle.backdropFilter?.replace(
+      /blur\((\d+)px\)/g, 
+      `blur(${10 * cardTransparency}px)`
+    ).replace(
+      /saturate\((\d+)%\)/g, 
+      `saturate(${100 + 80 * cardTransparency}%)`
+    ),
+    WebkitBackdropFilter: currentCardTheme.headerStyle.backdropFilter?.replace(
+      /blur\((\d+)px\)/g, 
+      `blur(${10 * cardTransparency}px)`
+    ).replace(
+      /saturate\((\d+)%\)/g, 
+      `saturate(${100 + 80 * cardTransparency}%)`
+    ),
+    // Remove borders for seamless transparency
+    border: 'none',
+    borderBottom: 'none'
   };
 
   const bodyStyle = currentCardTheme.bodyStyle ? {
     ...currentCardTheme.bodyStyle,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat'
+    backgroundRepeat: 'no-repeat',
+    // Apply user-controlled transparency to body background
+    background: currentCardTheme.bodyStyle.background?.replace(
+      /rgba?\([^)]+\)/g, 
+      (match) => {
+        const rgba = match.match(/rgba?\(([^)]+)\)/);
+        if (rgba) {
+          const values = rgba[1].split(',').map(v => v.trim());
+          if (values.length === 3) {
+            return `rgba(${values[0]}, ${values[1]}, ${values[2]}, ${cardTransparency * 0.3})`;
+          } else if (values.length === 4) {
+            return `rgba(${values[0]}, ${values[1]}, ${values[2]}, ${cardTransparency * parseFloat(values[3])})`;
+          }
+        }
+        return match;
+      }
+    ),
+    backdropFilter: currentCardTheme.bodyStyle.backdropFilter?.replace(
+      /blur\((\d+)px\)/g, 
+      `blur(${5 * cardTransparency}px)`
+    ),
+    WebkitBackdropFilter: currentCardTheme.bodyStyle.backdropFilter?.replace(
+      /blur\((\d+)px\)/g, 
+      `blur(${5 * cardTransparency}px)`
+    )
   } : {};
 
   const renderContent = () => {
@@ -170,13 +230,15 @@ export function Card({
           ${isAppCard || isUserApp ? 'app-card' : ''}`}
         style={{
           ...cardStyle as any,
-          ...(currentCardTheme.bodyStyle && bodyStyle)
+          ...(currentCardTheme.bodyStyle && bodyStyle),
+          // Remove card border completely for seamless transparency
+          border: 'none'
         }}
         onMouseDown={!isMobile && !isAppCard ? handleMouseDown : undefined}
       >
         {!isAppCard && (
           <div 
-            className="flex-shrink-0 flex justify-between items-center px-4 py-2 border-b border-gray-200"
+            className="flex-shrink-0 flex justify-between items-center px-4 py-2"
             style={headerStyle}
             onMouseDown={!isMobile ? handleMouseDown : undefined}
           >
