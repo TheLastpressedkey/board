@@ -3,6 +3,7 @@ import { X, Code, Eye, Pencil, Settings } from 'lucide-react';
 import { Card as CardType } from '../../types';
 import { useDraggable } from '../../hooks/useDraggable';
 import { useResizable } from '../../hooks/useResizable';
+import { useCardTheme } from '../../contexts/CardThemeContext';
 import { TextCardContent } from './TextCard';
 import { LinkCardContent } from './LinkCard';
 import { AppCardContent } from './AppCard';
@@ -35,6 +36,8 @@ export function Card({
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingMetadata, setIsEditingMetadata] = useState(false);
   const [showWebEmbedSettings, setShowWebEmbedSettings] = useState(false);
+  const { currentCardTheme } = useCardTheme();
+  
   const defaultPosition = useMemo(() => ({ x: 0, y: 0 }), []);
   const defaultDimensions = useMemo(() => ({ width: 300, height: 200 }), []);
 
@@ -77,6 +80,21 @@ export function Card({
     transform: isDragging ? 'translate(0, 0) scale(1.02)' : 'translate(0, 0)',
     transition: isDragging ? 'none' : 'transform 0.2s ease, box-shadow 0.2s ease'
   };
+
+  // Apply card theme styles
+  const headerStyle = {
+    ...currentCardTheme.headerStyle,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  };
+
+  const bodyStyle = currentCardTheme.bodyStyle ? {
+    ...currentCardTheme.bodyStyle,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  } : {};
 
   const renderContent = () => {
     if (isAppCard) {
@@ -150,15 +168,22 @@ export function Card({
           ${!isMobile && isDragging ? 'cursor-grabbing shadow-xl z-50' : 'cursor-default shadow-lg z-10'}
           ${!isMobile && isResizing ? 'cursor-nwse-resize' : ''}
           ${isAppCard || isUserApp ? 'app-card' : ''}`}
-        style={cardStyle as any}
+        style={{
+          ...cardStyle as any,
+          ...(currentCardTheme.bodyStyle && bodyStyle)
+        }}
         onMouseDown={!isMobile && !isAppCard ? handleMouseDown : undefined}
       >
         {!isAppCard && (
           <div 
-            className="flex-shrink-0 flex justify-between items-center px-4 py-2 bg-gray-50 border-b border-gray-200"
+            className="flex-shrink-0 flex justify-between items-center px-4 py-2 border-b border-gray-200"
+            style={headerStyle}
             onMouseDown={!isMobile ? handleMouseDown : undefined}
           >
-            <div className="text-sm font-medium text-gray-600 truncate flex-1 mr-2">
+            <div 
+              className="text-sm font-medium truncate flex-1 mr-2"
+              style={{ color: headerStyle.textColor || 'rgb(75, 85, 99)' }}
+            >
               {(isTextCard || isLinkCard || isWebEmbed) && card.metadata?.title 
                 ? card.metadata.title 
                 : card.type === 'userapp' 
@@ -171,40 +196,55 @@ export function Card({
               {isUserApp && (
                 <button
                   onClick={() => setIsEditing(!isEditing)}
-                  className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
+                  className="p-1 hover:bg-black/10 rounded-full flex-shrink-0 transition-colors"
                   onMouseDown={(e) => e.stopPropagation()}
                 >
                   {isEditing ? (
-                    <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                    <Eye 
+                      className="w-4 h-4" 
+                      style={{ color: headerStyle.iconColor || 'rgb(107, 114, 128)' }}
+                    />
                   ) : (
-                    <Code className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                    <Code 
+                      className="w-4 h-4" 
+                      style={{ color: headerStyle.iconColor || 'rgb(107, 114, 128)' }}
+                    />
                   )}
                 </button>
               )}
               {(isLinkCard || isTextCard || isWebEmbed) && (
                 <button
                   onClick={() => setIsEditingMetadata(true)}
-                  className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
+                  className="p-1 hover:bg-black/10 rounded-full flex-shrink-0 transition-colors"
                   onMouseDown={(e) => e.stopPropagation()}
                 >
-                  <Pencil className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                  <Pencil 
+                    className="w-4 h-4" 
+                    style={{ color: headerStyle.iconColor || 'rgb(107, 114, 128)' }}
+                  />
                 </button>
               )}
               {isWebEmbed && (
                 <button
                   onClick={() => setShowWebEmbedSettings(true)}
-                  className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
+                  className="p-1 hover:bg-black/10 rounded-full flex-shrink-0 transition-colors"
                   onMouseDown={(e) => e.stopPropagation()}
                 >
-                  <Settings className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                  <Settings 
+                    className="w-4 h-4" 
+                    style={{ color: headerStyle.iconColor || 'rgb(107, 114, 128)' }}
+                  />
                 </button>
               )}
               <button
                 onClick={() => onDelete(card.id)}
-                className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
+                className="p-1 hover:bg-black/10 rounded-full flex-shrink-0 transition-colors"
                 onMouseDown={(e) => e.stopPropagation()}
               >
-                <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                <X 
+                  className="w-4 h-4" 
+                  style={{ color: headerStyle.iconColor || 'rgb(107, 114, 128)' }}
+                />
               </button>
             </div>
           </div>
