@@ -5,6 +5,7 @@ import { ai } from '../../services/ai';
 import { uploadthing } from '../../services/uploadthing';
 import { SMTPForm } from './SMTPForm';
 import { CardThemeSelector } from './CardThemeSelector';
+import { CardTransparencySlider } from './CardTransparencySlider';
 
 interface UserSettingsProps {
   username: string;
@@ -759,8 +760,12 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
 
                     {/* Card Themes */}
                     <div>
-                     
                       <CardThemeSelector />
+                    </div>
+
+                    {/* Card Transparency Slider */}
+                    <div>
+                      <CardTransparencySlider />
                     </div>
                   </div>
                 )}
