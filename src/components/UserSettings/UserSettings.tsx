@@ -4,6 +4,7 @@ import { ThemeType, useTheme } from '../../contexts/ThemeContext';
 import { ai } from '../../services/ai';
 import { uploadthing } from '../../services/uploadthing';
 import { SMTPForm } from './SMTPForm';
+import { CardThemeSelector } from './CardThemeSelector';
 
 interface UserSettingsProps {
   username: string;
@@ -754,6 +755,12 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
                           </button>
                         ))}
                       </div>
+                    </div>
+
+                    {/* Card Themes */}
+                    <div>
+                     
+                      <CardThemeSelector />
                     </div>
                   </div>
                 )}
