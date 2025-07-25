@@ -9,6 +9,9 @@ const CARD_MARGIN = 20; // Space between cards
 const FIXED_CARD_WIDTH = 300; // Fixed width for all cards
 const FIXED_CARD_HEIGHT = 200; // Fixed height for all cards
 const ROWS = 3; // Number of rows for auto-arrange
+const SIDEBAR_WIDTH = 80; // Largeur de la sidebar + marge
+const MIN_CARD_X = SIDEBAR_WIDTH + 20; // Position X minimale pour les cartes
+const MIN_CARD_Y = 20; // Position Y minimale pour les cartes
 
 export function useBoards() {
   const [boards, setBoards] = useState<Board[]>([]);
@@ -83,6 +86,12 @@ export function useBoards() {
   ) => {
     if (!currentBoard) return;
 
+    // Ajuster la position pour éviter la sidebar
+    const adjustedPosition = {
+      x: Math.max(position.x, MIN_CARD_X),
+      y: Math.max(position.y, MIN_CARD_Y)
+    };
+
     const newCard = createCard(type, position, initialContent || '', dimensions || {
       width: FIXED_CARD_WIDTH,
       height: FIXED_CARD_HEIGHT
@@ -103,9 +112,15 @@ export function useBoards() {
   const addLinkCard = useCallback(async (position: { x: number; y: number }, url: string) => {
     if (!currentBoard) return;
 
+    // Ajuster la position pour éviter la sidebar
+    const adjustedPosition = {
+      x: Math.max(position.x, MIN_CARD_X),
+      y: Math.max(position.y, MIN_CARD_Y)
+    };
+
     try {
       const metadata = await fetchLinkMetadata(url);
-      const newCard = createCard('link', position, url, {
+      const newCard = createCard('link', adjustedPosition, url, {
         width: FIXED_CARD_WIDTH,
         height: FIXED_CARD_HEIGHT
       });
@@ -158,10 +173,16 @@ export function useBoards() {
   }, [boards, currentBoard]);
 
   const updateCardPosition = useCallback((cardId: string, position: { x: number; y: number }) => {
+    // Ajuster la position pour éviter la sidebar
+    const adjustedPosition = {
+      x: Math.max(position.x, MIN_CARD_X),
+      y: Math.max(position.y, MIN_CARD_Y)
+    };
+
     setBoards(prevBoards => prevBoards.map(board => ({
       ...board,
       cards: board.cards?.map(card => 
-        card.id === cardId ? { ...card, position } : card
+        card.id === cardId ? { ...card, position: adjustedPosition } : card
       ) || []
     })));
     setUnsavedChanges(true);
@@ -202,7 +223,7 @@ export function useBoards() {
         return {
           ...card,
           position: {
-            x: CARD_MARGIN + col * (FIXED_CARD_WIDTH + CARD_MARGIN),
+            x: Math.max(MIN_CARD_X, CARD_MARGIN + col * (FIXED_CARD_WIDTH + CARD_MARGIN)),
             y: CARD_MARGIN + row * (FIXED_CARD_HEIGHT + CARD_MARGIN)
           },
           dimensions: {

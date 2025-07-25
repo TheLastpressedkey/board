@@ -3,6 +3,10 @@ import { Type, Monitor, Box, Cpu, Command } from 'lucide-react';
 import { ContentType } from '../../types';
 import { AppStore } from '../AppStore/AppStore';
 
+// Constants pour éviter la sidebar
+const SIDEBAR_WIDTH = 80;
+const MIN_CARD_X = SIDEBAR_WIDTH + 20;
+
 interface ContextMenuProps {
   x: number;
   y: number;
@@ -35,12 +39,15 @@ export function ContextMenu({ x, y, onSelect, onClose }: ContextMenuProps) {
     onClose();
   };
 
+  // Ajuster la position du menu contextuel pour éviter qu'il soit trop près de la sidebar
+  const adjustedX = Math.max(x, MIN_CARD_X);
+
   return (
     <>
       <div className="fixed inset-0" onClick={onClose} />
       <div
         className="fixed bg-gray-800 rounded-lg shadow-xl py-2 w-64"
-        style={{ left: x, top: y }}
+        style={{ left: adjustedX, top: y }}
       >
         {menuItems.map(({ type, icon: Icon, label }) => (
           <button

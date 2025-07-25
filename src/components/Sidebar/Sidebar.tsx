@@ -37,10 +37,10 @@ export function Sidebar({
 
   return (
     <>
-      <div className="fixed left-4 top-4 z-50 flex flex-col gap-2">
+      <div className="fixed left-4 top-4 z-50 flex flex-col gap-2 w-16">
         <button
           onClick={() => setShowSearch(true)}
-          className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-200 transition-colors"
+          className="w-12 h-12 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-200 transition-colors"
           title="Search cards"
         >
           <Search className="w-4 h-4" />
@@ -50,7 +50,7 @@ export function Sidebar({
           <div key={board.id} className="relative group">
             <button
               onClick={() => onBoardSelect(board.id)}
-              className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all
+              className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all
                 ${currentBoard === board.id ? activeButtonStyle : inactiveButtonStyle}`}
               style={{
                 backgroundColor: currentBoard === board.id ? themeColors.primary : undefined
@@ -73,7 +73,7 @@ export function Sidebar({
         {/* AI Chatbot Button */}
         <button
           onClick={handleChatbotToggle}
-          className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-200 transition-colors"
+          className="w-12 h-12 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-200 transition-colors"
           title="AI Assistant"
           style={{
             backgroundColor: showChatbot ? themeColors.primary : undefined,
@@ -85,7 +85,7 @@ export function Sidebar({
 
         <button
           onClick={onSignOut}
-          className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-200 mt-auto"
+          className="w-12 h-12 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-200 mt-auto"
           title="Sign out"
         >
           <LogOut className="w-4 h-4" />

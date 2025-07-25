@@ -6,6 +6,11 @@ import { useSelectionZone } from '../../hooks/useSelectionZone';
 import { SelectionZone } from '../SelectionZone/SelectionZone';
 import { WebEmbedInput } from '../Card/WebEmbedInput';
 
+// Constants pour le positionnement
+const SIDEBAR_WIDTH = 80; // Largeur de la sidebar + marge
+const MIN_CARD_X = SIDEBAR_WIDTH + 20; // Position X minimale pour les cartes
+const MIN_CARD_Y = 20; // Position Y minimale pour les cartes
+
 interface BoardProps {
   board: BoardType;
   onDeleteCard: (id: string) => void;
@@ -108,7 +113,12 @@ export function Board({
         setShowWebEmbedInput(true);
         setShowContextMenu(false);
       } else {
-        onAddCard(type, selectedZone.position, selectedZone.dimensions);
+        // Ajuster la position pour éviter la sidebar
+        const adjustedPosition = {
+          x: Math.max(selectedZone.position.x, MIN_CARD_X),
+          y: Math.max(selectedZone.position.y, MIN_CARD_Y)
+        };
+        onAddCard(type, adjustedPosition, selectedZone.dimensions);
         setShowContextMenu(false);
         setSelectedZone(null);
       }
@@ -183,7 +193,12 @@ export function Board({
           <WebEmbedInput
             position={contextMenuPosition}
             onSubmit={(url, title) => {
-              onAddCard('embed', selectedZone.position, selectedZone.dimensions);
+              // Ajuster la position pour éviter la sidebar
+              const adjustedPosition = {
+                x: Math.max(selectedZone.position.x, MIN_CARD_X),
+                y: Math.max(selectedZone.position.y, MIN_CARD_Y)
+              };
+              onAddCard('embed', adjustedPosition, selectedZone.dimensions);
               const newCard = board.cards[board.cards.length - 1];
               onContentChange(newCard.id, url);
               onUpdateCardMetadata(newCard.id, { 
