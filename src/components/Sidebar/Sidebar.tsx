@@ -41,6 +41,7 @@ export function Sidebar({
         <button
           onClick={() => setShowSearch(true)}
           className="w-12 h-12 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-200 transition-colors"
+          style={{ backgroundColor: themeColors.menuBg }}
           title="Search cards"
         >
           <Search className="w-4 h-4" />
@@ -53,7 +54,7 @@ export function Sidebar({
               className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all
                 ${currentBoard === board.id ? activeButtonStyle : inactiveButtonStyle}`}
               style={{
-                backgroundColor: currentBoard === board.id ? themeColors.primary : undefined
+                backgroundColor: currentBoard === board.id ? themeColors.primary : themeColors.menuBg
               }}
             >
               <Layout className="w-4 h-4" />
@@ -76,7 +77,7 @@ export function Sidebar({
           className="w-12 h-12 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-200 transition-colors"
           title="AI Assistant"
           style={{
-            backgroundColor: showChatbot ? themeColors.primary : undefined,
+            backgroundColor: showChatbot ? themeColors.primary : themeColors.menuBg,
             color: showChatbot ? 'white' : undefined
           }}
         >
@@ -86,6 +87,7 @@ export function Sidebar({
         <button
           onClick={onSignOut}
           className="w-12 h-12 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-200 mt-auto"
+          style={{ backgroundColor: themeColors.menuBg }}
           title="Sign out"
         >
           <LogOut className="w-4 h-4" />

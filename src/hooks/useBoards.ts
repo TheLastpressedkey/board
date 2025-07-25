@@ -9,9 +9,9 @@ const CARD_MARGIN = 20; // Space between cards
 const FIXED_CARD_WIDTH = 300; // Fixed width for all cards
 const FIXED_CARD_HEIGHT = 200; // Fixed height for all cards
 const ROWS = 3; // Number of rows for auto-arrange
-const SIDEBAR_WIDTH = 80; // Largeur de la sidebar + marge
-const MIN_CARD_X = SIDEBAR_WIDTH + 20; // Position X minimale pour les cartes
-const MIN_CARD_Y = 20; // Position Y minimale pour les cartes
+const SIDEBAR_WIDTH = 100; // Largeur de la sidebar + marge
+const MIN_CARD_X = 150; // Position X minimale pour les cartes (150px du bord gauche)
+const MIN_CARD_Y = 50; // Position Y minimale pour les cartes
 
 export function useBoards() {
   const [boards, setBoards] = useState<Board[]>([]);
@@ -86,13 +86,13 @@ export function useBoards() {
   ) => {
     if (!currentBoard) return;
 
-    // Ajuster la position pour éviter la sidebar
+    // Forcer la position pour éviter la sidebar
     const adjustedPosition = {
-      x: Math.max(position.x, MIN_CARD_X),
-      y: Math.max(position.y, MIN_CARD_Y)
+      x: position.x < MIN_CARD_X ? MIN_CARD_X : position.x,
+      y: position.y < MIN_CARD_Y ? MIN_CARD_Y : position.y
     };
 
-    const newCard = createCard(type, position, initialContent || '', dimensions || {
+    const newCard = createCard(type, adjustedPosition, initialContent || '', dimensions || {
       width: FIXED_CARD_WIDTH,
       height: FIXED_CARD_HEIGHT
     });
@@ -112,10 +112,10 @@ export function useBoards() {
   const addLinkCard = useCallback(async (position: { x: number; y: number }, url: string) => {
     if (!currentBoard) return;
 
-    // Ajuster la position pour éviter la sidebar
+    // Forcer la position pour éviter la sidebar
     const adjustedPosition = {
-      x: Math.max(position.x, MIN_CARD_X),
-      y: Math.max(position.y, MIN_CARD_Y)
+      x: position.x < MIN_CARD_X ? MIN_CARD_X : position.x,
+      y: position.y < MIN_CARD_Y ? MIN_CARD_Y : position.y
     };
 
     try {
@@ -173,10 +173,10 @@ export function useBoards() {
   }, [boards, currentBoard]);
 
   const updateCardPosition = useCallback((cardId: string, position: { x: number; y: number }) => {
-    // Ajuster la position pour éviter la sidebar
+    // Forcer la position pour éviter la sidebar
     const adjustedPosition = {
-      x: Math.max(position.x, MIN_CARD_X),
-      y: Math.max(position.y, MIN_CARD_Y)
+      x: position.x < MIN_CARD_X ? MIN_CARD_X : position.x,
+      y: position.y < MIN_CARD_Y ? MIN_CARD_Y : position.y
     };
 
     setBoards(prevBoards => prevBoards.map(board => ({
@@ -223,8 +223,8 @@ export function useBoards() {
         return {
           ...card,
           position: {
-            x: Math.max(MIN_CARD_X, CARD_MARGIN + col * (FIXED_CARD_WIDTH + CARD_MARGIN)),
-            y: CARD_MARGIN + row * (FIXED_CARD_HEIGHT + CARD_MARGIN)
+            x: MIN_CARD_X + col * (FIXED_CARD_WIDTH + CARD_MARGIN),
+            y: MIN_CARD_Y + row * (FIXED_CARD_HEIGHT + CARD_MARGIN)
           },
           dimensions: {
             width: FIXED_CARD_WIDTH,
