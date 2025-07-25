@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Share2, User, PlusCircle, Save, Wifi, WifiOff, Settings, Zap } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Share2, User, PlusCircle, Save, Wifi, WifiOff, Settings } from 'lucide-react';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { UserSettings } from '../UserSettings/UserSettings';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -12,7 +12,6 @@ interface BottomBarProps {
   email: string;
   hasUnsavedChanges: boolean;
   onUpdateUsername: (newUsername: string) => void;
-  onAutoArrange?: () => void;
 }
 
 export function BottomBar({ 
@@ -22,8 +21,7 @@ export function BottomBar({
   username,
   email,
   hasUnsavedChanges,
-  onUpdateUsername,
-  onAutoArrange
+  onUpdateUsername
 }: BottomBarProps) {
   const [currentTime, setCurrentTime] = React.useState(new Date());
   const { isOnline, isSyncing, setIsSyncing } = useNetworkStatus();
@@ -114,14 +112,6 @@ export function BottomBar({
             className={`p-1 ${themeColors.menuHover} rounded text-gray-300 hover:text-gray-100`}
           >
             <PlusCircle className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={onAutoArrange}
-            className={`p-1 ${themeColors.menuHover} rounded text-gray-300 hover:text-gray-100`}
-            title="Auto-arrange cards"
-          >
-            <Zap className="w-4 h-4" />
           </button>
 
           <button

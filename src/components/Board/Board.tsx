@@ -4,12 +4,6 @@ import { Board as BoardType, ContentType } from '../../types';
 import { useScrollProgress } from '../../hooks/useScrollProgress';
 import { useSelectionZone } from '../../hooks/useSelectionZone';
 import { SelectionZone } from '../SelectionZone/SelectionZone';
-import { WebEmbedInput } from '../Card/WebEmbedInput';
-
-// Constants pour le positionnement
-const SIDEBAR_WIDTH = 80; // Largeur de la sidebar + marge
-const MIN_CARD_X = SIDEBAR_WIDTH + 20; // Position X minimale pour les cartes
-const MIN_CARD_Y = 20; // Position Y minimale pour les cartes
 
 interface BoardProps {
   board: BoardType;
@@ -20,7 +14,6 @@ interface BoardProps {
   onAddCard: (type: ContentType, position: { x: number; y: number }, dimensions?: { width: number; height: number }) => void;
   onUpdateCardDimensions: (id: string, dimensions: { width: number; height: number }) => void;
   onUpdateCardMetadata: (id: string, metadata: any) => void;
-  onAutoArrange?: () => void;
 }
 
 export function Board({ 
@@ -31,15 +24,14 @@ export function Board({
   onScrollProgress,
   onAddCard,
   onUpdateCardDimensions,
-  onUpdateCardMetadata,
-  onAutoArrange
+  onUpdateCardMetadata
 }: BoardProps) {
   const boardRef = useRef<HTMLDivElement>(null);
   const [isDraggingBoard, setIsDraggingBoard] = React.useState(false);
   const [startDragPos, setStartDragPos] = React.useState({ x: 0, y: 0 });
   const [scrollPos, setScrollPos] = React.useState({ x: 0, y: 0 });
   const [showContextMenu, setShowContextMenu] = React.useState(false);
-  const [showWebEmbedInput, setShowWebEmbedInput] = React.useState(false);
+  const [showLinkInput, setShowLinkInput] = React.useState(false);
   const [contextMenuPosition, setContextMenuPosition] = React.useState({ x: 0, y: 0 });
   const [selectedZone, setSelectedZone] = React.useState<{
     position: { x: number; y: number };
@@ -109,25 +101,15 @@ export function Board({
 
   const handleCardTypeSelect = (type: ContentType) => {
     if (selectedZone) {
-      if (type === 'embed') {
-        setShowWebEmbedInput(true);
+      if (type === 'link') {
+        setShowLinkInput(true);
         setShowContextMenu(false);
       } else {
-        // Ajuster la position pour éviter la sidebar
-        const adjustedPosition = {
-          x: Math.max(selectedZone.position.x, MIN_CARD_X),
-          y: Math.max(selectedZone.position.y, MIN_CARD_Y)
-        };
-        onAddCard(type, adjustedPosition, selectedZone.dimensions);
+        onAddCard(type, selectedZone.position, selectedZone.dimensions);
         setShowContextMenu(false);
         setSelectedZone(null);
       }
     }
-  };
-
-  const generateWebEmbedId = () => {
-    const webEmbeds = board.cards.filter(card => card.type === 'embed').length + 1;
-    return `Web Embed ${webEmbeds}`;
   };
 
   useEffect(() => {
@@ -188,31 +170,6 @@ export function Board({
         </div>
 
         {isSelecting && selectionZone && <SelectionZone zone={selectionZone} />}
-
-        {showWebEmbedInput && selectedZone && (
-          <WebEmbedInput
-            position={contextMenuPosition}
-            onSubmit={(url, title) => {
-              // Ajuster la position pour éviter la sidebar
-              const adjustedPosition = {
-                x: Math.max(selectedZone.position.x, MIN_CARD_X),
-                y: Math.max(selectedZone.position.y, MIN_CARD_Y)
-              };
-              onAddCard('embed', adjustedPosition, selectedZone.dimensions);
-              const newCard = board.cards[board.cards.length - 1];
-              onContentChange(newCard.id, url);
-              onUpdateCardMetadata(newCard.id, { 
-                title: title || generateWebEmbedId()
-              });
-              setShowWebEmbedInput(false);
-              setSelectedZone(null);
-            }}
-            onClose={() => {
-              setShowWebEmbedInput(false);
-              setSelectedZone(null);
-            }}
-          />
-        )}
       </div>
     </div>
   );

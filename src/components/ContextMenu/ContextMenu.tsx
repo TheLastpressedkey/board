@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
-import { Type, Monitor, Box, Cpu, Command } from 'lucide-react';
+import { Type, Monitor, Box, Cpu, Palette, Command } from 'lucide-react';
 import { ContentType } from '../../types';
 import { AppStore } from '../AppStore/AppStore';
-
-// Constants pour éviter la sidebar
-const SIDEBAR_WIDTH = 80;
-const MIN_CARD_X = SIDEBAR_WIDTH + 20;
+import { ThemeSelector } from '../ThemeSelector/ThemeSelector';
 
 interface ContextMenuProps {
   x: number;
@@ -16,18 +13,22 @@ interface ContextMenuProps {
 
 export function ContextMenu({ x, y, onSelect, onClose }: ContextMenuProps) {
   const [showAppStore, setShowAppStore] = useState(false);
+  const [showThemeSelector, setShowThemeSelector] = useState(false);
 
   const menuItems = [
     { type: 'text' as ContentType, icon: Type, label: 'Text' },
     { type: 'embed' as ContentType, icon: Monitor, label: 'Web Embed' },
     { type: 'app' as ContentType, icon: Box, label: 'Install App' },
     { type: 'userapp' as ContentType, icon: Cpu, label: 'Create an App' },
+    { type: 'theme' as ContentType, icon: Palette, label: 'Theme' },
     { type: 'shortcut' as ContentType, icon: Command, label: 'Shortcut' },
   ];
 
   const handleItemClick = (type: ContentType) => {
     if (type === 'app') {
       setShowAppStore(true);
+    } else if (type === 'theme') {
+      setShowThemeSelector(true);
     } else {
       onSelect(type);
       onClose();
@@ -39,15 +40,12 @@ export function ContextMenu({ x, y, onSelect, onClose }: ContextMenuProps) {
     onClose();
   };
 
-  // Ajuster la position du menu contextuel pour éviter qu'il soit trop près de la sidebar
-  const adjustedX = Math.max(x, MIN_CARD_X);
-
   return (
     <>
       <div className="fixed inset-0" onClick={onClose} />
       <div
         className="fixed bg-gray-800 rounded-lg shadow-xl py-2 w-64"
-        style={{ left: adjustedX, top: y }}
+        style={{ left: x, top: y }}
       >
         {menuItems.map(({ type, icon: Icon, label }) => (
           <button
@@ -65,6 +63,12 @@ export function ContextMenu({ x, y, onSelect, onClose }: ContextMenuProps) {
         <AppStore
           onSelect={handleAppSelect}
           onClose={() => setShowAppStore(false)}
+        />
+      )}
+
+      {showThemeSelector && (
+        <ThemeSelector
+          onClose={() => setShowThemeSelector(false)}
         />
       )}
     </>

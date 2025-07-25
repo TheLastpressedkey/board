@@ -31,50 +31,26 @@
 }
 
 /* Custom scrollbar styles */
-.settings-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.settings-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-}
-
-.settings-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--theme-scrollbar-color);
-  border-radius: 8px;
-}
-
-.settings-scrollbar::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
-/* Other scrollbars */
 .overflow-auto::-webkit-scrollbar,
-.card-scrollbar::-webkit-scrollbar,
-.analytics-scrollbar::-webkit-scrollbar {
+.card-scrollbar::-webkit-scrollbar {
   width: 4px;
   height: 4px;
 }
 
 .overflow-auto::-webkit-scrollbar-track,
-.card-scrollbar::-webkit-scrollbar-track,
-.analytics-scrollbar::-webkit-scrollbar-track {
+.card-scrollbar::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
 }
 
 .overflow-auto::-webkit-scrollbar-thumb,
-.card-scrollbar::-webkit-scrollbar-thumb,
-.analytics-scrollbar::-webkit-scrollbar-thumb {
+.card-scrollbar::-webkit-scrollbar-thumb {
   background: var(--theme-scrollbar-color);
   border-radius: 4px;
 }
 
 .overflow-auto::-webkit-scrollbar-corner,
-.card-scrollbar::-webkit-scrollbar-corner,
-.analytics-scrollbar::-webkit-scrollbar-corner {
+.card-scrollbar::-webkit-scrollbar-corner {
   background: transparent;
 }
 
@@ -138,13 +114,4 @@
   margin: 1rem;
   overflow: hidden;
   border-radius: 0.5rem;
-}
-
-/* Drag handle styles */
-.drag-handle {
-  cursor: grab;
-}
-
-.drag-handle:active {
-  cursor: grabbing;
 }

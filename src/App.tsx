@@ -12,7 +12,6 @@ import { isValidUrl } from './utils/linkUtils';
 import { LinkInput } from './components/Card/LinkInput';
 import { ContentType } from './types';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { CardThemeProvider } from './contexts/CardThemeContext';
 
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -35,8 +34,7 @@ export default function App() {
     currentBoardData,
     loadBoards,
     saveBoards,
-    hasUnsavedChanges,
-    autoArrangeCards
+    hasUnsavedChanges
   } = useBoards();
   
   const { contextMenu, setContextMenu, handleContextMenu } = useContextMenu();
@@ -57,25 +55,20 @@ export default function App() {
                           activeElement instanceof HTMLTextAreaElement;
 
       if (text && isValidUrl(text) && !isInputActive) {
-        if (contextMenu) {
-          addLinkCard(contextMenu, text);
-        } else {
-          const boardElement = document.querySelector('.bg-dots');
-          if (boardElement) {
-            const rect = boardElement.getBoundingClientRect();
-            const position = {
-              x: window.scrollX + e.clientX - rect.left,
-              y: window.scrollY + e.clientY - rect.top
-            };
-            addLinkCard(position, text);
-          }
+        const rect = document.querySelector('.bg-dots')?.getBoundingClientRect();
+        if (rect) {
+          const position = {
+            x: window.scrollX + rect.width / 2 - 150,
+            y: window.scrollY + rect.height / 2 - 100
+          };
+          addLinkCard(position, text);
         }
       }
     };
 
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
-  }, [addLinkCard, contextMenu]);
+  }, [addLinkCard]);
 
   const handleCardTypeSelect = (type: ContentType, position?: { x: number; y: number }, dimensions?: { width: number; height: number }) => {
     if (type === 'link' && contextMenu) {
@@ -107,68 +100,64 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <CardThemeProvider>
-        <div className="min-h-screen bg-gray-900" onContextMenu={handleContextMenu}>
-          <Sidebar
-            boards={boards}
-            currentBoard={currentBoard || ''}
-            onBoardSelect={setCurrentBoard}
-            onBoardDelete={deleteBoard}
-            user={user}
-            onSignOut={signOut}
-            onCreateCard={handleCreateCard}
+      <div className="min-h-screen bg-gray-900" onContextMenu={handleContextMenu}>
+        <Sidebar
+          boards={boards}
+          currentBoard={currentBoard || ''}
+          onBoardSelect={setCurrentBoard}
+          onBoardDelete={deleteBoard}
+          user={user}
+          onSignOut={signOut}
+          onCreateCard={handleCreateCard}
+        />
+
+        {currentBoardData && (
+          <Board
+            board={currentBoardData}
+            onDeleteCard={deleteCard}
+            onUpdateCardPosition={updateCardPosition}
+            onContentChange={updateCardContent}
+            onScrollProgress={setScrollProgress}
+            onAddCard={handleCardTypeSelect}
+            onUpdateCardDimensions={updateCardDimensions}
+            onUpdateCardMetadata={updateCardMetadata}
           />
+        )}
 
-          {currentBoardData && (
-            <Board
-              board={currentBoardData}
-              onDeleteCard={deleteCard}
-              onUpdateCardPosition={updateCardPosition}
-              onContentChange={updateCardContent}
-              onScrollProgress={setScrollProgress}
-              onAddCard={handleCardTypeSelect}
-              onUpdateCardDimensions={updateCardDimensions}
-              onUpdateCardMetadata={updateCardMetadata}
-              onAutoArrange={autoArrangeCards}
-            />
-          )}
-
-          {contextMenu && !showLinkInput && (
-            <ContextMenu
-              x={contextMenu.x}
-              y={contextMenu.y}
-              onSelect={handleCardTypeSelect}
-              onClose={() => setContextMenu(null)}
-            />
-          )}
-
-          {showLinkInput && contextMenu && (
-            <LinkInput
-              position={contextMenu}
-              onSubmit={(url) => {
-                addLinkCard(contextMenu, url);
-                setShowLinkInput(false);
-                setContextMenu(null);
-              }}
-              onClose={() => {
-                setShowLinkInput(false);
-                setContextMenu(null);
-              }}
-            />
-          )}
-
-          <BottomBar 
-            scrollProgress={scrollProgress}
-            onCreateBoard={createBoard}
-            onSaveBoards={saveBoards}
-            username={username}
-            email={user.email || ''}
-            hasUnsavedChanges={hasUnsavedChanges}
-            onUpdateUsername={updateUsername}
-            onAutoArrange={autoArrangeCards}
+        {contextMenu && !showLinkInput && (
+          <ContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            onSelect={handleCardTypeSelect}
+            onClose={() => setContextMenu(null)}
           />
-        </div>
-      </CardThemeProvider>
+        )}
+
+        {showLinkInput && contextMenu && (
+          <LinkInput
+            position={contextMenu}
+            onSubmit={(url) => {
+              addLinkCard(contextMenu, url);
+              setShowLinkInput(false);
+              setContextMenu(null);
+            }}
+            onClose={() => {
+              setShowLinkInput(false);
+              setContextMenu(null);
+            }}
+          />
+        )}
+
+        <BottomBar 
+          scrollProgress={scrollProgress}
+          onCreateBoard={createBoard}
+          onSaveBoards={saveBoards}
+          username={username}
+          email={user.email || ''}
+          hasUnsavedChanges={hasUnsavedChanges}
+          onUpdateUsername={updateUsername}
+        />
+      </div>
     </ThemeProvider>
   );
 }
