@@ -152,7 +152,7 @@ export function Board({
       onMouseMove={(e) => !isDraggingBoard && handleSelectionMove(e)}
       onMouseUp={handleBoardMouseUp}
     >
-      <div className="relative md:w-[10000px] md:h-full" style={{ paddingLeft: `${MIN_CARD_X}px` }}>
+      <div className="relative md:w-[10000px] md:h-full">
         {/* Mobile Layout */}
         <div className="md:hidden min-h-screen py-20">
           <div className="flex flex-col items-center">
@@ -179,13 +179,7 @@ export function Board({
               key={card.id}
               card={card}
               onDelete={onDeleteCard}
-              onPositionChange={(position) => {
-                const adjustedPosition = {
-                  x: Math.max(position.x, MIN_CARD_X),
-                  y: Math.max(position.y, MIN_CARD_Y)
-                };
-                onUpdateCardPosition(card.id, adjustedPosition);
-              }}
+              onPositionChange={(position) => onUpdateCardPosition(card.id, position)}
               onContentChange={onContentChange}
               onDimensionsChange={onUpdateCardDimensions}
               onMetadataChange={onUpdateCardMetadata}
