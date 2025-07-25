@@ -7,8 +7,9 @@ import { SelectionZone } from '../SelectionZone/SelectionZone';
 import { WebEmbedInput } from '../Card/WebEmbedInput';
 
 // Constants pour le positionnement
-const SIDEBAR_WIDTH = 80; // Largeur de la sidebar + marge
-const MIN_CARD_X = SIDEBAR_WIDTH + 20; // Position X minimale pour les cartes
+const SIDEBAR_WIDTH = 80; // Largeur de la sidebar
+const SIDEBAR_MARGIN = 40; // Marge supplémentaire après la sidebar
+const MIN_CARD_X = SIDEBAR_WIDTH + SIDEBAR_MARGIN; // Position X minimale pour les cartes (120px)
 const MIN_CARD_Y = 20; // Position Y minimale pour les cartes
 
 interface BoardProps {
