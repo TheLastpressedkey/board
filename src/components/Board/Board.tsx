@@ -6,10 +6,10 @@ import { useSelectionZone } from '../../hooks/useSelectionZone';
 import { SelectionZone } from '../SelectionZone/SelectionZone';
 import { WebEmbedInput } from '../Card/WebEmbedInput';
 
-// Constants pour le positionnement - augmentés pour éviter la sidebar
-const SIDEBAR_WIDTH = 100; // Largeur de la sidebar + marge
-const MIN_CARD_X = SIDEBAR_WIDTH + 50; // Position X minimale pour les cartes (150px du bord)
-const MIN_CARD_Y = 50; // Position Y minimale pour les cartes
+// Constants pour le positionnement
+const SIDEBAR_WIDTH = 80; // Largeur de la sidebar + marge
+const MIN_CARD_X = SIDEBAR_WIDTH + 20; // Position X minimale pour les cartes
+const MIN_CARD_Y = 20; // Position Y minimale pour les cartes
 
 interface BoardProps {
   board: BoardType;
@@ -113,10 +113,10 @@ export function Board({
         setShowWebEmbedInput(true);
         setShowContextMenu(false);
       } else {
-        // Forcer la position pour éviter la sidebar
+        // Ajuster la position pour éviter la sidebar
         const adjustedPosition = {
-          x: Math.max(selectedZone.position.x + MIN_CARD_X, MIN_CARD_X),
-          y: Math.max(selectedZone.position.y + MIN_CARD_Y, MIN_CARD_Y)
+          x: Math.max(selectedZone.position.x, MIN_CARD_X),
+          y: Math.max(selectedZone.position.y, MIN_CARD_Y)
         };
         onAddCard(type, adjustedPosition, selectedZone.dimensions);
         setShowContextMenu(false);
@@ -193,10 +193,10 @@ export function Board({
           <WebEmbedInput
             position={contextMenuPosition}
             onSubmit={(url, title) => {
-              // Forcer la position pour éviter la sidebar
+              // Ajuster la position pour éviter la sidebar
               const adjustedPosition = {
-                x: Math.max(selectedZone.position.x + MIN_CARD_X, MIN_CARD_X),
-                y: Math.max(selectedZone.position.y + MIN_CARD_Y, MIN_CARD_Y)
+                x: Math.max(selectedZone.position.x, MIN_CARD_X),
+                y: Math.max(selectedZone.position.y, MIN_CARD_Y)
               };
               onAddCard('embed', adjustedPosition, selectedZone.dimensions);
               const newCard = board.cards[board.cards.length - 1];

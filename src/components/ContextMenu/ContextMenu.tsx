@@ -3,9 +3,9 @@ import { Type, Monitor, Box, Cpu, Command } from 'lucide-react';
 import { ContentType } from '../../types';
 import { AppStore } from '../AppStore/AppStore';
 
-// Constants pour éviter la sidebar - augmentés
-const SIDEBAR_WIDTH = 100;
-const MIN_MENU_X = 150; // Position minimale pour le menu contextuel
+// Constants pour éviter la sidebar
+const SIDEBAR_WIDTH = 80;
+const MIN_CARD_X = SIDEBAR_WIDTH + 20;
 
 interface ContextMenuProps {
   x: number;
@@ -39,8 +39,8 @@ export function ContextMenu({ x, y, onSelect, onClose }: ContextMenuProps) {
     onClose();
   };
 
-  // Forcer la position du menu contextuel pour éviter qu'il soit trop près de la sidebar
-  const adjustedX = x < MIN_MENU_X ? MIN_MENU_X : x;
+  // Ajuster la position du menu contextuel pour éviter qu'il soit trop près de la sidebar
+  const adjustedX = Math.max(x, MIN_CARD_X);
 
   return (
     <>
