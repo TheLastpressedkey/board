@@ -1,33 +1,28 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Todo } from './types';
 
-export function useTodoList() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [hasChanges, setHasChanges] = useState(false);
-
-  // Load initial todos from metadata if available
-  useEffect(() => {
-    const savedTodos = window.cardMetadata?.todos;
-    if (savedTodos) {
-      setTodos(savedTodos.map(todo => ({
+export function useTodoList(initialTodos?: Todo[], onDataChange?: (data: any) => void) {
+  const [todos, setTodos] = useState<Todo[]>(() => {
+    if (initialTodos) {
+      return initialTodos.map(todo => ({
         ...todo,
         createdAt: new Date(todo.createdAt)
-      })));
+      }));
     }
-  }, []);
+    return [];
+  });
 
   // Notify parent component about changes
   useEffect(() => {
-    if (hasChanges && window.onCardDataChange) {
-      window.onCardDataChange({
+    if (onDataChange) {
+      onDataChange({
         todos: todos.map(todo => ({
           ...todo,
           createdAt: todo.createdAt.toISOString()
         }))
       });
-      setHasChanges(false);
     }
-  }, [todos, hasChanges]);
+  }, [todos, onDataChange]);
 
   const addTodo = useCallback((text: string) => {
     const newTodo: Todo = {
@@ -38,19 +33,16 @@ export function useTodoList() {
     };
     
     setTodos(prev => [...prev, newTodo]);
-    setHasChanges(true);
   }, []);
 
   const toggleTodo = useCallback((id: string) => {
     setTodos(prev => prev.map(todo => 
       todo.id === id ? { ...todo, completed: !todo.completed } : todo
     ));
-    setHasChanges(true);
   }, []);
 
   const deleteTodo = useCallback((id: string) => {
     setTodos(prev => prev.filter(todo => todo.id !== id));
-    setHasChanges(true);
   }, []);
 
   return {

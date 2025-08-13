@@ -31,6 +31,10 @@ export function Sidebar({
   const activeButtonStyle = `bg-[${themeColors.primary}] text-white`;
   const inactiveButtonStyle = 'text-gray-400 hover:text-gray-200';
 
+  const handleChatbotToggle = () => {
+    setShowChatbot(!showChatbot);
+  };
+
   return (
     <>
       <div className="fixed left-4 top-4 z-50 flex flex-col gap-2">
@@ -68,7 +72,7 @@ export function Sidebar({
 
         {/* AI Chatbot Button */}
         <button
-          onClick={() => setShowChatbot(true)}
+          onClick={handleChatbotToggle}
           className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-200 transition-colors"
           title="AI Assistant"
           style={{
@@ -99,7 +103,7 @@ export function Sidebar({
 
       {showChatbot && (
         <Chatbot 
-          onClose={() => setShowChatbot(false)} 
+          onClose={handleChatbotToggle}
           onCreateCard={onCreateCard}
         />
       )}

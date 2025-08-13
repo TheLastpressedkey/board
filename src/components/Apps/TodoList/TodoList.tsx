@@ -6,10 +6,12 @@ import { useTheme } from '../../../contexts/ThemeContext';
 
 interface TodoListProps {
   onClose: () => void;
+  metadata?: { todos?: any[] };
+  onDataChange?: (data: any) => void;
 }
 
-export function TodoList({ onClose }: TodoListProps) {
-  const { todos, addTodo, toggleTodo, deleteTodo } = useTodoList();
+export function TodoList({ onClose, metadata, onDataChange }: TodoListProps) {
+  const { todos, addTodo, toggleTodo, deleteTodo } = useTodoList(metadata?.todos, onDataChange);
   const [newTodo, setNewTodo] = useState('');
   const { themeColors } = useTheme();
 

@@ -36,9 +36,10 @@ export function EmailApp({ onClose, onDragStart }: EmailAppProps) {
         body: JSON.stringify({ to, subject, content }),
       });
 
+      const data = await response.json();
+      
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to send email');
+        throw new Error(data.error || 'Failed to send email');
       }
 
       setSuccess(true);
@@ -46,8 +47,8 @@ export function EmailApp({ onClose, onDragStart }: EmailAppProps) {
       setSubject('');
       setContent('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send email');
       console.error('Error sending email:', err);
+      setError(err instanceof Error ? err.message : 'Failed to send email');
     } finally {
       setSending(false);
     }

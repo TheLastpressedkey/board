@@ -1,5 +1,5 @@
-import React from 'react';
-import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail, FileText } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppStoreProps {
@@ -58,6 +58,38 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
       description: 'Stay updated with your favorite news sources and blogs',
       icon: Rss,
       category: 'News',
+      author: 'Core Apps'
+    },
+    {
+      id: 'analytics',
+      name: 'Analytics',
+      description: 'View detailed statistics and insights about your workspace',
+      icon: Activity,
+      category: 'Analytics',
+      author: 'Core Apps'
+    },
+    {
+      id: 'kanban',
+      name: 'Kanban Board',
+      description: 'Organize and track tasks with a flexible Kanban board',
+      icon: Layout,
+      category: 'Productivity',
+      author: 'Core Apps'
+    },
+    {
+      id: 'email',
+      name: 'Email',
+      description: 'Send emails using your configured SMTP settings',
+      icon: Mail,
+      category: 'Communication',
+      author: 'Core Apps'
+    },
+    {
+      id: 'document-editor',
+      name: 'Document Editor',
+      description: 'Create and edit documents with advanced formatting and markdown support',
+      icon: FileText,
+      category: 'Productivity',
       author: 'Core Apps'
     }
   ];

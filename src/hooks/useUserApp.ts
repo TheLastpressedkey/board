@@ -1,18 +1,34 @@
 import { useState, useEffect } from 'react';
 
-export function useUserApp(htmlContent: string) {
+interface UseUserAppResult {
+  renderedContent: string;
+  error: string | null;
+}
+
+export function useUserApp(code: string): UseUserAppResult {
+  const [error, setError] = useState<string | null>(null);
   const [renderedContent, setRenderedContent] = useState('');
 
   useEffect(() => {
-    // Basic sanitization and rendering
-    const sanitizedContent = htmlContent
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
-      .replace(/on\w+="[^"]*"/g, ''); // Remove inline event handlers
-    
-    setRenderedContent(sanitizedContent);
-  }, [htmlContent]);
+    try {
+      // Validation basique du code
+      new Function(code);
+      
+      // Nettoyage basique du code
+      const sanitizedContent = code
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/on\w+="[^"]*"/g, '');
+      
+      setRenderedContent(sanitizedContent);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid code');
+      setRenderedContent('');
+    }
+  }, [code]);
 
   return {
-    renderedContent
+    renderedContent,
+    error
   };
 }

@@ -6,15 +6,12 @@ interface CardThemeContextType {
   currentCardTheme: CardTheme;
   setCardTheme: (themeId: string) => void;
   availableThemes: CardTheme[];
-  cardTransparency: number;
-  setCardTransparency: (transparency: number) => void;
 }
 
 const CardThemeContext = createContext<CardThemeContextType | undefined>(undefined);
 
 export function CardThemeProvider({ children }: { children: React.ReactNode }) {
   const [currentTheme, setCurrentTheme] = useState<CardTheme>(cardThemes[0]);
-  const [cardTransparency, setCardTransparencyState] = useState<number>(1.0);
 
   useEffect(() => {
     loadCardTheme();
@@ -22,13 +19,10 @@ export function CardThemeProvider({ children }: { children: React.ReactNode }) {
 
   const loadCardTheme = async () => {
     try {
-      const { cardTheme, cardTransparency } = await userProfile.getPreferredUsername();
+      const { cardTheme } = await userProfile.getPreferredUsername();
       if (cardTheme) {
         const theme = cardThemes.find(t => t.id === cardTheme) || cardThemes[0];
         setCurrentTheme(theme);
-      }
-      if (cardTransparency !== undefined) {
-        setCardTransparencyState(cardTransparency);
       }
     } catch (error) {
       console.error('Error loading card theme:', error);
@@ -50,29 +44,11 @@ export function CardThemeProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const setCardTransparency = async (transparency: number) => {
-    try {
-      // Clamp transparency between 0.1 and 1.0
-      const clampedTransparency = Math.max(0.1, Math.min(1.0, transparency));
-      setCardTransparencyState(clampedTransparency);
-      
-      // Save to localStorage for immediate feedback
-      localStorage.setItem('cardTransparency', clampedTransparency.toString());
-      
-      // Save to database
-      await userProfile.updateCardTransparency(clampedTransparency);
-    } catch (error) {
-      console.error('Error saving card transparency:', error);
-    }
-  };
-
   return (
     <CardThemeContext.Provider value={{
       currentCardTheme: currentTheme,
       setCardTheme,
-      availableThemes: cardThemes,
-      cardTransparency,
-      setCardTransparency
+      availableThemes: cardThemes
     }}>
       {children}
     </CardThemeContext.Provider>

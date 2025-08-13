@@ -49,7 +49,7 @@ export function KanbanTaskForm({ task, status, onSubmit, onClose, themeColors }:
       >
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-white">
-            {task ? 'Edit Task' : 'New Task'}
+            {task ? 'Modifier la tâche' : 'Nouvelle tâche'}
           </h3>
           <button
             onClick={onClose}
@@ -62,7 +62,7 @@ export function KanbanTaskForm({ task, status, onSubmit, onClose, themeColors }:
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
-              Title
+              Titre
             </label>
             <input
               type="text"
@@ -89,7 +89,7 @@ export function KanbanTaskForm({ task, status, onSubmit, onClose, themeColors }:
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
-                Priority
+                Priorité
               </label>
               <select
                 value={priority}
@@ -97,15 +97,15 @@ export function KanbanTaskForm({ task, status, onSubmit, onClose, themeColors }:
                 className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2"
                 style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
               >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
+                <option value="low">Basse</option>
+                <option value="medium">Moyenne</option>
+                <option value="high">Haute</option>
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
-                Due Date
+                Date d'échéance
               </label>
               <input
                 type="date"
@@ -119,7 +119,7 @@ export function KanbanTaskForm({ task, status, onSubmit, onClose, themeColors }:
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
-              Labels
+              Étiquettes
             </label>
             <div className="flex flex-wrap gap-2 mb-2">
               {labels.map((label, index) => (
@@ -143,7 +143,7 @@ export function KanbanTaskForm({ task, status, onSubmit, onClose, themeColors }:
                 type="text"
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
-                placeholder="Add a label"
+                placeholder="Ajouter une étiquette"
                 className="flex-1 px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2"
                 style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
               />
@@ -164,14 +164,14 @@ export function KanbanTaskForm({ task, status, onSubmit, onClose, themeColors }:
               onClick={onClose}
               className="px-4 py-2 text-sm text-gray-300 hover:text-white"
             >
-              Cancel
+              Annuler
             </button>
             <button
               type="submit"
               className="px-4 py-2 text-sm text-white rounded-lg"
               style={{ backgroundColor: themeColors.primary }}
             >
-              {task ? 'Update' : 'Create'}
+              {task ? 'Mettre à jour' : 'Créer'}
             </button>
           </div>
         </form>

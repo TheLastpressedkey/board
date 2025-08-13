@@ -1,13 +1,18 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import { X, Code, Eye, Pencil } from 'lucide-react';
+import { X, Code, Eye, Pencil, Settings } from 'lucide-react';
 import { Card as CardType } from '../../types';
 import { useDraggable } from '../../hooks/useDraggable';
 import { useResizable } from '../../hooks/useResizable';
+import { useCardTheme } from '../../contexts/CardThemeContext';
 import { TextCardContent } from './TextCard';
 import { LinkCardContent } from './LinkCard';
 import { AppCardContent } from './AppCard';
 import { UserAppContent } from './UserAppContent';
+import { WebEmbedContent } from './WebEmbedContent';
+import { WebEmbedSettings } from './WebEmbedSettings';
 import { CardEditForm } from './CardEditForm';
+import { Analytics } from '../Apps/Analytics/Analytics';
+import { KanbanApp } from '../Apps/Kanban/KanbanApp';
 
 interface CardProps {
   card: CardType;
@@ -30,6 +35,9 @@ export function Card({
 }: CardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingMetadata, setIsEditingMetadata] = useState(false);
+  const [showWebEmbedSettings, setShowWebEmbedSettings] = useState(false);
+  const { currentCardTheme } = useCardTheme();
+  
   const defaultPosition = useMemo(() => ({ x: 0, y: 0 }), []);
   const defaultDimensions = useMemo(() => ({ width: 300, height: 200 }), []);
 
@@ -47,6 +55,7 @@ export function Card({
   const isUserApp = card.type === 'userapp';
   const isLinkCard = card.type === 'link';
   const isTextCard = card.type === 'text';
+  const isWebEmbed = card.type === 'embed';
 
   const handleContentChange = useCallback((content: string) => {
     onContentChange(card.id, content);
@@ -72,11 +81,43 @@ export function Card({
     transition: isDragging ? 'none' : 'transform 0.2s ease, box-shadow 0.2s ease'
   };
 
+  // Apply card theme styles
+  const headerStyle = {
+    ...currentCardTheme.headerStyle,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  };
+
+  const bodyStyle = currentCardTheme.bodyStyle ? {
+    ...currentCardTheme.bodyStyle,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  } : {};
+
   const renderContent = () => {
     if (isAppCard) {
+      const appType = card.type.replace('app-', '');
+      
+      if (appType === 'analytics') {
+        return <Analytics onClose={() => onDelete(card.id)} onDragStart={handleMouseDown} />;
+      }
+
+      if (appType === 'kanban') {
+        return (
+          <KanbanApp 
+            onClose={() => onDelete(card.id)} 
+            onDragStart={handleMouseDown}
+            metadata={card.metadata}
+            onDataChange={onMetadataChange}
+          />
+        );
+      }
+
       return (
         <AppCardContent
-          appType={card.type.replace('app-', '')}
+          appType={appType}
           onClose={() => onDelete(card.id)}
           isMobile={isMobile}
           metadata={card.metadata}
@@ -109,6 +150,12 @@ export function Card({
             isEditing={isEditing}
           />
         );
+      case 'embed':
+        return (
+          <WebEmbedContent
+            url={card.content}
+          />
+        );
       default:
         return null;
     }
@@ -121,50 +168,83 @@ export function Card({
           ${!isMobile && isDragging ? 'cursor-grabbing shadow-xl z-50' : 'cursor-default shadow-lg z-10'}
           ${!isMobile && isResizing ? 'cursor-nwse-resize' : ''}
           ${isAppCard || isUserApp ? 'app-card' : ''}`}
-        style={cardStyle as any}
+        style={{
+          ...cardStyle as any,
+          ...(currentCardTheme.bodyStyle && bodyStyle)
+        }}
         onMouseDown={!isMobile && !isAppCard ? handleMouseDown : undefined}
       >
         {!isAppCard && (
           <div 
-            className="flex-shrink-0 flex justify-between items-center px-4 py-2 bg-gray-50 border-b border-gray-200"
+            className="flex-shrink-0 flex justify-between items-center px-4 py-2 border-b border-gray-200"
+            style={headerStyle}
             onMouseDown={!isMobile ? handleMouseDown : undefined}
           >
-            <div className="text-sm font-medium text-gray-600 truncate flex-1 mr-2">
-              {(isTextCard || isLinkCard) && card.metadata?.title 
+            <div 
+              className="text-sm font-medium truncate flex-1 mr-2"
+              style={{ color: headerStyle.textColor || 'rgb(75, 85, 99)' }}
+            >
+              {(isTextCard || isLinkCard || isWebEmbed) && card.metadata?.title 
                 ? card.metadata.title 
                 : card.type === 'userapp' 
                 ? 'Custom App' 
+                : isWebEmbed
+                ? 'Web Embed'
                 : `${card.id.slice(0, 8)}`}
             </div>
             <div className="flex items-center gap-2">
               {isUserApp && (
                 <button
                   onClick={() => setIsEditing(!isEditing)}
-                  className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
+                  className="p-1 hover:bg-black/10 rounded-full flex-shrink-0 transition-colors"
                   onMouseDown={(e) => e.stopPropagation()}
                 >
                   {isEditing ? (
-                    <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                    <Eye 
+                      className="w-4 h-4" 
+                      style={{ color: headerStyle.iconColor || 'rgb(107, 114, 128)' }}
+                    />
                   ) : (
-                    <Code className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                    <Code 
+                      className="w-4 h-4" 
+                      style={{ color: headerStyle.iconColor || 'rgb(107, 114, 128)' }}
+                    />
                   )}
                 </button>
               )}
-              {(isLinkCard || isTextCard) && (
+              {(isLinkCard || isTextCard || isWebEmbed) && (
                 <button
                   onClick={() => setIsEditingMetadata(true)}
-                  className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
+                  className="p-1 hover:bg-black/10 rounded-full flex-shrink-0 transition-colors"
                   onMouseDown={(e) => e.stopPropagation()}
                 >
-                  <Pencil className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                  <Pencil 
+                    className="w-4 h-4" 
+                    style={{ color: headerStyle.iconColor || 'rgb(107, 114, 128)' }}
+                  />
+                </button>
+              )}
+              {isWebEmbed && (
+                <button
+                  onClick={() => setShowWebEmbedSettings(true)}
+                  className="p-1 hover:bg-black/10 rounded-full flex-shrink-0 transition-colors"
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  <Settings 
+                    className="w-4 h-4" 
+                    style={{ color: headerStyle.iconColor || 'rgb(107, 114, 128)' }}
+                  />
                 </button>
               )}
               <button
                 onClick={() => onDelete(card.id)}
-                className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
+                className="p-1 hover:bg-black/10 rounded-full flex-shrink-0 transition-colors"
                 onMouseDown={(e) => e.stopPropagation()}
               >
-                <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                <X 
+                  className="w-4 h-4" 
+                  style={{ color: headerStyle.iconColor || 'rgb(107, 114, 128)' }}
+                />
               </button>
             </div>
           </div>
@@ -202,6 +282,21 @@ export function Card({
           metadata={card.metadata}
           onSubmit={handleMetadataSubmit}
           onClose={() => setIsEditingMetadata(false)}
+        />
+      )}
+
+      {showWebEmbedSettings && (
+        <WebEmbedSettings
+          currentUrl={card.content}
+          currentTitle={card.metadata?.title}
+          onSubmit={(url, title) => {
+            handleContentChange(url);
+            if (onMetadataChange) {
+              onMetadataChange(card.id, { ...card.metadata, title });
+            }
+            setShowWebEmbedSettings(false);
+          }}
+          onClose={() => setShowWebEmbedSettings(false)}
         />
       )}
     </>

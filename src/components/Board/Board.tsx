@@ -1,9 +1,10 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Card } from '../Card/Card';
 import { Board as BoardType, ContentType } from '../../types';
 import { useScrollProgress } from '../../hooks/useScrollProgress';
 import { useSelectionZone } from '../../hooks/useSelectionZone';
 import { SelectionZone } from '../SelectionZone/SelectionZone';
+import { WebEmbedInput } from '../Card/WebEmbedInput';
 
 interface BoardProps {
   board: BoardType;
@@ -14,6 +15,7 @@ interface BoardProps {
   onAddCard: (type: ContentType, position: { x: number; y: number }, dimensions?: { width: number; height: number }) => void;
   onUpdateCardDimensions: (id: string, dimensions: { width: number; height: number }) => void;
   onUpdateCardMetadata: (id: string, metadata: any) => void;
+  onAutoArrange?: () => void;
 }
 
 export function Board({ 
@@ -24,14 +26,15 @@ export function Board({
   onScrollProgress,
   onAddCard,
   onUpdateCardDimensions,
-  onUpdateCardMetadata
+  onUpdateCardMetadata,
+  onAutoArrange
 }: BoardProps) {
   const boardRef = useRef<HTMLDivElement>(null);
   const [isDraggingBoard, setIsDraggingBoard] = React.useState(false);
   const [startDragPos, setStartDragPos] = React.useState({ x: 0, y: 0 });
   const [scrollPos, setScrollPos] = React.useState({ x: 0, y: 0 });
   const [showContextMenu, setShowContextMenu] = React.useState(false);
-  const [showLinkInput, setShowLinkInput] = React.useState(false);
+  const [showWebEmbedInput, setShowWebEmbedInput] = React.useState(false);
   const [contextMenuPosition, setContextMenuPosition] = React.useState({ x: 0, y: 0 });
   const [selectedZone, setSelectedZone] = React.useState<{
     position: { x: number; y: number };
@@ -99,17 +102,42 @@ export function Board({
     }
   };
 
+  const getRelativePosition = (clientX: number, clientY: number) => {
+    if (!boardRef.current) return { x: 0, y: 0 };
+    
+    const rect = boardRef.current.getBoundingClientRect();
+    return {
+      x: clientX - rect.left + boardRef.current.scrollLeft,
+      y: clientY - rect.top + boardRef.current.scrollTop
+    };
+  };
+
   const handleCardTypeSelect = (type: ContentType) => {
     if (selectedZone) {
-      if (type === 'link') {
-        setShowLinkInput(true);
+      if (type === 'embed') {
+        setShowWebEmbedInput(true);
         setShowContextMenu(false);
       } else {
         onAddCard(type, selectedZone.position, selectedZone.dimensions);
         setShowContextMenu(false);
         setSelectedZone(null);
       }
+    } else {
+      const position = getRelativePosition(contextMenuPosition.x, contextMenuPosition.y);
+      onAddCard(type, position);
+      setShowContextMenu(false);
     }
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenuPosition({ x: e.clientX, y: e.clientY });
+    setShowContextMenu(true);
+  };
+
+  const generateWebEmbedId = () => {
+    const webEmbeds = board.cards.filter(card => card.type === 'embed').length + 1;
+    return `Web Embed ${webEmbeds}`;
   };
 
   useEffect(() => {
@@ -132,6 +160,7 @@ export function Board({
       onMouseDown={handleBoardMouseDown}
       onMouseMove={(e) => !isDraggingBoard && handleSelectionMove(e)}
       onMouseUp={handleBoardMouseUp}
+      onContextMenu={handleContextMenu}
     >
       <div className="relative md:w-[10000px] md:h-full">
         {/* Mobile Layout */}
@@ -170,6 +199,26 @@ export function Board({
         </div>
 
         {isSelecting && selectionZone && <SelectionZone zone={selectionZone} />}
+
+        {showWebEmbedInput && selectedZone && (
+          <WebEmbedInput
+            position={contextMenuPosition}
+            onSubmit={(url, title) => {
+              onAddCard('embed', selectedZone.position, selectedZone.dimensions);
+              const newCard = board.cards[board.cards.length - 1];
+              onContentChange(newCard.id, url);
+              onUpdateCardMetadata(newCard.id, { 
+                title: title || generateWebEmbedId()
+              });
+              setShowWebEmbedInput(false);
+              setSelectedZone(null);
+            }}
+            onClose={() => {
+              setShowWebEmbedInput(false);
+              setSelectedZone(null);
+            }}
+          />
+        )}
       </div>
     </div>
   );
