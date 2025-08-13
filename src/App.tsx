@@ -42,12 +42,36 @@ export default function App() {
   const { contextMenu, setContextMenu, handleContextMenu } = useContextMenu();
   const [scrollProgress, setScrollProgress] = React.useState(0);
   const [showLinkInput, setShowLinkInput] = React.useState(false);
+  const [lastMousePosition, setLastMousePosition] = React.useState({ x: 0, y: 0 });
 
   useEffect(() => {
     if (user) {
       loadBoards();
     }
   }, [user, loadBoards]);
+
+  // Track mouse position for paste functionality
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setLastMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // Utility function to convert global coordinates to board-relative coordinates
+  const getRelativePositionFromGlobal = React.useCallback((globalX: number, globalY: number) => {
+    const boardElement = document.querySelector('.bg-dots');
+    if (boardElement) {
+      const rect = boardElement.getBoundingClientRect();
+      return {
+        x: globalX - rect.left + boardElement.scrollLeft,
+        y: globalY - rect.top + boardElement.scrollTop
+      };
+    }
+    return { x: globalX, y: globalY }; // Fallback
+  }, []);
 
   useEffect(() => {
     const handlePaste = async (e: ClipboardEvent) => {
@@ -58,24 +82,20 @@ export default function App() {
 
       if (text && isValidUrl(text) && !isInputActive) {
         if (contextMenu) {
-          addLinkCard(contextMenu, text);
+          // If context menu is open, use its position
+          const relativePosition = getRelativePositionFromGlobal(contextMenu.x, contextMenu.y);
+          addLinkCard(relativePosition, text);
         } else {
-          const boardElement = document.querySelector('.bg-dots');
-          if (boardElement) {
-            const rect = boardElement.getBoundingClientRect();
-            const position = {
-              x: window.scrollX + e.clientX - rect.left,
-              y: window.scrollY + e.clientY - rect.top
-            };
-            addLinkCard(position, text);
-          }
+          // Use current mouse position for paste
+          const relativePosition = getRelativePositionFromGlobal(lastMousePosition.x, lastMousePosition.y);
+          addLinkCard(relativePosition, text);
         }
       }
     };
 
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
-  }, [addLinkCard, contextMenu]);
+  }, [addLinkCard, contextMenu, lastMousePosition, getRelativePositionFromGlobal]);
 
   const handleCardTypeSelect = (type: ContentType, position?: { x: number; y: number }, dimensions?: { width: number; height: number }) => {
     if (type === 'link' && contextMenu) {
@@ -84,7 +104,9 @@ export default function App() {
       addCard(position, type, dimensions);
       setContextMenu(null);
     } else if (contextMenu) {
-      addCard(contextMenu, type);
+      // Convert global coordinates to board-relative coordinates
+      const relativePosition = getRelativePositionFromGlobal(contextMenu.x, contextMenu.y);
+      addCard(relativePosition, type);
       setContextMenu(null);
     }
   };
@@ -146,7 +168,9 @@ export default function App() {
             <LinkInput
               position={contextMenu}
               onSubmit={(url) => {
-                addLinkCard(contextMenu, url);
+                // Convert global coordinates to board-relative coordinates for link cards
+                const relativePosition = getRelativePositionFromGlobal(contextMenu.x, contextMenu.y);
+                addLinkCard(relativePosition, url);
                 setShowLinkInput(false);
                 setContextMenu(null);
               }}
