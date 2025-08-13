@@ -10,7 +10,7 @@ export function formatCardTitle(type: ContentType, id: string): string {
 
 export function createCard(
   type: ContentType, 
-  position: { x: number; y: number }, 
+  position: { x: number; y: number } = { x: 0, y: 0 }, 
   content: string = '',
   dimensions?: { width: number; height: number }
 ): Card {

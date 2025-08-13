@@ -4,24 +4,81 @@
 
 /* Theme variables */
 :root {
-  --theme-primary-color: theme('colors.pink.500');
-  --theme-scrollbar-color: theme('colors.pink.500');
-  --theme-menu-bg: rgba(31, 41, 55, 0.4);
-  --theme-menu-hover: rgba(55, 65, 81, 0.5);
+  --theme-primary: theme('colors.pink.500');
+  --theme-scrollbar: theme('colors.pink.500');
+  --theme-menuBg: rgba(31, 41, 55, 0.4);
+  --theme-menuHover: rgba(55, 65, 81, 0.5);
 }
 
-:root[data-theme='ocean'] {
-  --theme-primary-color: theme('colors.sky.400');
-  --theme-scrollbar-color: theme('colors.sky.400');
-  --theme-menu-bg: rgba(12, 74, 110, 0.4);
-  --theme-menu-hover: rgba(7, 89, 133, 0.5);
+/* Theme-specific styles */
+.theme-default {
+  --theme-primary: rgb(236, 72, 153);
+  --theme-scrollbar: rgb(236, 72, 153);
+  --theme-menuBg: rgba(31, 41, 55, 0.4);
+  --theme-menuHover: rgba(55, 65, 81, 0.5);
 }
 
-:root[data-theme='sunset'] {
-  --theme-primary-color: theme('colors.orange.400');
-  --theme-scrollbar-color: theme('colors.orange.400');
-  --theme-menu-bg: rgba(124, 45, 18, 0.4);
-  --theme-menu-hover: rgba(154, 52, 18, 0.5);
+.theme-ocean {
+  --theme-primary: rgb(56, 189, 248);
+  --theme-scrollbar: rgb(56, 189, 248);
+  --theme-menuBg: rgba(12, 74, 110, 0.4);
+  --theme-menuHover: rgba(7, 89, 133, 0.5);
+}
+
+.theme-sunset {
+  --theme-primary: rgb(251, 146, 60);
+  --theme-scrollbar: rgb(251, 146, 60);
+  --theme-menuBg: rgba(124, 45, 18, 0.4);
+  --theme-menuHover: rgba(154, 52, 18, 0.5);
+}
+
+.theme-forest {
+  --theme-primary: rgb(34, 197, 94);
+  --theme-scrollbar: rgb(34, 197, 94);
+  --theme-menuBg: rgba(20, 83, 45, 0.4);
+  --theme-menuHover: rgba(22, 101, 52, 0.5);
+}
+
+.theme-purple {
+  --theme-primary: rgb(168, 85, 247);
+  --theme-scrollbar: rgb(168, 85, 247);
+  --theme-menuBg: rgba(88, 28, 135, 0.4);
+  --theme-menuHover: rgba(107, 33, 168, 0.5);
+}
+
+.theme-cyberpunk {
+  --theme-primary: rgb(0, 255, 255);
+  --theme-scrollbar: rgb(0, 255, 255);
+  --theme-menuBg: rgba(0, 20, 40, 0.6);
+  --theme-menuHover: rgba(8, 51, 68, 0.5);
+}
+
+.theme-minimal {
+  --theme-primary: rgb(75, 85, 99);
+  --theme-scrollbar: rgb(75, 85, 99);
+  --theme-menuBg: rgba(55, 65, 81, 0.3);
+  --theme-menuHover: rgba(75, 85, 99, 0.5);
+}
+
+.theme-dark-blue {
+  --theme-primary: rgb(59, 130, 246);
+  --theme-scrollbar: rgb(59, 130, 246);
+  --theme-menuBg: rgba(30, 58, 138, 0.4);
+  --theme-menuHover: rgba(30, 64, 175, 0.5);
+}
+
+.theme-emerald {
+  --theme-primary: rgb(16, 185, 129);
+  --theme-scrollbar: rgb(16, 185, 129);
+  --theme-menuBg: rgba(6, 78, 59, 0.4);
+  --theme-menuHover: rgba(6, 95, 70, 0.5);
+}
+
+.theme-rose {
+  --theme-primary: rgb(244, 63, 94);
+  --theme-scrollbar: rgb(244, 63, 94);
+  --theme-menuBg: rgba(136, 19, 55, 0.4);
+  --theme-menuHover: rgba(159, 18, 57, 0.5);
 }
 
 .bg-dots {
@@ -32,25 +89,33 @@
 
 /* Custom scrollbar styles */
 .overflow-auto::-webkit-scrollbar,
-.card-scrollbar::-webkit-scrollbar {
+.card-scrollbar::-webkit-scrollbar,
+.analytics-scrollbar::-webkit-scrollbar,
+.settings-scrollbar::-webkit-scrollbar {
   width: 4px;
   height: 4px;
 }
 
 .overflow-auto::-webkit-scrollbar-track,
-.card-scrollbar::-webkit-scrollbar-track {
+.card-scrollbar::-webkit-scrollbar-track,
+.analytics-scrollbar::-webkit-scrollbar-track,
+.settings-scrollbar::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
 }
 
 .overflow-auto::-webkit-scrollbar-thumb,
-.card-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--theme-scrollbar-color);
+.card-scrollbar::-webkit-scrollbar-thumb,
+.analytics-scrollbar::-webkit-scrollbar-thumb,
+.settings-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--theme-scrollbar);
   border-radius: 4px;
 }
 
 .overflow-auto::-webkit-scrollbar-corner,
-.card-scrollbar::-webkit-scrollbar-corner {
+.card-scrollbar::-webkit-scrollbar-corner,
+.analytics-scrollbar::-webkit-scrollbar-corner,
+.settings-scrollbar::-webkit-scrollbar-corner {
   background: transparent;
 }
 
@@ -114,4 +179,13 @@
   margin: 1rem;
   overflow: hidden;
   border-radius: 0.5rem;
+}
+
+/* Drag handle styles */
+.drag-handle {
+  cursor: grab;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
 }
