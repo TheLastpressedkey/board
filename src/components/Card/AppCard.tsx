@@ -1,5 +1,4 @@
 import React from 'react';
-import { X } from 'lucide-react';
 import { Calculator } from '../Apps/Calculator/Calculator';
 import { Clock } from '../Apps/Clock/Clock';
 import { TodoList } from '../Apps/TodoList/TodoList';
@@ -49,7 +48,7 @@ export function AppCardContent({
       case 'calendar':
         return <Calendar onClose={onClose} metadata={metadata} onDataChange={onDataChange} />;
       case 'rss':
-        return <RSSReader onClose={onClose} metadata={metadata} onDataChange={onDataChange} />;
+        return <RSSReader onClose={onClose} metadata={metadata} onDataChange={onDataChange} onDragStart={onDragStart} />;
       case 'analytics':
         return <Analytics onClose={onClose} onDragStart={onDragStart} />;
       case 'kanban':
