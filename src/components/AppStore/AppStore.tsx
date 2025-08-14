@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail, FileText } from 'lucide-react';
+import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail, FileText, FolderOpen } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppStoreProps {
@@ -90,6 +90,14 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
       description: 'Create and edit documents with advanced formatting and markdown support',
       icon: FileText,
       category: 'Productivity',
+      author: 'Core Apps'
+    },
+    {
+      id: 'file-manager',
+      name: 'File Manager',
+      description: 'Complete file management solution with Supabase Storage integration',
+      icon: FolderOpen,
+      category: 'Storage',
       author: 'Core Apps'
     }
   ];

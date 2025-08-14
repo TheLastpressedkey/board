@@ -5,6 +5,7 @@ import { ai } from '../../services/ai';
 import { uploadthing } from '../../services/uploadthing';
 import { SMTPForm } from './SMTPForm';
 import { CardThemeSelector } from './CardThemeSelector';
+import { EmailSettings } from './EmailSettings';
 
 interface UserSettingsProps {
   username: string;
@@ -882,12 +883,25 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
                   activeSection === 'privacy' || 
                   activeSection === 'language' || 
                   activeSection === 'shortcuts' || 
-                  activeSection === 'display' || 
-                  activeSection === 'email') && (
+                  activeSection === 'display') && (
                   <div className="flex flex-col items-center justify-center h-full text-gray-400">
                     <p className="text-lg">This section is coming soon</p>
                     <p className="text-sm mt-2">Stay tuned for updates!</p>
                   </div>
+                )}
+
+                {activeSection === 'email' && (
+                  <EmailSettings
+                    themeColors={themeColors}
+                    onSave={() => {
+                      setSuccessMessage('Configuration email sauvegardée avec succès');
+                      setTimeout(() => setSuccessMessage(''), 3000);
+                    }}
+                    onError={(message) => {
+                      setErrorMessage(message);
+                      setTimeout(() => setErrorMessage(''), 5000);
+                    }}
+                  />
                 )}
               </div>
             </div>

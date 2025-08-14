@@ -28,6 +28,25 @@ export class AIFunctionService {
           },
           strict: true
         }
+      },
+      {
+        type: "function" as const,
+        function: {
+          name: "search_link_cards",
+          description: "Search for links within the user's link cards on their WeBoard. Use this when the user asks about websites, URLs, or web resources they might have saved.",
+          parameters: {
+            type: "object",
+            properties: {
+              query: {
+                type: "string",
+                description: "The search query to find links. Can search in titles, descriptions, or URLs of saved link cards."
+              }
+            },
+            required: ["query"],
+            additionalProperties: false
+          },
+          strict: true
+        }
       }
     ];
   }
@@ -41,6 +60,10 @@ export class AIFunctionService {
         case 'search_text_cards':
           const searchResults = await cardSearch.searchTextCards(args.query);
           return cardSearch.formatResultsForAI(searchResults);
+          
+        case 'search_link_cards':
+          const linkResults = await cardSearch.searchLinkCards(args.query);
+          return cardSearch.formatLinkResultsForAI(linkResults);
           
         default:
           throw new Error(`Unknown function: ${functionName}`);

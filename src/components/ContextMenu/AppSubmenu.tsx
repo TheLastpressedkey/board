@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calculator, Table } from 'lucide-react';
+import { Calculator, Table, FolderOpen } from 'lucide-react';
 
 interface AppSubmenuProps {
   x: number;
@@ -11,7 +11,8 @@ interface AppSubmenuProps {
 export function AppSubmenu({ x, y, onSelect, onClose }: AppSubmenuProps) {
   const apps = [
     { id: 'calculator', icon: Calculator, label: 'Calculator' },
-    { id: 'table', icon: Table, label: 'Table' }
+    { id: 'table', icon: Table, label: 'Table' },
+    { id: 'file-manager', icon: FolderOpen, label: 'File Manager' }
   ];
 
   return (

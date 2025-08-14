@@ -8,6 +8,7 @@ import { Analytics } from '../Apps/Analytics/Analytics';
 import { KanbanApp } from '../Apps/Kanban/KanbanApp';
 import { EmailApp } from '../Apps/Email/EmailApp';
 import { DocumentManager } from '../Apps/DocumentEditor/DocumentManager';
+import { FileManager } from '../Apps/FileManager/FileManager';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppCardContentProps {
@@ -57,6 +58,8 @@ export function AppCardContent({
         return <EmailApp onClose={onClose} onDragStart={onDragStart} />;
       case 'document-editor':
         return <DocumentManager onClose={onClose} onDragStart={onDragStart} />;
+      case 'file-manager':
+        return <FileManager onClose={onClose} onDragStart={onDragStart} />;
       default:
         return (
           <div className="h-full flex items-center justify-center text-gray-500">

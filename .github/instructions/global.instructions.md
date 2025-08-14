@@ -3,6 +3,8 @@ applyTo: '**'
 ---
 Ce projet fonctionne uniquement dans wsl.
 
+Ne jamais crée de fichier .htacess
+
 Pour lancer toute commmande dans le terminal assure toi d'etre dans wsl : wsl.exe -d Ubuntu
 
 Certaine commande peuvent necessité des privilege root dans ce cas demande moi d'executer les commandes et de te donner les resultats.
@@ -30,3 +32,5 @@ Le code doit reste maintenable et professionnel.
 TU NE DOIS JAMAIS CREE DE FICHIER DE TEST MAIS DEMANDER ME DEMANDER DE TESTER
 
 Pour les commande github le cli utilise : "gh" par exemple "gh status"
+
+Ne CREE pas de fichier de test demande moi d'effectuer les tests

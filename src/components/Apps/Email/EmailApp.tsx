@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Mail, GripHorizontal, X, Send, Loader2 } from 'lucide-react';
+import { Mail, GripHorizontal, X, Send, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { supabase } from '../../../lib/supabase';
+import { email } from '../../../services/email';
 
 interface EmailAppProps {
   onClose: () => void;
@@ -15,43 +15,50 @@ export function EmailApp({ onClose, onDragStart }: EmailAppProps) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [showFallbackOption, setShowFallbackOption] = useState(false);
+  const [lastFailedMethod, setLastFailedMethod] = useState<string>('');
   const { themeColors } = useTheme();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, forcePhpMail = false) => {
     e.preventDefault();
     setError(null);
     setSuccess(false);
+    setShowFallbackOption(false);
     setSending(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
+      const result = forcePhpMail 
+        ? await email.sendEmail({ to, subject, content, forcePhpMail: true })
+        : await email.sendEmailWithFallback({ to, subject, content });
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ to, subject, content }),
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to send email');
+      if (result.success) {
+        setSuccess(true);
+        setTo('');
+        setSubject('');
+        setContent('');
+        
+        if (result.usedFallback) {
+          setError(`✅ ${result.message}`);
+        }
+      } else {
+        setError(result.error || 'Erreur lors de l\'envoi de l\'email');
+        
+        // Si SMTP a échoué, proposer PHP mail
+        if (result.error?.includes('SMTP') && !forcePhpMail) {
+          setShowFallbackOption(true);
+          setLastFailedMethod('SMTP');
+        }
       }
-
-      setSuccess(true);
-      setTo('');
-      setSubject('');
-      setContent('');
     } catch (err) {
       console.error('Error sending email:', err);
-      setError(err instanceof Error ? err.message : 'Failed to send email');
+      setError(err instanceof Error ? err.message : 'Erreur lors de l\'envoi de l\'email');
     } finally {
       setSending(false);
     }
+  };
+
+  const handleRetryWithPhpMail = () => {
+    handleSubmit(new Event('submit') as any, true);
   };
 
   return (
@@ -131,7 +138,30 @@ export function EmailApp({ onClose, onDragStart }: EmailAppProps) {
           </div>
 
           {error && (
-            <div className="text-red-400 text-sm">{error}</div>
+            <div className={`text-sm ${error.startsWith('✅') ? '' : 'text-red-400'}`}>
+              {error}
+            </div>
+          )}
+
+          {showFallbackOption && (
+            <div className="bg-yellow-900/20 border border-yellow-600/30 rounded-lg p-3">
+              <div className="flex items-center gap-2 text-yellow-400 text-sm mb-2">
+                <AlertTriangle className="w-4 h-4" />
+                <span>Erreur {lastFailedMethod}</span>
+              </div>
+              <p className="text-gray-300 text-sm mb-3">
+                L'envoi via {lastFailedMethod} a échoué. Voulez-vous essayer avec PHP mail ?
+              </p>
+              <button
+                type="button"
+                onClick={handleRetryWithPhpMail}
+                disabled={sending}
+                className="flex items-center gap-2 px-3 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 disabled:opacity-50"
+              >
+                <RefreshCw className="w-3 h-3" />
+                Essayer avec PHP mail
+              </button>
+            </div>
           )}
 
           {success && (
@@ -139,7 +169,7 @@ export function EmailApp({ onClose, onDragStart }: EmailAppProps) {
               className="text-sm"
               style={{ color: themeColors.primary }}
             >
-              Email sent successfully!
+              Email envoyé avec succès !
             </div>
           )}
 
