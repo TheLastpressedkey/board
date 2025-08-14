@@ -1,17 +1,17 @@
 // Configuration de l'API backend
 export const API_CONFIG = {
-  // URL de base de l'API (développement local)
-  BASE_URL: 'http://huguesfrantz.com/wbrd/backend/',
+  // URL de base de l'API - Utilise le proxy Vercel pour éviter les problèmes HTTPS/HTTP
+  BASE_URL: '/api/proxy',
   
-  // Endpoints de l'API
+  // Endpoints de l'API via proxy
   ENDPOINTS: {
-    UPLOAD: '/api.php/upload',
-    LIST: '/api.php/list',
-    SEARCH: '/api.php/search',
-    DELETE: '/api.php',
-    CREATE_FOLDER: '/api.php/create-folder',
-    RENAME: '/api.php/rename',
-    SEND_EMAIL: '/api.php/send-email',
+    UPLOAD: '?endpoint=upload',
+    LIST: '?endpoint=list',
+    SEARCH: '?endpoint=search',
+    DELETE: '?endpoint=delete',
+    CREATE_FOLDER: '?endpoint=create-folder',
+    RENAME: '?endpoint=rename',
+    SEND_EMAIL: '?endpoint=send-email',
   },
   
   // Configuration des uploads
