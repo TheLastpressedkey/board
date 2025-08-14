@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Bot, User, Loader2, Pencil, Plus, Trash2, Settings, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Send, Bot, User, Loader2, Pencil, Plus, Trash2, Settings, Copy, Check, ChevronDown, ChevronUp, Globe } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getChatCompletion } from '../../lib/openai';
 import { analytics } from '../../services/analytics';
-import { chat } from '../../services/chat';
+import { chat, ChatMessage } from '../../services/chat';
 import { ai } from '../../services/ai';
 
 interface ChatbotProps {
@@ -12,6 +12,15 @@ interface ChatbotProps {
 }
 
 const DEFAULT_SYSTEM_PROMPT = `Vous êtes Angel, un assistant IA expert avec une expertise en développement logiciel, design et résolution créative de problèmes.
+
+🔹 Fonctions disponibles :
+
+Vous avez accès à des fonctions spéciales pour aider l'utilisateur :
+
+1. **search_text_cards** : Recherche dans les cartes texte de l'utilisateur
+   - Utilisez cette fonction quand l'utilisateur pose des questions sur du contenu qu'il pourrait avoir noté
+   - Exemples : "que contient ma carte sur...", "j'ai écrit quelque chose sur...", "trouve mes notes sur..."
+   - La fonction recherche automatiquement dans toutes ses cartes texte
 
 🔹 Instructions pour le formatage des réponses avec du code :
 
@@ -361,6 +370,7 @@ export function Chatbot({ onClose, onCreateCard }: ChatbotProps) {
   const [systemPrompt, setSystemPrompt] = useState<string | null>(null);
   const [useCustomPrompt, setUseCustomPrompt] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { themeColors } = useTheme();
   const [isInitialized, setIsInitialized] = useState(false);
@@ -505,7 +515,7 @@ ${JSON.stringify({
         { role: 'user' as const, content: enrichedMessage }
       ];
 
-      const response = await getChatCompletion(chatMessages);
+      const response = await getChatCompletion(chatMessages, webSearchEnabled);
 
       const botMessage = await chat.saveMessage(
         response || "Je suis désolé, je n'ai pas pu traiter votre demande.",
@@ -564,6 +574,18 @@ ${JSON.stringify({
         <div className="flex items-center gap-2">
           {!isMinimized && (
             <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setWebSearchEnabled(!webSearchEnabled);
+                }}
+                className={`p-2 rounded-lg transition-colors ${
+                  webSearchEnabled ? 'bg-gray-700/50' : 'hover:bg-gray-700/50'
+                }`}
+                title={webSearchEnabled ? "Désactiver la recherche web" : "Activer la recherche web"}
+              >
+                <Globe className={`w-4 h-4 ${webSearchEnabled ? 'text-green-400' : 'text-gray-400'}`} />
+              </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -637,7 +659,12 @@ ${JSON.stringify({
                   <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
                   <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
-                <span className="text-sm">Angel réfléchit...</span>
+                <span className="text-sm">
+                  {webSearchEnabled ? "Angel recherche sur le web..." : "Angel réfléchit..."}
+                </span>
+                {webSearchEnabled && (
+                  <Globe className="w-4 h-4 text-green-400" />
+                )}
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -666,7 +693,11 @@ ${JSON.stringify({
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder={isEditMode ? "Demandez à Angel de créer du contenu..." : "Posez votre question à Angel..."}
+                  placeholder={
+                    webSearchEnabled 
+                      ? (isEditMode ? "Demandez à Angel de créer du contenu avec recherche web..." : "Posez votre question à Angel (recherche web activée)...")
+                      : (isEditMode ? "Demandez à Angel de créer du contenu..." : "Posez votre question à Angel...")
+                  }
                   className="w-full px-4 py-2 bg-gray-700/50 text-white rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 pr-12"
                   style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
                   disabled={isLoading}
