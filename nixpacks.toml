@@ -1,0 +1,14 @@
+# Forcer l'utilisation du provider Node.js
+providers = ["node"]
+
+[phases.install]
+# Commande pour installer les dépendances
+cmds = ["npm install"]
+
+[phases.build]
+# Commande pour builder l'application
+cmds = ["npm run build"]
+
+[start]
+# Commande pour servir le dossier 'dist' qui contient l'application buildée
+cmd = "npx http-server ./dist"
