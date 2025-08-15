@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    environment:
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_KEY=${VITE_SUPABASE_KEY}
+    env_file:
+      - .env
+
+networks:
+  default:
+
+# The backend of this application is composed of Supabase functions.
+# To run these functions locally, you need to use the Supabase CLI.
+# Follow the instructions in the Supabase documentation to set up the CLI
+# and run the functions locally.
+# https://supabase.com/docs/guides/functions/local-development

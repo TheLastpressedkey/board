@@ -39,8 +39,9 @@ WeBoard est un tableau de bord personnel moderne et interactif qui permet de gé
 ## 🚀 Installation
 
 ### Prérequis
-- Node.js 18+ 
+- Node.js 18+
 - npm ou yarn
+- Docker (pour l'exécution avec Docker)
 - Compte Supabase (pour l'authentification et la base de données)
 
 ### Configuration
@@ -57,11 +58,11 @@ npm install
 ```
 
 3. **Configuration de l'environnement**
-Créer un fichier `.env.local` :
+Créer un fichier `.env` à partir de `__.env.example` et renseignez les variables:
 ```env
 # Configuration Supabase
-VITE_SUPABASE_URL=votre_supabase_url
-VITE_SUPABASE_ANON_KEY=votre_supabase_anon_key
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_KEY=your_supabase_anon_key
 
 # Configuration API Backend (optionnel)
 VITE_API_BASE_URL=https://votre-backend.com
@@ -74,6 +75,19 @@ VITE_ALLOWED_EXTENSIONS=jpg,jpeg,png,gif,pdf,doc,docx,txt,zip,rar,mp4,mp3,wav
 4. **Démarrer le serveur de développement**
 ```bash
 npm run dev
+```
+
+## 🐳 Running with Docker
+
+1. **Build and run the container**
+```bash
+docker-compose up -d --build
+```
+The application will be available at `http://localhost`.
+
+2. **Stopping the application**
+```bash
+docker-compose down
 ```
 
 ## 🏗️ Architecture
