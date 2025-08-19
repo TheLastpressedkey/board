@@ -1,0 +1,90 @@
+// Configuration de l'API backend
+export const API_CONFIG = {
+  // Mode développement (true = développement, false = production)
+  DEV: false,
+  
+  // URLs selon l'environnement
+  DEV_URL: 'http://localhost/project/Apps/weboard_last_v/board-main/board-main/backend/',
+  PROD_URL: 'https://huguesfrantz.com/wbrd/backend/',
+  
+  // URL de base de l'API (automatiquement définie selon le mode)
+  get BASE_URL() {
+    return this.DEV ? this.DEV_URL : this.PROD_URL;
+  },
+  
+  // Endpoints de l'API
+  ENDPOINTS: {
+    UPLOAD: '/api.php/upload',
+    LIST: '/api.php/list',
+    SEARCH: '/api.php/search',
+    DELETE: '/api.php',
+    CREATE_FOLDER: '/api.php/create-folder',
+    RENAME: '/api.php/rename',
+    SEND_EMAIL: '/api.php/send-email',
+  },
+  
+  // Configuration des uploads
+  MAX_FILE_SIZE: 52428800, // 50MB
+  ALLOWED_EXTENSIONS: [
+    // Images
+    'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico',
+    // Documents
+    'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp',
+    // Texte
+    'txt', 'md', 'rtf', 'csv', 'xml', 'json', 'html', 'htm', 'css', 'js', 'ts',
+    // Archives
+    'zip', 'rar', '7z', 'tar', 'gz', 'bz2',
+    // Audio
+    'mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a',
+    // Vidéo
+    'mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm',
+    // Code
+    'php', 'py', 'java', 'cpp', 'c', 'h', 'sql', 'sh', 'bat',
+    // Autres
+    'log', 'conf', 'ini', 'cfg'
+  ],
+  
+  // Timeout pour les requêtes
+  TIMEOUT: 30000, // 30 secondes
+};
+
+// Helper pour construire les URLs complètes
+export const buildApiUrl = (endpoint: string): string => {
+  return `${API_CONFIG.BASE_URL}${endpoint}`;
+};
+
+// Fonction pour basculer entre dev et production
+export const setDevMode = (isDev: boolean): void => {
+  (API_CONFIG as any).DEV = isDev;
+};
+
+// Fonction pour obtenir le mode actuel
+export const getEnvironment = (): 'development' | 'production' => {
+  return API_CONFIG.DEV ? 'development' : 'production';
+};
+
+// Fonction pour afficher l'URL actuelle (utile pour debug)
+export const getCurrentApiUrl = (): string => {
+  return API_CONFIG.BASE_URL;
+};
+
+// Validation des types de fichiers
+export const isFileAllowed = (filename: string): boolean => {
+  const extension = filename.split('.').pop()?.toLowerCase();
+  return extension ? API_CONFIG.ALLOWED_EXTENSIONS.includes(extension) : false;
+};
+
+// Formatage de la taille des fichiers
+export const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+};
+
+// Validation de la taille des fichiers
+export const isFileSizeValid = (size: number): boolean => {
+  return size <= API_CONFIG.MAX_FILE_SIZE;
+};
+
