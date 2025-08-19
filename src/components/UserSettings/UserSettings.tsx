@@ -3,6 +3,7 @@ import { X, Bell, Shield, Globe, Keyboard, Mail, Palette, Monitor, Lock, Buildin
 import { ThemeType, useTheme } from '../../contexts/ThemeContext';
 import { ai } from '../../services/ai';
 import { uploadthing } from '../../services/uploadthing';
+import { liveblocks } from '../../services/liveblocks';
 import { SMTPForm } from './SMTPForm';
 import { CardThemeSelector } from './CardThemeSelector';
 import { EmailSettings } from './EmailSettings';
@@ -44,6 +45,12 @@ interface SettingsState {
 }
 
 interface UploadThingFormProps {
+  onSave: () => void;
+  onError: (message: string) => void;
+  themeColors: any;
+}
+
+interface LiveBlocksFormProps {
   onSave: () => void;
   onError: (message: string) => void;
   themeColors: any;
@@ -121,6 +128,94 @@ function UploadThingForm({ onSave, onError, themeColors }: UploadThingFormProps)
           style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
           required
           placeholder="Enter your UploadThing Secret Key"
+        />
+      </div>
+
+      <div className="pt-4 flex justify-end">
+        <button
+          type="submit"
+          className="px-4 py-2 text-sm text-white rounded-lg"
+          style={{ backgroundColor: themeColors.primary }}
+        >
+          Save Configuration
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function LiveBlocksForm({ onSave, onError, themeColors }: LiveBlocksFormProps) {
+  const [config, setConfig] = useState({
+    publicKey: '',
+    secretKey: ''
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadConfig();
+  }, []);
+
+  const loadConfig = async () => {
+    try {
+      const data = await liveblocks.getConfig();
+      if (data) {
+        setConfig(data);
+      }
+    } catch (error) {
+      console.error('Error loading LiveBlocks config:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await liveblocks.saveConfig(config);
+      onSave();
+    } catch (error) {
+      console.error('Error saving LiveBlocks config:', error);
+      onError('Failed to save LiveBlocks configuration');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-2" style={{ borderColor: `${themeColors.primary} transparent` }} />
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-1">
+          Public Key
+        </label>
+        <input
+          type="text"
+          value={config.publicKey}
+          onChange={(e) => setConfig(prev => ({ ...prev, publicKey: e.target.value }))}
+          className="w-full px-3 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2"
+          style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
+          required
+          placeholder="Enter your LiveBlocks Public Key"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-1">
+          Secret Key
+        </label>
+        <input
+          type="password"
+          value={config.secretKey}
+          onChange={(e) => setConfig(prev => ({ ...prev, secretKey: e.target.value }))}
+          className="w-full px-3 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2"
+          style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
+          required
+          placeholder="Enter your LiveBlocks Secret Key"
         />
       </div>
 
@@ -305,6 +400,13 @@ const apiServices = [
     description: 'Configure file uploads and storage settings',
     icon: 'https://uploadthing.com/favicon.ico',
     comingSoon: false
+  },
+  {
+    id: 'liveblocks',
+    name: 'LiveBlocks.io',
+    description: 'Configure real-time collaboration features',
+    icon: 'https://liveblocks.io/favicon.ico',
+    comingSoon: false
   }
 ];
 
@@ -435,6 +537,28 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
             <UploadThingForm
               onSave={() => {
                 showMessage('UploadThing configuration saved successfully');
+                setSelectedService(null);
+              }}
+              onError={(message) => showMessage(message, true)}
+              themeColors={themeColors}
+            />
+          </div>
+        );
+      case 'liveblocks':
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium text-white">LiveBlocks.io Configuration</h3>
+              <button
+                onClick={() => setSelectedService(null)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <LiveBlocksForm
+              onSave={() => {
+                showMessage('LiveBlocks configuration saved successfully');
                 setSelectedService(null);
               }}
               onError={(message) => showMessage(message, true)}

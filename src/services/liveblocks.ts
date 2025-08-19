@@ -1,12 +1,12 @@
 import { supabase } from '../lib/supabase';
 
-interface UploadThingConfig {
-  appId: string;
+interface LiveBlocksConfig {
+  publicKey: string;
   secretKey: string;
 }
 
-export const uploadthing = {
-  async getConfig(): Promise<UploadThingConfig | null> {
+export const liveblocks = {
+  async getConfig(): Promise<LiveBlocksConfig | null> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -14,15 +14,15 @@ export const uploadthing = {
       .from('api_configs')
       .select('config')
       .eq('user_id', user.id)
-      .eq('service', 'uploadthing')
+      .eq('service', 'liveblocks')
       .eq('is_active', true)
       .maybeSingle();
 
     if (error) throw error;
-    return data?.config as UploadThingConfig || null;
+    return data?.config as LiveBlocksConfig || null;
   },
 
-  async saveConfig(config: UploadThingConfig): Promise<void> {
+  async saveConfig(config: LiveBlocksConfig): Promise<void> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -30,7 +30,7 @@ export const uploadthing = {
       .from('api_configs')
       .select('id')
       .eq('user_id', user.id)
-      .eq('service', 'uploadthing')
+      .eq('service', 'liveblocks')
       .eq('is_active', true)
       .maybeSingle();
 
@@ -49,7 +49,7 @@ export const uploadthing = {
         .from('api_configs')
         .insert({
           user_id: user.id,
-          service: 'uploadthing',
+          service: 'liveblocks',
           config,
           is_active: true
         });
