@@ -56,6 +56,7 @@ export function Card({
   const isLinkCard = card.type === 'link';
   const isTextCard = card.type === 'text';
   const isWebEmbed = card.type === 'embed';
+  const isClockApp = card.type === 'app-clock';
 
   const handleContentChange = useCallback((content: string) => {
     onContentChange(card.id, content);
@@ -171,13 +172,14 @@ export function Card({
   return (
     <>
       <div
-        className={`card bg-white rounded-lg shadow-lg select-none flex flex-col overflow-hidden
+        className={`card ${isClockApp ? '' : 'bg-white'} rounded-lg shadow-lg select-none flex flex-col overflow-hidden
           ${!isMobile && isDragging ? 'cursor-grabbing shadow-xl z-50' : 'cursor-default shadow-lg z-10'}
           ${!isMobile && isResizing ? 'cursor-nwse-resize' : ''}
           ${isAppCard || isUserApp ? 'app-card' : ''}`}
         style={{
           ...cardStyle as any,
-          ...(currentCardTheme.bodyStyle && bodyStyle)
+          ...(currentCardTheme.bodyStyle && bodyStyle),
+          ...(isClockApp && { backgroundColor: 'transparent', boxShadow: 'none' })
         }}
         onMouseDown={!isMobile && !isAppCard ? handleMouseDown : undefined}
       >

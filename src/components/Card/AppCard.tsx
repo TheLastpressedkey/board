@@ -32,12 +32,23 @@ export function AppCardContent({
 }: AppCardContentProps) {
   const { themeColors } = useTheme();
 
-  const containerStyle = {
-    width: '100%',
-    height: '100%',
-    backgroundColor: themeColors.menuBg,
-    borderRadius: '0.5rem',
-    overflow: 'hidden'
+  const getContainerStyle = () => {
+    if (appType === 'clock') {
+      return {
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'transparent',
+        borderRadius: '0.5rem',
+        overflow: 'hidden'
+      };
+    }
+    return {
+      width: '100%',
+      height: '100%',
+      backgroundColor: themeColors.menuBg,
+      borderRadius: '0.5rem',
+      overflow: 'hidden'
+    };
   };
 
   const renderApp = () => {
@@ -45,7 +56,7 @@ export function AppCardContent({
       case 'calculator':
         return <Calculator onClose={onClose} />;
       case 'clock':
-        return <Clock onClose={onClose} />;
+        return <Clock onClose={onClose} onDragStart={onDragStart} />;
       case 'todolist':
         return <TodoList onClose={onClose} metadata={metadata} onDataChange={onDataChange} cardId={cardId} onDragStart={onDragStart} />;
       case 'calendar':
@@ -72,7 +83,7 @@ export function AppCardContent({
   };
 
   return (
-    <div style={containerStyle}>
+    <div style={getContainerStyle()}>
       <div className="h-full">
         {renderApp()}
       </div>
