@@ -18,9 +18,22 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
   const [tool, setTool] = useState<Tool>('pen');
   const [color, setColor] = useState('#ffffff');
   const [lineWidth, setLineWidth] = useState(3);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
   const { themeColors } = useTheme();
 
   const colors = ['#ffffff', '#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#000000'];
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
+        setShowColorPicker(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -182,19 +195,42 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
             <Eraser className="w-4 h-4 text-gray-300" />
           </button>
 
-          <div className="flex items-center gap-1">
-            {colors.map((c) => (
-              <button
-                key={c}
-                onClick={() => setColor(c)}
-                className={`w-6 h-6 rounded transition-all hover:opacity-80 border-2 ${
-                  color === c ? 'border-white scale-110' : 'border-transparent'
-                }`}
-                style={{ backgroundColor: c }}
-                onMouseDown={(e) => e.stopPropagation()}
-                title={c}
+          <div className="relative" ref={colorPickerRef}>
+            <button
+              onClick={() => setShowColorPicker(!showColorPicker)}
+              className="p-2 rounded-lg hover:bg-gray-700/50 transition-colors flex items-center gap-2"
+              onMouseDown={(e) => e.stopPropagation()}
+              title="Color"
+            >
+              <Palette className="w-4 h-4 text-gray-300" />
+              <div
+                className="w-5 h-5 rounded border-2 border-gray-600"
+                style={{ backgroundColor: color }}
               />
-            ))}
+            </button>
+
+            {showColorPicker && (
+              <div
+                className="absolute left-0 top-full mt-1 p-2 rounded-lg shadow-xl border border-gray-700 flex gap-1.5 z-50"
+                style={{ backgroundColor: themeColors.menuBg }}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                {colors.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => {
+                      setColor(c);
+                      setShowColorPicker(false);
+                    }}
+                    className={`w-7 h-7 rounded transition-all hover:scale-110 ${
+                      color === c ? 'ring-2 ring-white' : ''
+                    }`}
+                    style={{ backgroundColor: c }}
+                    title={c}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2 px-2">
