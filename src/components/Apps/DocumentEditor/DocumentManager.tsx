@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Plus, Search, Trash2, Edit, Calendar, Tag, GripHorizontal, X } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useCardTheme } from '../../../contexts/CardThemeContext';
 import { documents, Document } from '../../../services/documents';
 import { DocumentEditor } from './DocumentEditor';
 
@@ -17,6 +18,8 @@ export function DocumentManager({ onClose, onDragStart }: DocumentManagerProps) 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { themeColors } = useTheme();
+  const { currentCardTheme } = useCardTheme();
+  const isTerminalTheme = currentCardTheme.id === 'terminal';
 
   useEffect(() => {
     loadDocuments();
@@ -89,30 +92,41 @@ export function DocumentManager({ onClose, onDragStart }: DocumentManagerProps) 
     );
   }
 
+  const bgMain = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(17, 24, 39)';
+  const bgHeader = isTerminalTheme ? 'rgb(0, 0, 0)' : themeColors.menuBg;
+  const bgInput = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(55, 65, 81)';
+  const bgCard = isTerminalTheme ? 'rgba(255, 255, 255, 0.05)' : 'rgba(31, 41, 55, 0.5)';
+  const bgCardHover = isTerminalTheme ? 'rgba(255, 255, 255, 0.1)' : 'rgba(55, 65, 81, 0.5)';
+  const textColor = isTerminalTheme ? 'rgb(255, 255, 255)' : 'white';
+  const textMuted = isTerminalTheme ? 'rgba(255, 255, 255, 0.5)' : 'rgb(156, 163, 175)';
+  const borderColor = isTerminalTheme ? 'rgba(255, 255, 255, 0.3)' : 'rgba(55, 65, 81, 0.5)';
+  const primaryColor = isTerminalTheme ? 'rgb(255, 255, 255)' : themeColors.primary;
+  const bgButtonText = isTerminalTheme ? 'rgb(0, 0, 0)' : 'white';
+
   return (
-    <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
+    <div className="flex flex-col h-full rounded-lg overflow-hidden" style={{ backgroundColor: bgMain }}>
       {/* Header */}
-      <div 
-        className="p-4 border-b border-gray-700/50"
-        style={{ backgroundColor: themeColors.menuBg }}
+      <div
+        className="p-4"
+        style={{ backgroundColor: bgHeader, borderBottom: `1px solid ${borderColor}` }}
       >
         <div className="flex items-center justify-between">
-          <div 
+          <div
             className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
             onMouseDown={onDragStart}
           >
-            <GripHorizontal className="w-5 h-5 text-gray-500" />
-            <FileText 
+            <GripHorizontal className="w-5 h-5" style={{ color: textMuted }} />
+            <FileText
               className="w-5 h-5"
-              style={{ color: themeColors.primary }}
+              style={{ color: primaryColor }}
             />
-            <h2 className="text-lg font-semibold text-white">Gestionnaire de Documents</h2>
+            <h2 className="text-lg font-semibold" style={{ color: textColor }}>Gestionnaire de Documents</h2>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSelectedDocument('new')}
-              className="px-3 py-1.5 text-sm text-white rounded-lg flex items-center gap-2"
-              style={{ backgroundColor: themeColors.primary }}
+              className="px-3 py-1.5 text-sm rounded-lg flex items-center gap-2"
+              style={{ backgroundColor: primaryColor, color: bgButtonText }}
               onMouseDown={(e) => e.stopPropagation()}
             >
               <Plus className="w-4 h-4" />
@@ -120,24 +134,30 @@ export function DocumentManager({ onClose, onDragStart }: DocumentManagerProps) 
             </button>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+              className="p-2 rounded-lg transition-colors"
               onMouseDown={(e) => e.stopPropagation()}
+              style={{ color: textMuted }}
             >
-              <X className="w-4 h-4 text-gray-400" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {/* Search */}
         <div className="mt-3 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: textMuted }} />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Rechercher dans les documents..."
-            className="w-full pl-10 pr-4 py-2 bg-gray-700/50 text-white rounded-lg focus:outline-none focus:ring-2"
-            style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
+            className="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2"
+            style={{
+              backgroundColor: bgInput,
+              color: textColor,
+              border: `1px solid ${borderColor}`,
+              '--tw-ring-color': primaryColor
+            } as React.CSSProperties}
             onMouseDown={(e) => e.stopPropagation()}
           />
         </div>
@@ -147,14 +167,14 @@ export function DocumentManager({ onClose, onDragStart }: DocumentManagerProps) 
       <div className="flex-1 overflow-y-auto analytics-scrollbar">
         {loading ? (
           <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-2\" style={{ borderColor: `${themeColors.primary} transparent` }} />
+            <div className="animate-spin rounded-full h-8 w-8 border-2" style={{ borderColor: `${primaryColor} transparent` }} />
           </div>
         ) : error ? (
-          <div className="flex items-center justify-center h-full text-red-400">
+          <div className="flex items-center justify-center h-full" style={{ color: 'rgb(248, 113, 113)' }}>
             {error}
           </div>
         ) : filteredDocuments.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-400">
+          <div className="flex flex-col items-center justify-center h-full" style={{ color: textMuted }}>
             <FileText className="w-12 h-12 mb-4 opacity-50" />
             <p className="text-lg mb-2">
               {searchQuery ? 'Aucun document trouvé' : 'Aucun document'}
@@ -168,19 +188,22 @@ export function DocumentManager({ onClose, onDragStart }: DocumentManagerProps) 
             {filteredDocuments.map((doc) => (
               <div
                 key={doc.id}
-                className="bg-gray-800/50 rounded-lg p-4 hover:bg-gray-700/50 transition-colors group cursor-pointer"
+                className="rounded-lg p-4 transition-colors group cursor-pointer"
+                style={{ backgroundColor: bgCard }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = bgCardHover)}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = bgCard)}
                 onClick={() => setSelectedDocument(doc.id)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-medium mb-1 truncate">
+                    <h3 className="font-medium mb-1 truncate" style={{ color: textColor }}>
                       {doc.title}
                     </h3>
-                    <p className="text-gray-400 text-sm line-clamp-2 mb-2">
+                    <p className="text-sm line-clamp-2 mb-2" style={{ color: textMuted }}>
                       {doc.content.substring(0, 150)}...
                     </p>
-                    
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
+
+                    <div className="flex items-center gap-4 text-xs" style={{ color: textMuted }}>
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         <span>{formatDate(doc.updatedAt)}</span>
@@ -196,18 +219,22 @@ export function DocumentManager({ onClose, onDragStart }: DocumentManagerProps) 
 
                     {doc.tags.length > 0 && (
                       <div className="flex items-center gap-1 mt-2">
-                        <Tag className="w-3 h-3 text-gray-500" />
+                        <Tag className="w-3 h-3" style={{ color: textMuted }} />
                         <div className="flex flex-wrap gap-1">
                           {doc.tags.slice(0, 3).map((tag, index) => (
                             <span
                               key={index}
-                              className="px-2 py-0.5 bg-gray-700 text-gray-300 text-xs rounded-full"
+                              className="px-2 py-0.5 text-xs rounded-full"
+                              style={{
+                                backgroundColor: isTerminalTheme ? 'rgba(255, 255, 255, 0.1)' : 'rgb(55, 65, 81)',
+                                color: isTerminalTheme ? 'rgb(255, 255, 255)' : 'rgb(209, 213, 219)'
+                              }}
                             >
                               {tag}
                             </span>
                           ))}
                           {doc.tags.length > 3 && (
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs" style={{ color: textMuted }}>
                               +{doc.tags.length - 3}
                             </span>
                           )}
@@ -222,20 +249,22 @@ export function DocumentManager({ onClose, onDragStart }: DocumentManagerProps) 
                         e.stopPropagation();
                         setSelectedDocument(doc.id);
                       }}
-                      className="p-1.5 hover:bg-gray-600/50 rounded-lg"
+                      className="p-1.5 rounded-lg"
+                      style={{ backgroundColor: isTerminalTheme ? 'rgba(255, 255, 255, 0.1)' : 'rgba(75, 85, 99, 0.5)' }}
                       title="Éditer"
                     >
-                      <Edit className="w-4 h-4 text-gray-400" />
+                      <Edit className="w-4 h-4" style={{ color: textMuted }} />
                     </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteDocument(doc.id);
                       }}
-                      className="p-1.5 hover:bg-gray-600/50 rounded-lg"
+                      className="p-1.5 rounded-lg"
+                      style={{ backgroundColor: isTerminalTheme ? 'rgba(255, 255, 255, 0.1)' : 'rgba(75, 85, 99, 0.5)' }}
                       title="Supprimer"
                     >
-                      <Trash2 className="w-4 h-4 text-red-400" />
+                      <Trash2 className="w-4 h-4" style={{ color: 'rgb(248, 113, 113)' }} />
                     </button>
                   </div>
                 </div>
