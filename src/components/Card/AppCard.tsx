@@ -9,6 +9,7 @@ import { KanbanApp } from '../Apps/Kanban/KanbanApp';
 import { EmailApp } from '../Apps/Email/EmailApp';
 import { DocumentManager } from '../Apps/DocumentEditor/DocumentManager';
 import { FileManager } from '../Apps/FileManager/FileManager';
+import { Whiteboard } from '../Apps/Whiteboard/Whiteboard';
 import { useTheme } from '../../contexts/ThemeContext';
 import { GripHorizontal, X, AlertCircle } from 'lucide-react';
 
@@ -74,6 +75,8 @@ export function AppCardContent({
         return <DocumentManager onClose={onClose} onDragStart={onDragStart} />;
       case 'file-manager':
         return <FileManager onClose={onClose} onDragStart={onDragStart} />;
+      case 'whiteboard':
+        return <Whiteboard onClose={onClose} onDragStart={onDragStart} metadata={metadata} onDataChange={onDataChange} cardId={cardId} />;
       default:
         return (
           <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">

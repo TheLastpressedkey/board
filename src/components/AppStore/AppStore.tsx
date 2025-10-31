@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail, FileText, FolderOpen } from 'lucide-react';
+import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail, FileText, FolderOpen, Pencil } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppStoreProps {
@@ -98,6 +98,14 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
       description: 'Complete file management solution with Supabase Storage integration',
       icon: FolderOpen,
       category: 'Storage',
+      author: 'Core Apps'
+    },
+    {
+      id: 'whiteboard',
+      name: 'Whiteboard',
+      description: 'Draw, sketch and brainstorm with a digital whiteboard',
+      icon: Pencil,
+      category: 'Creativity',
       author: 'Core Apps'
     }
   ];
