@@ -201,7 +201,7 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
 
             {showColorPicker && (
               <div
-                className="absolute top-full right-0 mt-2 p-3 rounded-lg shadow-2xl z-10 grid grid-cols-4 gap-2 border border-gray-700/50"
+                className="absolute top-full right-0 mt-2 p-2 rounded-lg shadow-2xl z-10 grid grid-cols-4 gap-1.5 border border-gray-700/50 backdrop-blur-sm"
                 style={{ backgroundColor: themeColors.menuBg }}
                 onMouseDown={(e) => e.stopPropagation()}
               >
@@ -212,8 +212,8 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
                       setColor(c);
                       setShowColorPicker(false);
                     }}
-                    className={`w-8 h-8 rounded-lg transition-all hover:scale-110 ${
-                      color === c ? 'ring-2 ring-offset-2 ring-offset-gray-800' : ''
+                    className={`w-7 h-7 rounded transition-all hover:scale-110 relative ${
+                      color === c ? 'ring-2' : ''
                     }`}
                     style={{
                       backgroundColor: c,
