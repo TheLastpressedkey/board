@@ -53,9 +53,9 @@ export function Clock({ onClose, onDragStart }: ClockProps) {
   const radius = clockSize / 2 - 10;
   const center = clockSize / 2;
 
-  const clockColor = isTerminalTheme ? 'rgb(0, 255, 0)' : themeColors.primary;
+  const clockColor = isTerminalTheme ? 'rgb(255, 255, 255)' : themeColors.primary;
   const bgOverlay = isTerminalTheme ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.2)';
-  const iconColor = isTerminalTheme ? 'rgb(0, 255, 0)' : 'white';
+  const iconColor = isTerminalTheme ? 'rgb(255, 255, 255)' : 'white';
 
   return (
     <div 
@@ -186,7 +186,7 @@ export function Clock({ onClose, onDragStart }: ClockProps) {
             y1={center}
             x2={center + (radius * 0.8) * Math.cos((secondAngle - 90) * Math.PI / 180)}
             y2={center + (radius * 0.8) * Math.sin((secondAngle - 90) * Math.PI / 180)}
-            stroke={isTerminalTheme ? 'rgb(255, 0, 0)' : 'red'}
+            stroke="red"
             strokeWidth={clockSize / 100}
             strokeLinecap="round"
           />
