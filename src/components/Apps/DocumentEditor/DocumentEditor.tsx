@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Save, FileText, Bold, Italic, Underline, List, ListOrdered, Link, Image, Undo, Redo, Eye, Edit3, GripHorizontal, X } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useCardTheme } from '../../../contexts/CardThemeContext';
 import { DocumentToolbar } from './DocumentToolbar';
 import { DocumentPreview } from './DocumentPreview';
 import { documents } from '../../../services/documents';
@@ -26,6 +27,8 @@ export function DocumentEditor({ onClose, onDragStart, metadata, onDataChange }:
   const [error, setError] = useState<string | null>(null);
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const { themeColors } = useTheme();
+  const { currentCardTheme } = useCardTheme();
+  const isTerminalTheme = currentCardTheme.id === 'terminal';
 
   useEffect(() => {
     if (metadata?.documentId) {
@@ -150,65 +153,78 @@ export function DocumentEditor({ onClose, onDragStart, metadata, onDataChange }:
     quote: () => insertText('> ')
   };
 
+  const bgMain = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(17, 24, 39)';
+  const bgHeader = isTerminalTheme ? 'rgb(0, 0, 0)' : themeColors.menuBg;
+  const bgInput = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(31, 41, 55)';
+  const textColor = isTerminalTheme ? 'rgb(255, 255, 255)' : 'white';
+  const textMuted = isTerminalTheme ? 'rgba(255, 255, 255, 0.5)' : 'rgb(156, 163, 175)';
+  const borderColor = isTerminalTheme ? 'rgba(255, 255, 255, 0.3)' : 'rgba(55, 65, 81, 0.5)';
+  const primaryColor = isTerminalTheme ? 'rgb(255, 255, 255)' : themeColors.primary;
+  const bgHover = isTerminalTheme ? 'rgba(255, 255, 255, 0.1)' : 'rgba(55, 65, 81, 0.5)';
+
   return (
-    <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
+    <div className="flex flex-col h-full rounded-lg overflow-hidden" style={{ backgroundColor: bgMain }}>
       {/* Header */}
-      <div 
-        className="p-4 border-b border-gray-700/50"
-        style={{ backgroundColor: themeColors.menuBg }}
+      <div
+        className="p-4"
+        style={{ backgroundColor: bgHeader, borderBottom: `1px solid ${borderColor}` }}
       >
         <div className="flex items-center justify-between">
-          <div 
+          <div
             className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
             onMouseDown={onDragStart}
           >
-            <GripHorizontal className="w-5 h-5 text-gray-500" />
-            <FileText 
+            <GripHorizontal className="w-5 h-5" style={{ color: textMuted }} />
+            <FileText
               className="w-5 h-5"
-              style={{ color: themeColors.primary }}
+              style={{ color: primaryColor }}
             />
             <input
               type="text"
               value={document.title}
               onChange={(e) => setDocument(prev => ({ ...prev, title: e.target.value }))}
-              className="text-lg font-semibold bg-transparent text-white border-none outline-none"
+              className="text-lg font-semibold bg-transparent border-none outline-none"
+              style={{ color: textColor }}
               onMouseDown={(e) => e.stopPropagation()}
             />
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsPreview(!isPreview)}
-              className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+              className="p-2 rounded-lg transition-colors"
+              style={{ backgroundColor: bgHover }}
               title={isPreview ? "Mode édition" : "Aperçu"}
               onMouseDown={(e) => e.stopPropagation()}
             >
               {isPreview ? (
-                <Edit3 className="w-4 h-4 text-gray-400" />
+                <Edit3 className="w-4 h-4" style={{ color: textMuted }} />
               ) : (
-                <Eye className="w-4 h-4 text-gray-400" />
+                <Eye className="w-4 h-4" style={{ color: textMuted }} />
               )}
             </button>
             <button
               onClick={() => handleSave(true)}
               disabled={isSaving}
-              className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors disabled:opacity-50"
+              className="p-2 rounded-lg transition-colors disabled:opacity-50"
+              style={{ backgroundColor: bgHover }}
               title="Sauvegarder"
               onMouseDown={(e) => e.stopPropagation()}
             >
-              <Save className={`w-4 h-4 text-gray-400 ${isSaving ? 'animate-pulse' : ''}`} />
+              <Save className={`w-4 h-4 ${isSaving ? 'animate-pulse' : ''}`} style={{ color: textMuted }} />
             </button>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+              className="p-2 rounded-lg transition-colors"
+              style={{ backgroundColor: bgHover }}
               onMouseDown={(e) => e.stopPropagation()}
             >
-              <X className="w-4 h-4 text-gray-400" />
+              <X className="w-4 h-4" style={{ color: textMuted }} />
             </button>
           </div>
         </div>
 
         {/* Status Bar */}
-        <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+        <div className="flex items-center justify-between mt-2 text-xs" style={{ color: textMuted }}>
           <div className="flex items-center gap-4">
             <span>{document.content.length} caractères</span>
             <span>{document.content.split(/\s+/).filter(w => w.length > 0).length} mots</span>
@@ -217,7 +233,7 @@ export function DocumentEditor({ onClose, onDragStart, metadata, onDataChange }:
             )}
           </div>
           {error && (
-            <span className="text-red-400">{error}</span>
+            <span style={{ color: 'rgb(248, 113, 113)' }}>{error}</span>
           )}
         </div>
       </div>
@@ -227,6 +243,11 @@ export function DocumentEditor({ onClose, onDragStart, metadata, onDataChange }:
         <DocumentToolbar
           onAction={formatActions}
           themeColors={themeColors}
+          isTerminalTheme={isTerminalTheme}
+          bgHeader={bgHeader}
+          textMuted={textMuted}
+          borderColor={borderColor}
+          bgHover={bgHover}
         />
       )}
 
@@ -237,17 +258,19 @@ export function DocumentEditor({ onClose, onDragStart, metadata, onDataChange }:
             content={document.content}
             format={document.format}
             themeColors={themeColors}
+            isTerminalTheme={isTerminalTheme}
           />
         ) : (
-          <div className="h-full p-4">
+          <div className="h-full p-4 analytics-scrollbar overflow-y-auto">
             <textarea
               ref={editorRef}
               value={document.content}
               onChange={(e) => setDocument(prev => ({ ...prev, content: e.target.value }))}
               placeholder="Commencez à écrire votre document..."
-              className="w-full h-full bg-transparent text-white resize-none outline-none font-mono text-sm leading-relaxed"
-              style={{ 
-                fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace'
+              className="w-full h-full bg-transparent resize-none outline-none font-mono text-sm leading-relaxed"
+              style={{
+                fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+                color: textColor
               }}
               onMouseDown={(e) => e.stopPropagation()}
             />
@@ -256,21 +279,26 @@ export function DocumentEditor({ onClose, onDragStart, metadata, onDataChange }:
       </div>
 
       {/* Tags */}
-      <div 
-        className="p-4 border-t border-gray-700/50"
-        style={{ backgroundColor: themeColors.menuBg }}
+      <div
+        className="p-4"
+        style={{ backgroundColor: bgHeader, borderTop: `1px solid ${borderColor}` }}
       >
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-400">Tags:</span>
+          <span className="text-sm" style={{ color: textMuted }}>Tags:</span>
           <input
             type="text"
             placeholder="Ajouter des tags (séparés par des virgules)"
             value={document.tags.join(', ')}
-            onChange={(e) => setDocument(prev => ({ 
-              ...prev, 
+            onChange={(e) => setDocument(prev => ({
+              ...prev,
               tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
             }))}
-            className="flex-1 px-2 py-1 bg-gray-700/50 text-white text-sm rounded border-none outline-none"
+            className="flex-1 px-2 py-1 text-sm rounded border-none outline-none"
+            style={{
+              backgroundColor: bgInput,
+              color: textColor,
+              border: `1px solid ${borderColor}`
+            }}
             onMouseDown={(e) => e.stopPropagation()}
           />
         </div>

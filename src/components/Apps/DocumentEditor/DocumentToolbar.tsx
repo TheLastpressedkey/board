@@ -17,9 +17,14 @@ interface DocumentToolbarProps {
     quote: () => void;
   };
   themeColors: any;
+  isTerminalTheme: boolean;
+  bgHeader: string;
+  textMuted: string;
+  borderColor: string;
+  bgHover: string;
 }
 
-export function DocumentToolbar({ onAction, themeColors }: DocumentToolbarProps) {
+export function DocumentToolbar({ onAction, themeColors, isTerminalTheme, bgHeader, textMuted, borderColor, bgHover }: DocumentToolbarProps) {
   const toolbarGroups = [
     {
       name: 'Titres',
@@ -55,34 +60,36 @@ export function DocumentToolbar({ onAction, themeColors }: DocumentToolbarProps)
   ];
 
   return (
-    <div 
-      className="p-3 border-b border-gray-700/50 flex items-center gap-4 overflow-x-auto"
-      style={{ backgroundColor: themeColors.menuBg }}
+    <div
+      className="p-3 flex items-center gap-4 overflow-x-auto analytics-scrollbar"
+      style={{ backgroundColor: bgHeader, borderBottom: `1px solid ${borderColor}` }}
     >
       {toolbarGroups.map((group, groupIndex) => (
         <div key={group.name} className="flex items-center gap-1">
           {groupIndex > 0 && (
-            <div className="w-px h-6 bg-gray-600 mx-2" />
+            <div className="w-px h-6 mx-2" style={{ backgroundColor: borderColor }} />
           )}
           {group.tools.map((tool, toolIndex) => (
             <button
               key={toolIndex}
               onClick={tool.action}
-              className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors group"
+              className="p-2 rounded-lg transition-colors group"
+              style={{ backgroundColor: bgHover }}
               title={tool.tooltip}
               onMouseDown={(e) => e.stopPropagation()}
             >
-              <tool.icon className="w-4 h-4 text-gray-400 group-hover:text-white" />
+              <tool.icon className="w-4 h-4" style={{ color: textMuted }} />
             </button>
           ))}
         </div>
       ))}
 
       {/* Code Block Button */}
-      <div className="w-px h-6 bg-gray-600 mx-2" />
+      <div className="w-px h-6 mx-2" style={{ backgroundColor: borderColor }} />
       <button
         onClick={onAction.codeBlock}
-        className="px-3 py-1 text-xs bg-gray-700/50 hover:bg-gray-600/50 rounded transition-colors text-gray-300"
+        className="px-3 py-1 text-xs rounded transition-colors"
+        style={{ backgroundColor: bgHover, color: textMuted }}
         title="Bloc de code"
         onMouseDown={(e) => e.stopPropagation()}
       >
