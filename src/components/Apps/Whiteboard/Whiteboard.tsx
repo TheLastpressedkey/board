@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { GripHorizontal, X, Palette, Eraser, Trash2, Download, Pencil } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useCardTheme } from '../../../contexts/CardThemeContext';
 
 interface WhiteboardProps {
   onClose: () => void;
@@ -21,6 +22,8 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
   const [showColorPicker, setShowColorPicker] = useState(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const { themeColors } = useTheme();
+  const { currentCardTheme } = useCardTheme();
+  const isTerminalTheme = currentCardTheme.id === 'terminal';
 
   const colors = ['#ffffff', '#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#000000'];
 
@@ -57,7 +60,7 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
       canvas.width = rect.width;
       canvas.height = rect.height;
 
-      ctx.fillStyle = '#1f2937';
+      ctx.fillStyle = isTerminalTheme ? '#000000' : '#1f2937';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       if (metadata?.drawing) {
@@ -110,7 +113,8 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.strokeStyle = tool === 'eraser' ? '#1f2937' : color;
+    const eraserColor = isTerminalTheme ? '#000000' : '#1f2937';
+    ctx.strokeStyle = tool === 'eraser' ? eraserColor : color;
     ctx.lineWidth = tool === 'eraser' ? lineWidth * 3 : lineWidth;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -139,7 +143,7 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.fillStyle = '#1f2937';
+    ctx.fillStyle = isTerminalTheme ? '#000000' : '#1f2937';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     saveDrawing();
   };
@@ -154,65 +158,78 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
     link.click();
   };
 
+  const bgMain = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(17, 24, 39)';
+  const bgHeader = isTerminalTheme ? 'rgb(0, 0, 0)' : themeColors.menuBg;
+  const bgButton = isTerminalTheme ? 'rgba(255, 255, 255, 0.1)' : 'rgb(55, 65, 81)';
+  const bgButtonHover = isTerminalTheme ? 'rgba(255, 255, 255, 0.15)' : 'rgba(55, 65, 81, 0.5)';
+  const textColor = isTerminalTheme ? 'rgb(255, 255, 255)' : 'white';
+  const textMuted = isTerminalTheme ? 'rgba(255, 255, 255, 0.7)' : 'rgb(209, 213, 219)';
+  const borderColor = isTerminalTheme ? 'rgba(255, 255, 255, 0.3)' : 'rgba(55, 65, 81, 0.5)';
+  const primaryColor = isTerminalTheme ? 'rgb(255, 255, 255)' : themeColors.primary;
+
   return (
-    <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
+    <div className="flex flex-col h-full rounded-lg overflow-hidden" style={{ backgroundColor: bgMain }}>
       <div
-        className="p-3 border-b border-gray-700/50 flex items-center justify-between"
-        style={{ backgroundColor: themeColors.menuBg }}
+        className="p-3 flex items-center justify-between"
+        style={{ backgroundColor: bgHeader, borderBottom: `1px solid ${borderColor}` }}
       >
         <div
           className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
           onMouseDown={onDragStart}
         >
-          <GripHorizontal className="w-5 h-5 text-gray-500" />
+          <GripHorizontal className="w-5 h-5" style={{ color: textMuted }} />
           <Pencil
             className="w-5 h-5"
-            style={{ color: themeColors.primary }}
+            style={{ color: primaryColor }}
           />
-          <h2 className="text-lg font-semibold text-white">Whiteboard</h2>
+          <h2 className="text-lg font-semibold" style={{ color: textColor }}>Whiteboard</h2>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={() => setTool('pen')}
-            className={`p-2 rounded-lg transition-colors ${
-              tool === 'pen' ? 'bg-gray-700' : 'hover:bg-gray-700/50'
-            }`}
+            className="p-2 rounded-lg transition-colors"
+            style={{ backgroundColor: tool === 'pen' ? bgButton : 'transparent' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = bgButtonHover}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = tool === 'pen' ? bgButton : 'transparent'}
             onMouseDown={(e) => e.stopPropagation()}
             title="Pen"
           >
-            <Pencil className="w-4 h-4 text-gray-300" />
+            <Pencil className="w-4 h-4" style={{ color: textMuted }} />
           </button>
 
           <button
             onClick={() => setTool('eraser')}
-            className={`p-2 rounded-lg transition-colors ${
-              tool === 'eraser' ? 'bg-gray-700' : 'hover:bg-gray-700/50'
-            }`}
+            className="p-2 rounded-lg transition-colors"
+            style={{ backgroundColor: tool === 'eraser' ? bgButton : 'transparent' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = bgButtonHover}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = tool === 'eraser' ? bgButton : 'transparent'}
             onMouseDown={(e) => e.stopPropagation()}
             title="Eraser"
           >
-            <Eraser className="w-4 h-4 text-gray-300" />
+            <Eraser className="w-4 h-4" style={{ color: textMuted }} />
           </button>
 
           <div className="relative" ref={colorPickerRef}>
             <button
               onClick={() => setShowColorPicker(!showColorPicker)}
-              className="p-2 rounded-lg hover:bg-gray-700/50 transition-colors flex items-center gap-2"
+              className="p-2 rounded-lg transition-colors flex items-center gap-2"
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = bgButtonHover}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               onMouseDown={(e) => e.stopPropagation()}
               title="Color"
             >
-              <Palette className="w-4 h-4 text-gray-300" />
+              <Palette className="w-4 h-4" style={{ color: textMuted }} />
               <div
-                className="w-5 h-5 rounded border-2 border-gray-600"
-                style={{ backgroundColor: color }}
+                className="w-5 h-5 rounded"
+                style={{ backgroundColor: color, border: `2px solid ${borderColor}` }}
               />
             </button>
 
             {showColorPicker && (
               <div
-                className="absolute left-0 top-full mt-1 p-2 rounded-lg shadow-xl border border-gray-700 flex gap-1.5 z-50"
-                style={{ backgroundColor: themeColors.menuBg }}
+                className="absolute left-0 top-full mt-1 p-2 rounded-lg shadow-xl flex gap-1.5 z-50"
+                style={{ backgroundColor: bgHeader, border: `1px solid ${borderColor}` }}
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 {colors.map((c) => (
@@ -222,10 +239,11 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
                       setColor(c);
                       setShowColorPicker(false);
                     }}
-                    className={`w-7 h-7 rounded transition-all hover:scale-110 ${
-                      color === c ? 'ring-2 ring-white' : ''
-                    }`}
-                    style={{ backgroundColor: c }}
+                    className="w-7 h-7 rounded transition-all hover:scale-110"
+                    style={{
+                      backgroundColor: c,
+                      border: color === c ? `2px solid ${primaryColor}` : 'none'
+                    }}
                     title={c}
                   />
                 ))}
@@ -242,38 +260,44 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
               onChange={(e) => setLineWidth(parseInt(e.target.value))}
               className="brush-slider"
               style={{
-                '--slider-color': themeColors.primary
+                '--slider-color': primaryColor
               } as React.CSSProperties}
               onMouseDown={(e) => e.stopPropagation()}
               title="Line width"
             />
-            <span className="text-xs text-gray-400 w-6 text-center">{lineWidth}</span>
+            <span className="text-xs w-6 text-center" style={{ color: textMuted }}>{lineWidth}</span>
           </div>
 
           <button
             onClick={clearCanvas}
-            className="p-2 rounded-lg hover:bg-gray-700/50 transition-colors"
+            className="p-2 rounded-lg transition-colors"
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = bgButtonHover}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             onMouseDown={(e) => e.stopPropagation()}
             title="Clear canvas"
           >
-            <Trash2 className="w-4 h-4 text-gray-300" />
+            <Trash2 className="w-4 h-4" style={{ color: textMuted }} />
           </button>
 
           <button
             onClick={downloadDrawing}
-            className="p-2 rounded-lg hover:bg-gray-700/50 transition-colors"
+            className="p-2 rounded-lg transition-colors"
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = bgButtonHover}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             onMouseDown={(e) => e.stopPropagation()}
             title="Download"
           >
-            <Download className="w-4 h-4 text-gray-300" />
+            <Download className="w-4 h-4" style={{ color: textMuted }} />
           </button>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-700/50 transition-colors"
+            className="p-2 rounded-lg transition-colors"
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = bgButtonHover}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <X className="w-4 h-4 text-gray-400" />
+            <X className="w-4 h-4" style={{ color: textMuted }} />
           </button>
         </div>
       </div>
