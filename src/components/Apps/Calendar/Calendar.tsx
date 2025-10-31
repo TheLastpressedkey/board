@@ -6,6 +6,7 @@ import { EventForm } from './EventForm';
 import { EventList } from './EventList';
 import { useCalendar } from './useCalendar';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useCardTheme } from '../../../contexts/CardThemeContext';
 import { Event } from './types';
 
 interface CalendarProps {
@@ -18,6 +19,8 @@ interface CalendarProps {
 
 export function Calendar({ onClose, metadata, onDataChange, cardId, onDragStart }: CalendarProps) {
   const { themeColors } = useTheme();
+  const { currentCardTheme } = useCardTheme();
+  const isTerminalTheme = currentCardTheme.id === 'terminal';
   const [showEventForm, setShowEventForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showSidebar, setShowSidebar] = useState(true);
@@ -80,49 +83,59 @@ export function Calendar({ onClose, metadata, onDataChange, cardId, onDragStart 
     }
   };
 
+  const bgMain = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(17, 24, 39)';
+  const bgHeader = isTerminalTheme ? 'rgb(0, 0, 0)' : themeColors.menuBg;
+  const textColor = isTerminalTheme ? 'rgb(255, 255, 255)' : 'white';
+  const textMuted = isTerminalTheme ? 'rgba(255, 255, 255, 0.5)' : 'rgb(156, 163, 175)';
+  const borderColor = isTerminalTheme ? 'rgba(255, 255, 255, 0.3)' : 'rgba(75, 85, 99, 0.5)';
+  const iconColor = isTerminalTheme ? 'rgb(255, 255, 255)' : themeColors.primary;
+
   return (
-    <div 
-      className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden" 
+    <div
+      className="flex flex-col h-full rounded-lg overflow-hidden"
       ref={containerRef}
+      style={{ backgroundColor: bgMain }}
     >
       {/* Header */}
-      <div 
-        className="p-4 border-b border-gray-700/50"
-        style={{ backgroundColor: themeColors.menuBg }}
+      <div
+        className="p-4"
+        style={{ backgroundColor: bgHeader, borderBottom: `1px solid ${borderColor}` }}
       >
         <div className="flex items-center justify-between">
-          <div 
+          <div
             className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
             onMouseDown={onDragStart}
           >
-            <GripHorizontal className="w-5 h-5 text-gray-500" />
-            <CalendarIcon 
+            <GripHorizontal className="w-5 h-5" style={{ color: textMuted }} />
+            <CalendarIcon
               className="w-5 h-5"
-              style={{ color: themeColors.primary }}
+              style={{ color: iconColor }}
             />
-            <h2 className="text-lg font-semibold text-white">Calendar</h2>
+            <h2 className="text-lg font-semibold" style={{ color: textColor }}>Calendar</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-700/50 rounded-lg transition-colors"
+            className="p-1 rounded-lg transition-colors"
+            style={{ color: textMuted }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <X className="w-5 h-5 text-gray-400" />
+            <X className="w-5 h-5" />
           </button>
         </div>
       </div>
 
       {/* Calendar Content */}
       <div className="flex-1 flex gap-4 p-4 min-h-0">
-        <div 
-          className="flex-1 flex flex-col min-h-0" 
+        <div
+          className="flex-1 flex flex-col min-h-0"
           ref={calendarRef}
-          style={{ backgroundColor: themeColors.menuBg }}
+          style={{ backgroundColor: bgHeader }}
         >
           <CalendarHeader
             currentDate={currentDate}
             onNavigate={navigateMonth}
             themeColors={themeColors}
+            isTerminalTheme={isTerminalTheme}
           />
           <CalendarGrid
             currentDate={currentDate}
@@ -130,13 +143,14 @@ export function Calendar({ onClose, metadata, onDataChange, cardId, onDragStart 
             onSelectDate={handleDateSelect}
             selectedDate={selectedDate}
             themeColors={themeColors}
+            isTerminalTheme={isTerminalTheme}
           />
         </div>
-        
+
         {showSidebar && (
-          <div 
+          <div
             className="w-[280px] flex-shrink-0 flex flex-col min-h-0"
-            style={{ backgroundColor: themeColors.menuBg }}
+            style={{ backgroundColor: bgHeader }}
           >
             <EventList
               events={events}
@@ -144,6 +158,7 @@ export function Calendar({ onClose, metadata, onDataChange, cardId, onDragStart 
               onUpdateEvent={handleUpdateEvent}
               calendarHeight={calendarRef.current?.clientHeight}
               themeColors={themeColors}
+              isTerminalTheme={isTerminalTheme}
             />
           </div>
         )}
@@ -159,6 +174,7 @@ export function Calendar({ onClose, metadata, onDataChange, cardId, onDragStart 
             setSelectedDate(null);
           }}
           themeColors={themeColors}
+          isTerminalTheme={isTerminalTheme}
         />
       )}
     </div>

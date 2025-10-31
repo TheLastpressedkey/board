@@ -9,14 +9,16 @@ interface CalendarGridProps {
   onSelectDate: (date: Date) => void;
   selectedDate: Date | null;
   themeColors: any;
+  isTerminalTheme: boolean;
 }
 
-export function CalendarGrid({ 
-  currentDate, 
-  events, 
-  onSelectDate, 
+export function CalendarGrid({
+  currentDate,
+  events,
+  onSelectDate,
   selectedDate,
-  themeColors 
+  themeColors,
+  isTerminalTheme
 }: CalendarGridProps) {
   const [hoveredDate, setHoveredDate] = useState<number | null>(null);
   const daysInMonth = getDaysInMonth(currentDate);
@@ -34,6 +36,12 @@ export function CalendarGrid({
     });
   };
 
+  const textMuted = isTerminalTheme ? 'rgba(255, 255, 255, 0.5)' : 'rgb(156, 163, 175)';
+  const textColor = isTerminalTheme ? 'rgb(255, 255, 255)' : 'rgb(209, 213, 219)';
+  const hoverBg = isTerminalTheme ? 'rgba(255, 255, 255, 0.1)' : 'rgb(55, 65, 81)';
+  const primaryColor = isTerminalTheme ? 'rgb(255, 255, 255)' : themeColors.primary;
+  const borderColor = isTerminalTheme ? 'rgba(255, 255, 255, 0.3)' : 'transparent';
+
   return (
     <div className="rounded-lg p-4">
       {/* Weekday headers */}
@@ -41,7 +49,8 @@ export function CalendarGrid({
         {days.map(day => (
           <div
             key={day}
-            className="text-center text-sm font-medium text-gray-400 py-2"
+            className="text-center text-sm font-medium py-2"
+            style={{ color: textMuted }}
           >
             {day}
           </div>
@@ -64,15 +73,13 @@ export function CalendarGrid({
               key={i}
               className={`
                 relative aspect-square rounded-lg transition-all duration-200
-                ${isCurrentMonth ? 'hover:bg-gray-700' : 'opacity-30'}
-                ${isToday ? 'bg-opacity-20' : ''}
-                ${isSelected ? 'bg-opacity-40 ring-2' : ''}
-                ${!isCurrentMonth && 'pointer-events-none'}
+                ${!isCurrentMonth && 'opacity-30 pointer-events-none'}
                 group
               `}
               style={{
-                backgroundColor: isToday || isSelected ? themeColors.primary : undefined,
-                borderColor: isSelected ? themeColors.primary : undefined
+                backgroundColor: isToday || isSelected ? primaryColor : undefined,
+                border: isTerminalTheme ? `1px solid ${borderColor}` : 'none',
+                opacity: isToday || isSelected ? (isTerminalTheme ? 0.2 : 0.2) : (isCurrentMonth ? 1 : 0.3)
               }}
               onMouseEnter={() => setHoveredDate(i)}
               onMouseLeave={() => setHoveredDate(null)}
@@ -81,24 +88,24 @@ export function CalendarGrid({
                 onClick={() => onSelectDate(date)}
                 className="w-full h-full p-2 flex flex-col items-center justify-start"
               >
-                <span className={`
-                  text-sm font-medium
-                  ${isToday || isSelected ? 'text-white' : 'text-gray-300'}
-                `}>
+                <span
+                  className="text-sm font-medium"
+                  style={{ color: isToday || isSelected ? 'white' : textColor }}
+                >
                   {date.getDate()}
                 </span>
-                
+
                 {dayEvents.length > 0 && (
                   <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
                     {dayEvents.slice(0, 3).map(event => (
                       <div
                         key={event.id}
                         className="w-1 h-1 rounded-full"
-                        style={{ backgroundColor: themeColors.primary }}
+                        style={{ backgroundColor: primaryColor }}
                       />
                     ))}
                     {dayEvents.length > 3 && (
-                      <span className="text-xs" style={{ color: themeColors.primary }}>
+                      <span className="text-xs" style={{ color: primaryColor }}>
                         +{dayEvents.length - 3}
                       </span>
                     )}
@@ -110,8 +117,11 @@ export function CalendarGrid({
               {isCurrentMonth && isHovered && (
                 <button
                   onClick={() => onSelectDate(date)}
-                  className="absolute top-1 right-1 p-1 rounded-full text-white transform transition-all duration-200"
-                  style={{ backgroundColor: themeColors.primary }}
+                  className="absolute top-1 right-1 p-1 rounded-full transform transition-all duration-200"
+                  style={{
+                    backgroundColor: primaryColor,
+                    color: isTerminalTheme ? 'rgb(0, 0, 0)' : 'white'
+                  }}
                 >
                   <Plus className="w-3 h-3" />
                 </button>

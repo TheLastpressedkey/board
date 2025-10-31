@@ -9,9 +9,10 @@ interface EventFormProps {
   onClose: () => void;
   event?: Event;
   themeColors: any;
+  isTerminalTheme: boolean;
 }
 
-export function EventForm({ selectedDate, onSubmit, onClose, event, themeColors }: EventFormProps) {
+export function EventForm({ selectedDate, onSubmit, onClose, event, themeColors, isTerminalTheme }: EventFormProps) {
   const [title, setTitle] = useState(event?.title || '');
   const [description, setDescription] = useState(event?.description || '');
   const [date, setDate] = useState(
@@ -39,30 +40,43 @@ export function EventForm({ selectedDate, onSubmit, onClose, event, themeColors 
     }
   };
 
+  const bgModal = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(31, 41, 55)';
+  const bgInput = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(55, 65, 81)';
+  const textColor = isTerminalTheme ? 'rgb(255, 255, 255)' : 'white';
+  const textMuted = isTerminalTheme ? 'rgba(255, 255, 255, 0.5)' : 'rgb(209, 213, 219)';
+  const borderColor = isTerminalTheme ? 'rgba(255, 255, 255, 0.3)' : 'transparent';
+  const primaryColor = isTerminalTheme ? 'rgb(255, 255, 255)' : themeColors.primary;
+  const hoverBg = isTerminalTheme ? 'rgba(255, 255, 255, 0.1)' : 'rgb(55, 65, 81)';
+
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
       onClick={handleOverlayClick}
     >
-      <div 
-        className="bg-gray-800 rounded-lg p-6 w-full max-w-md"
+      <div
+        className="rounded-lg p-6 w-full max-w-md"
+        style={{
+          backgroundColor: bgModal,
+          border: isTerminalTheme ? `1px solid ${borderColor}` : 'none'
+        }}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-white">
+          <h3 className="text-lg font-semibold" style={{ color: textColor }}>
             {event ? 'Edit Event' : 'New Event'}
           </h3>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-700 rounded-full"
+            className="p-1 rounded-full"
+            style={{ color: textMuted }}
           >
-            <X className="w-5 h-5 text-gray-400" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">
+            <label htmlFor="title" className="block text-sm font-medium mb-1" style={{ color: textMuted }}>
               Title
             </label>
             <input
@@ -70,27 +84,39 @@ export function EventForm({ selectedDate, onSubmit, onClose, event, themeColors 
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: bgInput,
+                color: textColor,
+                border: `1px solid ${borderColor}`,
+                '--tw-ring-color': primaryColor
+              } as React.CSSProperties}
               required
               autoFocus
             />
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-1">
+            <label htmlFor="description" className="block text-sm font-medium mb-1" style={{ color: textMuted }}>
               Description
             </label>
             <textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none h-24"
+              className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 resize-none h-24"
+              style={{
+                backgroundColor: bgInput,
+                color: textColor,
+                border: `1px solid ${borderColor}`,
+                '--tw-ring-color': primaryColor
+              } as React.CSSProperties}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="date" className="block text-sm font-medium text-gray-300 mb-1">
+              <label htmlFor="date" className="block text-sm font-medium mb-1" style={{ color: textMuted }}>
                 Date
               </label>
               <input
@@ -98,13 +124,19 @@ export function EventForm({ selectedDate, onSubmit, onClose, event, themeColors 
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2"
+                style={{
+                  backgroundColor: bgInput,
+                  color: textColor,
+                  border: `1px solid ${borderColor}`,
+                  '--tw-ring-color': primaryColor
+                } as React.CSSProperties}
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="time" className="block text-sm font-medium text-gray-300 mb-1">
+              <label htmlFor="time" className="block text-sm font-medium mb-1" style={{ color: textMuted }}>
                 Time
               </label>
               <input
@@ -112,7 +144,13 @@ export function EventForm({ selectedDate, onSubmit, onClose, event, themeColors 
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2"
+                style={{
+                  backgroundColor: bgInput,
+                  color: textColor,
+                  border: `1px solid ${borderColor}`,
+                  '--tw-ring-color': primaryColor
+                } as React.CSSProperties}
                 required
               />
             </div>
@@ -122,13 +160,18 @@ export function EventForm({ selectedDate, onSubmit, onClose, event, themeColors 
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm text-gray-300 hover:text-white"
+              className="px-4 py-2 text-sm"
+              style={{ color: textMuted }}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm bg-pink-500 text-white rounded-lg hover:bg-pink-600"
+              className="px-4 py-2 text-sm rounded-lg"
+              style={{
+                backgroundColor: primaryColor,
+                color: isTerminalTheme ? 'rgb(0, 0, 0)' : 'white'
+              }}
             >
               {event ? 'Update' : 'Create'}
             </button>
