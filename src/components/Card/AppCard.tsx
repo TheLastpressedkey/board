@@ -10,6 +10,7 @@ import { EmailApp } from '../Apps/Email/EmailApp';
 import { DocumentManager } from '../Apps/DocumentEditor/DocumentManager';
 import { FileManager } from '../Apps/FileManager/FileManager';
 import { useTheme } from '../../contexts/ThemeContext';
+import { GripHorizontal, X, AlertCircle } from 'lucide-react';
 
 interface AppCardContentProps {
   appType: string;
@@ -75,8 +76,45 @@ export function AppCardContent({
         return <FileManager onClose={onClose} onDragStart={onDragStart} />;
       default:
         return (
-          <div className="h-full flex items-center justify-center text-gray-500">
-            App not found
+          <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
+            {/* Header avec drag & drop */}
+            <div
+              className="p-4 border-b border-gray-700/50"
+              style={{ backgroundColor: themeColors.menuBg }}
+            >
+              <div className="flex items-center justify-between">
+                <div
+                  className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
+                  onMouseDown={onDragStart}
+                >
+                  <GripHorizontal className="w-5 h-5 text-gray-500" />
+                  <AlertCircle
+                    className="w-5 h-5"
+                    style={{ color: themeColors.primary }}
+                  />
+                  <h2 className="text-lg font-semibold text-white">App non disponible</h2>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="p-1 hover:bg-gray-700/50 rounded-lg transition-colors"
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+            </div>
+
+            {/* Contenu */}
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+              <AlertCircle className="w-16 h-16 text-gray-600 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-300 mb-2">Application non trouvée</h3>
+              <p className="text-gray-500 mb-4">
+                L'application "{appType}" n'est pas disponible ou n'existe pas.
+              </p>
+              <p className="text-sm text-gray-600">
+                Vous pouvez déplacer ou supprimer cette carte en utilisant la poignée en haut à gauche.
+              </p>
+            </div>
           </div>
         );
     }
