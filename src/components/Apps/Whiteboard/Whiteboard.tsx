@@ -32,7 +32,16 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
 
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect();
-      const oldImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      let oldImageData = null;
+
+      if (canvas.width > 0 && canvas.height > 0) {
+        try {
+          oldImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        } catch (e) {
+          oldImageData = null;
+        }
+      }
+
       canvas.width = rect.width;
       canvas.height = rect.height;
 
@@ -45,8 +54,12 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
           ctx.drawImage(img, 0, 0);
         };
         img.src = metadata.drawing;
-      } else {
-        ctx.putImageData(oldImageData, 0, 0);
+      } else if (oldImageData) {
+        try {
+          ctx.putImageData(oldImageData, 0, 0);
+        } catch (e) {
+          // Ignore
+        }
       }
     };
 
