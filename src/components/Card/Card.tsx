@@ -172,51 +172,57 @@ export function Card({
   return (
     <>
       <div
-        className={`card ${isClockApp ? '' : 'bg-white'} rounded-lg shadow-lg select-none flex flex-col overflow-hidden
+        className={`card ${isClockApp ? '' : isTextCard ? 'bg-black' : 'bg-white'} select-none flex flex-col overflow-hidden
           ${!isMobile && isDragging ? 'cursor-grabbing shadow-xl z-50' : 'cursor-default shadow-lg z-10'}
           ${!isMobile && isResizing ? 'cursor-nwse-resize' : ''}
-          ${isAppCard || isUserApp ? 'app-card' : ''}`}
+          ${isAppCard || isUserApp ? 'app-card' : ''}
+          ${isTextCard ? 'border border-white/30' : 'rounded-lg shadow-lg'}`}
         style={{
           ...cardStyle as any,
-          ...(currentCardTheme.bodyStyle && bodyStyle),
-          ...(isClockApp && { backgroundColor: 'transparent', boxShadow: 'none' })
+          ...(currentCardTheme.bodyStyle && !isTextCard && bodyStyle),
+          ...(isClockApp && { backgroundColor: 'transparent', boxShadow: 'none' }),
+          ...(isTextCard && { boxShadow: 'none' })
         }}
         onMouseDown={!isMobile && !isAppCard ? handleMouseDown : undefined}
       >
         {!isAppCard && (
-          <div 
-            className="flex-shrink-0 flex justify-between items-center px-4 py-2 border-b border-gray-200"
-            style={headerStyle}
+          <div
+            className={`flex-shrink-0 flex justify-between items-center px-3 py-2 ${
+              isTextCard ? 'border-b border-white/30' : 'border-b border-gray-200'
+            }`}
+            style={isTextCard ? { backgroundColor: 'black' } : headerStyle}
             onMouseDown={!isMobile ? handleMouseDown : undefined}
           >
-            <div 
-              className="text-sm font-medium truncate flex-1 mr-2"
-              style={{ color: headerStyle.textColor || 'rgb(75, 85, 99)' }}
+            <div
+              className="text-xs truncate flex-1 mr-2"
+              style={{ color: isTextCard ? 'white' : (headerStyle.textColor || 'rgb(75, 85, 99)') }}
             >
-              {(isTextCard || isLinkCard || isWebEmbed) && card.metadata?.title 
-                ? card.metadata.title 
-                : card.type === 'userapp' 
-                ? 'Custom App' 
+              {(isTextCard || isLinkCard || isWebEmbed) && card.metadata?.title
+                ? card.metadata.title
+                : card.type === 'userapp'
+                ? 'Custom App'
                 : isWebEmbed
                 ? 'Web Embed'
                 : `${card.id.slice(0, 8)}`}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               {isUserApp && (
                 <button
                   onClick={() => setIsEditing(!isEditing)}
-                  className="p-1 hover:bg-black/10 rounded-full flex-shrink-0 transition-colors"
+                  className={`p-1 rounded flex-shrink-0 transition-colors ${
+                    isTextCard ? 'hover:bg-white/10' : 'hover:bg-black/10'
+                  }`}
                   onMouseDown={(e) => e.stopPropagation()}
                 >
                   {isEditing ? (
-                    <Eye 
-                      className="w-4 h-4" 
-                      style={{ color: headerStyle.iconColor || 'rgb(107, 114, 128)' }}
+                    <Eye
+                      className="w-3.5 h-3.5"
+                      style={{ color: isTextCard ? 'white' : (headerStyle.iconColor || 'rgb(107, 114, 128)') }}
                     />
                   ) : (
-                    <Code 
-                      className="w-4 h-4" 
-                      style={{ color: headerStyle.iconColor || 'rgb(107, 114, 128)' }}
+                    <Code
+                      className="w-3.5 h-3.5"
+                      style={{ color: isTextCard ? 'white' : (headerStyle.iconColor || 'rgb(107, 114, 128)') }}
                     />
                   )}
                 </button>
@@ -224,35 +230,41 @@ export function Card({
               {(isLinkCard || isTextCard || isWebEmbed) && (
                 <button
                   onClick={() => setIsEditingMetadata(true)}
-                  className="p-1 hover:bg-black/10 rounded-full flex-shrink-0 transition-colors"
+                  className={`p-1 rounded flex-shrink-0 transition-colors ${
+                    isTextCard ? 'hover:bg-white/10' : 'hover:bg-black/10'
+                  }`}
                   onMouseDown={(e) => e.stopPropagation()}
                 >
-                  <Pencil 
-                    className="w-4 h-4" 
-                    style={{ color: headerStyle.iconColor || 'rgb(107, 114, 128)' }}
+                  <Pencil
+                    className="w-3.5 h-3.5"
+                    style={{ color: isTextCard ? 'white' : (headerStyle.iconColor || 'rgb(107, 114, 128)') }}
                   />
                 </button>
               )}
               {isWebEmbed && (
                 <button
                   onClick={() => setShowWebEmbedSettings(true)}
-                  className="p-1 hover:bg-black/10 rounded-full flex-shrink-0 transition-colors"
+                  className={`p-1 rounded flex-shrink-0 transition-colors ${
+                    isTextCard ? 'hover:bg-white/10' : 'hover:bg-black/10'
+                  }`}
                   onMouseDown={(e) => e.stopPropagation()}
                 >
-                  <Settings 
-                    className="w-4 h-4" 
-                    style={{ color: headerStyle.iconColor || 'rgb(107, 114, 128)' }}
+                  <Settings
+                    className="w-3.5 h-3.5"
+                    style={{ color: isTextCard ? 'white' : (headerStyle.iconColor || 'rgb(107, 114, 128)') }}
                   />
                 </button>
               )}
               <button
                 onClick={() => onDelete(card.id)}
-                className="p-1 hover:bg-black/10 rounded-full flex-shrink-0 transition-colors"
+                className={`p-1 rounded flex-shrink-0 transition-colors ${
+                  isTextCard ? 'hover:bg-white/10' : 'hover:bg-black/10'
+                }`}
                 onMouseDown={(e) => e.stopPropagation()}
               >
-                <X 
-                  className="w-4 h-4" 
-                  style={{ color: headerStyle.iconColor || 'rgb(107, 114, 128)' }}
+                <X
+                  className="w-3.5 h-3.5"
+                  style={{ color: isTextCard ? 'white' : (headerStyle.iconColor || 'rgb(107, 114, 128)') }}
                 />
               </button>
             </div>
