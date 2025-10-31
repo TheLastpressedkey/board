@@ -11,6 +11,7 @@ import { DocumentManager } from '../Apps/DocumentEditor/DocumentManager';
 import { FileManager } from '../Apps/FileManager/FileManager';
 import { Whiteboard } from '../Apps/Whiteboard/Whiteboard';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useCardTheme } from '../../contexts/CardThemeContext';
 import { GripHorizontal, X, AlertCircle } from 'lucide-react';
 
 interface AppCardContentProps {
@@ -23,9 +24,9 @@ interface AppCardContentProps {
   cardId?: string;
 }
 
-export function AppCardContent({ 
-  appType, 
-  onClose, 
+export function AppCardContent({
+  appType,
+  onClose,
   isMobile = false,
   metadata,
   onDataChange,
@@ -33,6 +34,8 @@ export function AppCardContent({
   cardId
 }: AppCardContentProps) {
   const { themeColors } = useTheme();
+  const { currentCardTheme } = useCardTheme();
+  const isTerminalTheme = currentCardTheme.id === 'terminal';
 
   const getContainerStyle = () => {
     if (appType === 'clock') {
@@ -44,10 +47,15 @@ export function AppCardContent({
         overflow: 'hidden'
       };
     }
+
+    const bgColor = isTerminalTheme
+      ? currentCardTheme.bodyStyle?.background || 'rgb(0, 0, 0)'
+      : themeColors.menuBg;
+
     return {
       width: '100%',
       height: '100%',
-      backgroundColor: themeColors.menuBg,
+      backgroundColor: bgColor,
       borderRadius: '0.5rem',
       overflow: 'hidden'
     };

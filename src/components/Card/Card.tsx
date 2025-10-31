@@ -106,19 +106,31 @@ export function Card({
   const renderContent = () => {
     if (isAppCard) {
       const appType = card.type.replace('app-', '');
-      
+
       if (appType === 'analytics') {
-        return <Analytics onClose={() => onDelete(card.id)} onDragStart={handleMouseDown} />;
+        const containerStyle = currentCardTheme.id === 'terminal' && currentCardTheme.bodyStyle
+          ? { background: currentCardTheme.bodyStyle.background }
+          : {};
+        return (
+          <div style={containerStyle} className="h-full">
+            <Analytics onClose={() => onDelete(card.id)} onDragStart={handleMouseDown} />
+          </div>
+        );
       }
 
       if (appType === 'kanban') {
+        const containerStyle = currentCardTheme.id === 'terminal' && currentCardTheme.bodyStyle
+          ? { background: currentCardTheme.bodyStyle.background }
+          : {};
         return (
-          <KanbanApp 
-            onClose={() => onDelete(card.id)} 
-            onDragStart={handleMouseDown}
-            metadata={card.metadata}
-            onDataChange={handleDataChange}
-          />
+          <div style={containerStyle} className="h-full">
+            <KanbanApp
+              onClose={() => onDelete(card.id)}
+              onDragStart={handleMouseDown}
+              metadata={card.metadata}
+              onDataChange={handleDataChange}
+            />
+          </div>
         );
       }
 
