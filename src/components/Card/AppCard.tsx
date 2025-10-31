@@ -10,7 +10,6 @@ import { EmailApp } from '../Apps/Email/EmailApp';
 import { DocumentManager } from '../Apps/DocumentEditor/DocumentManager';
 import { FileManager } from '../Apps/FileManager/FileManager';
 import { Whiteboard } from '../Apps/Whiteboard/Whiteboard';
-import { PasswordManager } from '../Apps/PasswordManager/PasswordManager';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCardTheme } from '../../contexts/CardThemeContext';
 import { GripHorizontal, X, AlertCircle } from 'lucide-react';
@@ -86,8 +85,6 @@ export function AppCardContent({
         return <FileManager onClose={onClose} onDragStart={onDragStart} />;
       case 'whiteboard':
         return <Whiteboard onClose={onClose} onDragStart={onDragStart} metadata={metadata} onDataChange={onDataChange} cardId={cardId} />;
-      case 'password-manager':
-        return <PasswordManager onClose={onClose} onDragStart={onDragStart} />;
       default:
         return (
           <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
