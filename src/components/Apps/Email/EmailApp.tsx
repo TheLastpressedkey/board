@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, GripHorizontal, X, Send, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useCardTheme } from '../../../contexts/CardThemeContext';
 import { email } from '../../../services/email';
 
 interface EmailAppProps {
@@ -18,6 +19,8 @@ export function EmailApp({ onClose, onDragStart }: EmailAppProps) {
   const [showFallbackOption, setShowFallbackOption] = useState(false);
   const [lastFailedMethod, setLastFailedMethod] = useState<string>('');
   const { themeColors } = useTheme();
+  const { currentCardTheme } = useCardTheme();
+  const isTerminalTheme = currentCardTheme.id === 'terminal';
 
   const handleSubmit = async (e: React.FormEvent, forcePhpMail = false) => {
     e.preventDefault();
@@ -61,31 +64,40 @@ export function EmailApp({ onClose, onDragStart }: EmailAppProps) {
     handleSubmit(new Event('submit') as any, true);
   };
 
+  const bgMain = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(17, 24, 39)';
+  const bgHeader = isTerminalTheme ? 'rgb(0, 0, 0)' : themeColors.menuBg;
+  const bgInput = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(31, 41, 55)';
+  const textColor = isTerminalTheme ? 'rgb(255, 255, 255)' : 'white';
+  const textMuted = isTerminalTheme ? 'rgba(255, 255, 255, 0.5)' : 'rgb(209, 213, 219)';
+  const borderColor = isTerminalTheme ? 'rgba(255, 255, 255, 0.3)' : 'rgba(55, 65, 81, 0.5)';
+  const primaryColor = isTerminalTheme ? 'rgb(255, 255, 255)' : themeColors.primary;
+
   return (
-    <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
+    <div className="flex flex-col h-full rounded-lg overflow-hidden" style={{ backgroundColor: bgMain }}>
       {/* Header */}
-      <div 
-        className="p-4 border-b border-gray-700/50"
-        style={{ backgroundColor: themeColors.menuBg }}
+      <div
+        className="p-4"
+        style={{ backgroundColor: bgHeader, borderBottom: `1px solid ${borderColor}` }}
       >
         <div className="flex items-center justify-between">
-          <div 
+          <div
             className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
             onMouseDown={onDragStart}
           >
-            <GripHorizontal className="w-5 h-5 text-gray-500" />
-            <Mail 
+            <GripHorizontal className="w-5 h-5" style={{ color: textMuted }} />
+            <Mail
               className="w-5 h-5"
-              style={{ color: themeColors.primary }}
+              style={{ color: primaryColor }}
             />
-            <h2 className="text-lg font-semibold text-white">Email</h2>
+            <h2 className="text-lg font-semibold" style={{ color: textColor }}>Email</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-700/50 rounded-lg transition-colors"
+            className="p-1 rounded-lg transition-colors"
             onMouseDown={(e) => e.stopPropagation()}
+            style={{ color: textMuted }}
           >
-            <X className="w-5 h-5 text-gray-400" />
+            <X className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -94,69 +106,91 @@ export function EmailApp({ onClose, onDragStart }: EmailAppProps) {
       <div className="flex-1 overflow-y-auto p-4">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: textMuted }}>
               To
             </label>
             <input
               type="email"
               value={to}
               onChange={(e) => setTo(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2"
-              style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
+              className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: bgInput,
+                color: textColor,
+                border: `1px solid ${borderColor}`,
+                '--tw-ring-color': primaryColor
+              } as React.CSSProperties}
               required
               placeholder="recipient@example.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: textMuted }}>
               Subject
             </label>
             <input
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2"
-              style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
+              className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: bgInput,
+                color: textColor,
+                border: `1px solid ${borderColor}`,
+                '--tw-ring-color': primaryColor
+              } as React.CSSProperties}
               required
               placeholder="Email subject"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: textMuted }}>
               Message
             </label>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full h-64 px-3 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 resize-none"
-              style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
+              className="w-full h-64 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 resize-none"
+              style={{
+                backgroundColor: bgInput,
+                color: textColor,
+                border: `1px solid ${borderColor}`,
+                '--tw-ring-color': primaryColor
+              } as React.CSSProperties}
               required
               placeholder="Write your message here..."
             />
           </div>
 
           {error && (
-            <div className={`text-sm ${error.startsWith('✅') ? '' : 'text-red-400'}`}>
+            <div className="text-sm" style={{ color: error.startsWith('✅') ? primaryColor : 'rgb(248, 113, 113)' }}>
               {error}
             </div>
           )}
 
           {showFallbackOption && (
-            <div className="bg-yellow-900/20 border border-yellow-600/30 rounded-lg p-3">
-              <div className="flex items-center gap-2 text-yellow-400 text-sm mb-2">
+            <div
+              className="rounded-lg p-3"
+              style={{
+                backgroundColor: isTerminalTheme ? 'rgba(255, 255, 0, 0.1)' : 'rgba(133, 77, 14, 0.2)',
+                border: `1px solid ${isTerminalTheme ? 'rgba(255, 255, 0, 0.3)' : 'rgba(202, 138, 4, 0.3)'}`
+              }}
+            >
+              <div className="flex items-center gap-2 text-sm mb-2" style={{ color: 'rgb(250, 204, 21)' }}>
                 <AlertTriangle className="w-4 h-4" />
                 <span>Erreur {lastFailedMethod}</span>
               </div>
-              <p className="text-gray-300 text-sm mb-3">
+              <p className="text-sm mb-3" style={{ color: textMuted }}>
                 L'envoi via {lastFailedMethod} a échoué. Voulez-vous essayer avec PHP mail ?
               </p>
               <button
                 type="button"
                 onClick={handleRetryWithPhpMail}
                 disabled={sending}
-                className="flex items-center gap-2 px-3 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 disabled:opacity-50"
+                className="flex items-center gap-2 px-3 py-1 text-sm rounded disabled:opacity-50"
+                style={{ backgroundColor: 'rgb(202, 138, 4)', color: 'white' }}
               >
                 <RefreshCw className="w-3 h-3" />
                 Essayer avec PHP mail
@@ -165,9 +199,9 @@ export function EmailApp({ onClose, onDragStart }: EmailAppProps) {
           )}
 
           {success && (
-            <div 
+            <div
               className="text-sm"
-              style={{ color: themeColors.primary }}
+              style={{ color: primaryColor }}
             >
               Email envoyé avec succès !
             </div>
@@ -177,8 +211,11 @@ export function EmailApp({ onClose, onDragStart }: EmailAppProps) {
             <button
               type="submit"
               disabled={sending}
-              className="px-4 py-2 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
-              style={{ backgroundColor: themeColors.primary }}
+              className="px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
+              style={{
+                backgroundColor: primaryColor,
+                color: isTerminalTheme ? 'rgb(0, 0, 0)' : 'white'
+              }}
             >
               {sending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
