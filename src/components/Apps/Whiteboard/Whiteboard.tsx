@@ -18,7 +18,6 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
   const [tool, setTool] = useState<Tool>('pen');
   const [color, setColor] = useState('#ffffff');
   const [lineWidth, setLineWidth] = useState(3);
-  const [showColorPicker, setShowColorPicker] = useState(false);
   const { themeColors } = useTheme();
 
   const colors = ['#ffffff', '#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#000000'];
@@ -183,46 +182,19 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
             <Eraser className="w-4 h-4 text-gray-300" />
           </button>
 
-          <div className="relative">
-            <button
-              onClick={() => setShowColorPicker(!showColorPicker)}
-              className="p-2 rounded-lg hover:bg-gray-700/50 transition-colors"
-              onMouseDown={(e) => e.stopPropagation()}
-              title="Color"
-            >
-              <div className="flex items-center gap-1">
-                <Palette className="w-4 h-4 text-gray-300" />
-                <div
-                  className="w-4 h-4 rounded border border-gray-600"
-                  style={{ backgroundColor: color }}
-                />
-              </div>
-            </button>
-
-            {showColorPicker && (
-              <div
-                className="absolute top-full right-0 mt-2 p-2 rounded-lg shadow-2xl z-10 grid grid-cols-4 gap-1.5 border border-gray-700/50 backdrop-blur-sm"
-                style={{ backgroundColor: themeColors.menuBg }}
+          <div className="flex items-center gap-1">
+            {colors.map((c) => (
+              <button
+                key={c}
+                onClick={() => setColor(c)}
+                className={`w-6 h-6 rounded transition-all hover:opacity-80 border-2 ${
+                  color === c ? 'border-white scale-110' : 'border-transparent'
+                }`}
+                style={{ backgroundColor: c }}
                 onMouseDown={(e) => e.stopPropagation()}
-              >
-                {colors.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => {
-                      setColor(c);
-                      setShowColorPicker(false);
-                    }}
-                    className={`w-7 h-7 rounded transition-all hover:scale-110 relative ${
-                      color === c ? 'ring-2' : ''
-                    }`}
-                    style={{
-                      backgroundColor: c,
-                      ringColor: color === c ? themeColors.primary : undefined
-                    }}
-                  />
-                ))}
-              </div>
-            )}
+                title={c}
+              />
+            ))}
           </div>
 
           <div className="flex items-center gap-2 px-2">
