@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GripHorizontal, X } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useCardTheme } from '../../../contexts/CardThemeContext';
 
 interface ClockProps {
   onClose: () => void;
@@ -12,6 +13,8 @@ export function Clock({ onClose, onDragStart }: ClockProps) {
   const [clockSize, setClockSize] = useState(200);
   const containerRef = useRef<HTMLDivElement>(null);
   const { themeColors } = useTheme();
+  const { currentCardTheme } = useCardTheme();
+  const isTerminalTheme = currentCardTheme.id === 'terminal';
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -50,6 +53,10 @@ export function Clock({ onClose, onDragStart }: ClockProps) {
   const radius = clockSize / 2 - 10;
   const center = clockSize / 2;
 
+  const clockColor = isTerminalTheme ? 'rgb(0, 255, 0)' : themeColors.primary;
+  const bgOverlay = isTerminalTheme ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.2)';
+  const iconColor = isTerminalTheme ? 'rgb(0, 255, 0)' : 'white';
+
   return (
     <div 
       ref={containerRef}
@@ -58,12 +65,12 @@ export function Clock({ onClose, onDragStart }: ClockProps) {
     >
       {/* En-tête avec poignée de déplacement */}
       <div className="absolute top-2 left-2 z-10">
-        <div 
+        <div
           className="flex items-center gap-2 cursor-grab active:cursor-grabbing p-2 rounded-lg"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}
+          style={{ backgroundColor: bgOverlay }}
           onMouseDown={onDragStart}
         >
-          <GripHorizontal className="w-4 h-4 text-white/70" />
+          <GripHorizontal className="w-4 h-4" style={{ color: iconColor, opacity: 0.7 }} />
         </div>
       </div>
 
@@ -72,10 +79,10 @@ export function Clock({ onClose, onDragStart }: ClockProps) {
         <button
           onClick={onClose}
           className="p-2 rounded-lg hover:bg-black/20 transition-colors"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}
+          style={{ backgroundColor: bgOverlay }}
           onMouseDown={(e) => e.stopPropagation()}
         >
-          <X className="w-4 h-4 text-white/70" />
+          <X className="w-4 h-4" style={{ color: iconColor, opacity: 0.7 }} />
         </button>
       </div>
 
@@ -91,8 +98,8 @@ export function Clock({ onClose, onDragStart }: ClockProps) {
             cx={center}
             cy={center}
             r={radius * 0.95}
-            fill="rgba(0, 0, 0, 0.1)"
-            stroke={themeColors.primary}
+            fill={isTerminalTheme ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)'}
+            stroke={clockColor}
             strokeWidth={clockSize / 100}
           />
           
@@ -113,14 +120,14 @@ export function Clock({ onClose, onDragStart }: ClockProps) {
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke={themeColors.primary}
+                  stroke={clockColor}
                   strokeWidth={clockSize / 65}
                 />
                 <text
                   x={textX}
                   y={textY + clockSize / 40}
                   textAnchor="middle"
-                  fill={themeColors.primary}
+                  fill={clockColor}
                   fontSize={clockSize / 14}
                   fontWeight="bold"
                 >
@@ -145,7 +152,7 @@ export function Clock({ onClose, onDragStart }: ClockProps) {
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke={themeColors.primary}
+                  stroke={clockColor}
                   strokeWidth={clockSize / 200}
                   opacity="0.5"
                 />
@@ -159,7 +166,7 @@ export function Clock({ onClose, onDragStart }: ClockProps) {
             y1={center}
             x2={center + (radius * 0.5) * Math.cos((hourAngle - 90) * Math.PI / 180)}
             y2={center + (radius * 0.5) * Math.sin((hourAngle - 90) * Math.PI / 180)}
-            stroke={themeColors.primary}
+            stroke={clockColor}
             strokeWidth={clockSize / 33}
             strokeLinecap="round"
           />
@@ -169,7 +176,7 @@ export function Clock({ onClose, onDragStart }: ClockProps) {
             y1={center}
             x2={center + (radius * 0.7) * Math.cos((minuteAngle - 90) * Math.PI / 180)}
             y2={center + (radius * 0.7) * Math.sin((minuteAngle - 90) * Math.PI / 180)}
-            stroke={themeColors.primary}
+            stroke={clockColor}
             strokeWidth={clockSize / 50}
             strokeLinecap="round"
           />
@@ -179,7 +186,7 @@ export function Clock({ onClose, onDragStart }: ClockProps) {
             y1={center}
             x2={center + (radius * 0.8) * Math.cos((secondAngle - 90) * Math.PI / 180)}
             y2={center + (radius * 0.8) * Math.sin((secondAngle - 90) * Math.PI / 180)}
-            stroke="red"
+            stroke={isTerminalTheme ? 'rgb(255, 0, 0)' : 'red'}
             strokeWidth={clockSize / 100}
             strokeLinecap="round"
           />
@@ -188,7 +195,7 @@ export function Clock({ onClose, onDragStart }: ClockProps) {
             cx={center}
             cy={center}
             r={clockSize / 25}
-            fill={themeColors.primary}
+            fill={clockColor}
           />
         </svg>
       </div>
