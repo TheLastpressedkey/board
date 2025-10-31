@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail, FileText, FolderOpen, Pencil, Lock } from 'lucide-react';
+import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail, FileText, FolderOpen, Pencil } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppStoreProps {
@@ -106,14 +106,6 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
       description: 'Draw, sketch and brainstorm with a digital whiteboard',
       icon: Pencil,
       category: 'Creativity',
-      author: 'Core Apps'
-    },
-    {
-      id: 'password-manager',
-      name: '1PSWD',
-      description: 'Secure password manager with password generator and encryption',
-      icon: Lock,
-      category: 'Security',
       author: 'Core Apps'
     }
   ];

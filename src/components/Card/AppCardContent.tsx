@@ -5,7 +5,6 @@ import { Clock } from '../Apps/Clock/Clock';
 import { TodoList } from '../Apps/TodoList/TodoList';
 import { Calendar } from '../Apps/Calendar/Calendar';
 import { RSSReader } from '../Apps/RSS/RSSReader';
-import { PasswordManager } from '../Apps/PasswordManager/PasswordManager';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppCardContentProps {
@@ -58,8 +57,6 @@ export function AppCardContent({
         return <Calendar onClose={onClose} metadata={metadata} onDataChange={onDataChange} />;
       case 'rss':
         return <RSSReader onClose={onClose} metadata={metadata} onDataChange={onDataChange} />;
-      case 'password-manager':
-        return <PasswordManager />;
       default:
         return (
           <div className="h-full flex items-center justify-center text-gray-500">
