@@ -31,9 +31,9 @@ export function TodoList({ onClose, metadata, onDataChange, cardId, onDragStart 
 
   const bgMain = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(17, 24, 39)';
   const bgHeader = isTerminalTheme ? 'rgb(0, 0, 0)' : themeColors.menuBg;
-  const textColor = isTerminalTheme ? 'rgb(0, 255, 0)' : 'white';
-  const textMuted = isTerminalTheme ? 'rgba(0, 255, 0, 0.5)' : 'rgb(156, 163, 175)';
-  const borderColor = isTerminalTheme ? 'rgba(0, 255, 0, 0.3)' : 'rgba(75, 85, 99, 0.5)';
+  const textColor = isTerminalTheme ? 'rgb(255, 255, 255)' : 'white';
+  const textMuted = isTerminalTheme ? 'rgba(255, 255, 255, 0.5)' : 'rgb(156, 163, 175)';
+  const borderColor = isTerminalTheme ? 'rgba(255, 255, 255, 0.3)' : 'rgba(75, 85, 99, 0.5)';
 
   return (
     <div className="flex flex-col h-full rounded-lg overflow-hidden" style={{ backgroundColor: bgMain }}>
@@ -50,7 +50,7 @@ export function TodoList({ onClose, metadata, onDataChange, cardId, onDragStart 
             <GripHorizontal className="w-5 h-5" style={{ color: textMuted }} />
             <CheckSquare
               className="w-5 h-5"
-              style={{ color: isTerminalTheme ? 'rgb(0, 255, 0)' : themeColors.primary }}
+              style={{ color: isTerminalTheme ? 'rgb(255, 255, 255)' : themeColors.primary }}
             />
             <h2 className="text-lg font-semibold" style={{ color: textColor }}>Todo List</h2>
           </div>

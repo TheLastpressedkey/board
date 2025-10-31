@@ -15,12 +15,12 @@ export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
   const { currentCardTheme } = useCardTheme();
   const isTerminalTheme = currentCardTheme.id === 'terminal';
 
-  const bgItem = isTerminalTheme ? 'rgba(0, 255, 0, 0.05)' : 'rgba(31, 41, 55, 0.5)';
-  const textColor = isTerminalTheme ? 'rgb(0, 255, 0)' : 'white';
-  const textMuted = isTerminalTheme ? 'rgba(0, 255, 0, 0.4)' : 'rgb(107, 114, 128)';
-  const borderColor = isTerminalTheme ? 'rgb(0, 255, 0)' : themeColors.primary;
-  const borderDefault = isTerminalTheme ? 'rgba(0, 255, 0, 0.3)' : '#4B5563';
-  const hoverBg = isTerminalTheme ? 'rgba(0, 255, 0, 0.1)' : 'rgb(55, 65, 81)';
+  const bgItem = isTerminalTheme ? 'rgba(255, 255, 255, 0.05)' : 'rgba(31, 41, 55, 0.5)';
+  const textColor = isTerminalTheme ? 'rgb(255, 255, 255)' : 'white';
+  const textMuted = isTerminalTheme ? 'rgba(255, 255, 255, 0.4)' : 'rgb(107, 114, 128)';
+  const borderColor = isTerminalTheme ? 'rgb(255, 255, 255)' : themeColors.primary;
+  const borderDefault = isTerminalTheme ? 'rgba(255, 255, 255, 0.3)' : '#4B5563';
+  const hoverBg = isTerminalTheme ? 'rgba(255, 255, 255, 0.1)' : 'rgb(55, 65, 81)';
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg group" style={{
@@ -38,7 +38,7 @@ export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
           borderColor: todo.completed ? borderColor : borderDefault
         }}
       >
-        {todo.completed && <Check className="w-3 h-3" style={{ color: isTerminalTheme ? 'rgb(0, 0, 0)' : 'white' }} />}
+        {todo.completed && <Check className="w-3 h-3" style={{ color: 'rgb(0, 0, 0)' }} />}
       </button>
 
       <span className="flex-1 text-sm" style={{

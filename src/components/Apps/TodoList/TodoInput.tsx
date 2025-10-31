@@ -16,10 +16,10 @@ export function TodoInput({ value, onChange, onSubmit }: TodoInputProps) {
 
   const bgHeader = isTerminalTheme ? 'rgb(0, 0, 0)' : themeColors.menuBg;
   const bgInput = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(55, 65, 81)';
-  const textColor = isTerminalTheme ? 'rgb(0, 255, 0)' : 'white';
-  const placeholderColor = isTerminalTheme ? 'rgba(0, 255, 0, 0.3)' : 'rgb(107, 114, 128)';
-  const borderColor = isTerminalTheme ? 'rgba(0, 255, 0, 0.3)' : 'transparent';
-  const primaryColor = isTerminalTheme ? 'rgb(0, 255, 0)' : themeColors.primary;
+  const textColor = isTerminalTheme ? 'rgb(255, 255, 255)' : 'white';
+  const placeholderColor = isTerminalTheme ? 'rgba(255, 255, 255, 0.3)' : 'rgb(107, 114, 128)';
+  const borderColor = isTerminalTheme ? 'rgba(255, 255, 255, 0.3)' : 'transparent';
+  const primaryColor = isTerminalTheme ? 'rgb(255, 255, 255)' : themeColors.primary;
 
   return (
     <form onSubmit={onSubmit} className="p-4" style={{ backgroundColor: bgHeader }}>
@@ -45,7 +45,7 @@ export function TodoInput({ value, onChange, onSubmit }: TodoInputProps) {
           className="px-3 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             backgroundColor: primaryColor,
-            color: isTerminalTheme ? 'rgb(0, 0, 0)' : 'white',
+            color: 'rgb(0, 0, 0)',
             border: isTerminalTheme ? `1px solid ${primaryColor}` : 'none'
           }}
           onMouseDown={(e) => e.stopPropagation()}
