@@ -23,23 +23,10 @@ interface ThemeOption {
   gradient?: string;
 }
 
-interface AppThemeOption {
-  id: string;
-  name: string;
-  description: string;
-  preview: string;
-  colors: {
-    background: string;
-    menuBg: string;
-    statusBar: string;
-    accent: string;
-  };
-}
 
 interface SettingsState {
   username: string;
   theme: ThemeType;
-  appTheme: string;
   systemPrompt: string;
   useCustomPrompt: boolean;
 }
@@ -305,44 +292,6 @@ const themes: ThemeOption[] = [
   }
 ];
 
-const appThemes: AppThemeOption[] = [
-  {
-    id: 'default',
-    name: 'Classic Dark',
-    description: 'Modern dark theme with subtle gradients',
-    preview: 'https://images.unsplash.com/photo-1557683311-eac922347aa1?w=400&q=80',
-    colors: {
-      background: '#1a1a1a',
-      menuBg: 'rgba(31, 41, 55, 0.4)',
-      statusBar: 'rgba(17, 24, 39, 0.8)',
-      accent: '#ec4899'
-    }
-  },
-  {
-    id: 'firefox-proton',
-    name: 'Proton',
-    description: 'Inspired by Firefox Proton design',
-    preview: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=400&q=80',
-    colors: {
-      background: '#17171f',
-      menuBg: 'rgba(66, 65, 77, 0.4)',
-      statusBar: 'rgba(42, 42, 46, 0.8)',
-      accent: '#00ddff'
-    }
-  },
-  {
-    id: 'nord',
-    name: 'Nord',
-    description: 'Arctic-inspired color palette',
-    preview: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=400&q=80',
-    colors: {
-      background: '#2e3440',
-      menuBg: 'rgba(67, 76, 94, 0.4)',
-      statusBar: 'rgba(46, 52, 64, 0.8)',
-      accent: '#88c0d0'
-    }
-  }
-];
 
 const apiServices = [
   {
@@ -422,7 +371,6 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
   const [settings, setSettings] = useState<SettingsState>({
     username,
     theme: currentTheme,
-    appTheme: 'default',
     systemPrompt: '',
     useCustomPrompt: false
   });
@@ -457,8 +405,7 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
 
   const hasChanges = useCallback(() => {
     return settings.username !== username ||
-           settings.theme !== currentTheme ||
-           settings.appTheme !== 'default';
+           settings.theme !== currentTheme;
   }, [settings, username, currentTheme]);
 
   const handleCloseAttempt = () => {
@@ -840,51 +787,8 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
                       </div>
                     </div>
 
-                    {/* App Theme */}
-                    <div>
-                      <h3 className="text-lg font-medium text-white mb-4">App Theme</h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        {appThemes.map((theme) => (
-                          <button
-                            key={theme.id}
-                            onClick={() => setSettings({ ...settings, appTheme: theme.id })}
-                            className={`relative group rounded-lg overflow-hidden transition-all ${
-                              settings.appTheme === theme.id
-                                ? 'ring-2'
-                                : 'hover:ring-2 hover:ring-opacity-50'
-                            }`}
-                            style={{ 
-                              '--tw-ring-color': theme.colors.accent,
-                              aspectRatio: '16/10'
-                            } as React.CSSProperties}
-                          >
-                            <img 
-                              src={theme.preview} 
-                              alt={theme.name}
-                              className="w-full h-full object-cover"
-                            />
-                            <div 
-                              className="absolute inset-0 flex flex-col justify-end p-3 text-left"
-                              style={{ 
-                                background: `linear-gradient(transparent, ${theme.colors.background})`
-                              }}
-                            >
-                              <div 
-                                className="rounded-lg p-3"
-                                style={{ backgroundColor: theme.colors.menuBg }}
-                              >
-                                <h4 className="text-white font-medium text-sm mb-1">{theme.name}</h4>
-                                <p className="text-xs text-gray-400 line-clamp-2">{theme.description}</p>
-                              </div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
                     {/* Card Themes */}
                     <div>
-                     
                       <CardThemeSelector />
                     </div>
                   </div>
