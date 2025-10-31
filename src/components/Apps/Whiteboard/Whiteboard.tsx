@@ -201,7 +201,8 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
 
             {showColorPicker && (
               <div
-                className="absolute top-full right-0 mt-1 p-2 bg-gray-800 rounded-lg shadow-lg z-10 grid grid-cols-4 gap-2"
+                className="absolute top-full right-0 mt-2 p-3 rounded-lg shadow-2xl z-10 grid grid-cols-4 gap-2 border border-gray-700/50"
+                style={{ backgroundColor: themeColors.menuBg }}
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 {colors.map((c) => (
@@ -211,26 +212,35 @@ export function Whiteboard({ onClose, onDragStart, metadata, onDataChange }: Whi
                       setColor(c);
                       setShowColorPicker(false);
                     }}
-                    className={`w-6 h-6 rounded border-2 transition-transform hover:scale-110 ${
-                      color === c ? 'border-white' : 'border-gray-600'
+                    className={`w-8 h-8 rounded-lg transition-all hover:scale-110 ${
+                      color === c ? 'ring-2 ring-offset-2 ring-offset-gray-800' : ''
                     }`}
-                    style={{ backgroundColor: c }}
+                    style={{
+                      backgroundColor: c,
+                      ringColor: color === c ? themeColors.primary : undefined
+                    }}
                   />
                 ))}
               </div>
             )}
           </div>
 
-          <input
-            type="range"
-            min="1"
-            max="20"
-            value={lineWidth}
-            onChange={(e) => setLineWidth(parseInt(e.target.value))}
-            className="w-20"
-            onMouseDown={(e) => e.stopPropagation()}
-            title="Line width"
-          />
+          <div className="flex items-center gap-2 px-2">
+            <input
+              type="range"
+              min="1"
+              max="20"
+              value={lineWidth}
+              onChange={(e) => setLineWidth(parseInt(e.target.value))}
+              className="brush-slider"
+              style={{
+                '--slider-color': themeColors.primary
+              } as React.CSSProperties}
+              onMouseDown={(e) => e.stopPropagation()}
+              title="Line width"
+            />
+            <span className="text-xs text-gray-400 w-6 text-center">{lineWidth}</span>
+          </div>
 
           <button
             onClick={clearCanvas}

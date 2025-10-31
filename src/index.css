@@ -189,3 +189,67 @@
 .drag-handle:active {
   cursor: grabbing;
 }
+
+/* Brush slider styles */
+.brush-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 80px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  outline: none;
+}
+
+.brush-slider::-webkit-slider-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.brush-slider::-moz-range-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.brush-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--slider-color, rgb(236, 72, 153));
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.brush-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: var(--slider-color, rgb(236, 72, 153));
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.brush-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 8px var(--slider-color, rgb(236, 72, 153));
+}
+
+.brush-slider::-moz-range-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 8px var(--slider-color, rgb(236, 72, 153));
+}
+
+.brush-slider::-webkit-slider-thumb:active {
+  transform: scale(1.1);
+}
+
+.brush-slider::-moz-range-thumb:active {
+  transform: scale(1.1);
+}
