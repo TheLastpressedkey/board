@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useCardTheme } from '../../../contexts/CardThemeContext';
 
 interface CalculatorProps {
   onClose: () => void;
@@ -13,6 +14,8 @@ export function Calculator({ onClose }: CalculatorProps) {
   const [operation, setOperation] = React.useState<Operation>(null);
   const [newNumber, setNewNumber] = React.useState(true);
   const { themeColors } = useTheme();
+  const { currentCardTheme } = useCardTheme();
+  const isTerminalTheme = currentCardTheme.id === 'terminal';
 
   const handleNumber = (num: string) => {
     if (newNumber) {
@@ -72,27 +75,37 @@ export function Calculator({ onClose }: CalculatorProps) {
     ['0', '.', '=', '+']
   ];
 
+  const bgMain = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(17, 24, 39)';
+  const bgDisplay = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(31, 41, 55)';
+  const bgButton = isTerminalTheme ? 'rgb(20, 20, 20)' : 'rgb(31, 41, 55)';
+  const textColor = isTerminalTheme ? 'rgb(255, 255, 255)' : 'white';
+  const borderColor = isTerminalTheme ? 'rgba(255, 255, 255, 0.3)' : 'transparent';
+
   return (
-    <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
+    <div className="flex flex-col h-full rounded-lg overflow-hidden" style={{ backgroundColor: bgMain }}>
       {/* Display */}
-      <div className="bg-gray-800 p-4">
-        <div className="bg-gray-900 p-4 rounded-lg">
-          <div className="text-right text-2xl font-mono text-white">
+      <div className="p-4" style={{ backgroundColor: bgMain }}>
+        <div className="p-4 rounded-lg" style={{ backgroundColor: bgDisplay, border: `1px solid ${borderColor}` }}>
+          <div className="text-right text-2xl font-mono" style={{ color: textColor }}>
             {display}
           </div>
         </div>
       </div>
 
       {/* Keypad */}
-      <div className="flex-1 grid grid-cols-4 gap-1 p-2 bg-gray-900">
+      <div className="flex-1 grid grid-cols-4 gap-1 p-2" style={{ backgroundColor: bgMain }}>
         <button
-          className="col-span-4 text-white rounded transition-colors"
+          className="col-span-4 rounded transition-colors"
           onClick={handleClear}
-          style={{ backgroundColor: themeColors.primary }}
+          style={{
+            backgroundColor: themeColors.primary,
+            color: textColor,
+            border: isTerminalTheme ? `1px solid ${borderColor}` : 'none'
+          }}
         >
           C
         </button>
-        
+
         {buttons.map((row, i) => (
           <React.Fragment key={i}>
             {row.map((btn) => (
@@ -105,8 +118,9 @@ export function Calculator({ onClose }: CalculatorProps) {
                 }}
                 className="p-4 text-lg font-medium rounded transition-colors"
                 style={{
-                  backgroundColor: ['+', '-', '*', '/', '='].includes(btn) ? themeColors.primary : 'rgb(31, 41, 55)',
-                  color: 'white'
+                  backgroundColor: ['+', '-', '*', '/', '='].includes(btn) ? themeColors.primary : bgButton,
+                  color: textColor,
+                  border: `1px solid ${borderColor}`
                 }}
               >
                 {btn}
