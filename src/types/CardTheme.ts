@@ -204,5 +204,21 @@ export const cardThemes: CardTheme[] = [
       background: 'linear-gradient(180deg, rgba(254, 252, 232, 0.95), rgba(253, 246, 178, 0.95))',
       border: '1px solid rgba(245, 158, 11, 0.3)'
     }
+  },
+  {
+    id: 'terminal',
+    name: 'Terminal',
+    description: 'Style terminal avec fond noir et bordures blanches fines',
+    preview: 'https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=200&h=120&fit=crop',
+    headerStyle: {
+      background: 'rgb(0, 0, 0)',
+      border: 'none',
+      textColor: 'rgb(255, 255, 255)',
+      iconColor: 'rgb(255, 255, 255)'
+    },
+    bodyStyle: {
+      background: 'rgb(0, 0, 0)',
+      border: '1px solid rgba(255, 255, 255, 0.3)'
+    }
   }
 ];

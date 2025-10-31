@@ -12,16 +12,17 @@ export function TextCardContent({ content, onChange }: TextCardContentProps) {
   }, [onChange]);
 
   return (
-    <div className="h-full flex flex-col bg-black">
+    <div className="h-full flex flex-col">
       <textarea
-        className="w-full h-full resize-none p-4 text-white placeholder-gray-600
-          focus:outline-none bg-black card-scrollbar font-mono"
+        className="w-full h-full resize-none p-4 text-gray-700 placeholder-gray-400
+          focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50
+          bg-white card-scrollbar"
         value={content}
         onChange={handleChange}
-        placeholder="Entrez votre texte ici..."
+        placeholder="Enter your text here..."
         style={{
           minHeight: '100%',
-          lineHeight: '1.6',
+          lineHeight: '1.5',
           fontSize: '0.95rem'
         }}
         onMouseDown={(e) => e.stopPropagation()}
