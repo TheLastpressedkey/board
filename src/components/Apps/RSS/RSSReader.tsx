@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, RefreshCcw, AlertCircle, Clock } from 'lucide-react';
+import { Settings, RefreshCcw, AlertCircle, Clock, GripHorizontal, X } from 'lucide-react';
 import { RSSSettings } from './RSSSettings';
 import { RSSFeedList } from './RSSFeedList';
 import { useRSSFeeds } from './useRSSFeeds';
@@ -9,9 +9,10 @@ interface RSSReaderProps {
   onClose: () => void;
   metadata?: { feeds?: string[] };
   onDataChange?: (data: { feeds: string[] }) => void;
+  onDragStart?: (e: React.MouseEvent) => void;
 }
 
-export function RSSReader({ metadata, onDataChange }: RSSReaderProps) {
+export function RSSReader({ metadata, onDataChange, onClose, onDragStart }: RSSReaderProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { themeColors } = useTheme();
@@ -51,9 +52,23 @@ export function RSSReader({ metadata, onDataChange }: RSSReaderProps) {
   return (
     <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
       {/* Header with controls and rate limit info */}
-      <div className="p-3 border-b border-gray-700">
+      <div
+        className="p-3 border-b border-gray-700"
+        style={{ backgroundColor: themeColors.menuBg }}
+      >
         <div className="flex justify-between items-center mb-2">
-          <h3 className="text-white font-medium">RSS Reader</h3>
+          <div
+            className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
+            onMouseDown={onDragStart}
+          >
+            <GripHorizontal className="w-5 h-5 text-gray-500" />
+            <h3
+              className="text-white font-medium"
+              style={{ color: themeColors.primary }}
+            >
+              RSS Reader
+            </h3>
+          </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleRefresh}
@@ -62,14 +77,23 @@ export function RSSReader({ metadata, onDataChange }: RSSReaderProps) {
               } ${isRateLimited ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={isLoading || isRateLimited}
               title={isRateLimited ? 'Rate limit exceeded' : 'Refresh feeds'}
+              onMouseDown={(e) => e.stopPropagation()}
             >
               <RefreshCcw className="w-4 h-4 text-gray-400" />
             </button>
             <button
               onClick={() => setShowSettings(true)}
               className="p-1 hover:bg-gray-700 rounded-full transition-colors"
+              onMouseDown={(e) => e.stopPropagation()}
             >
               <Settings className="w-4 h-4 text-gray-400" />
+            </button>
+            <button
+              onClick={onClose}
+              className="p-1 hover:bg-gray-700 rounded-full transition-colors"
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <X className="w-4 h-4 text-gray-400" />
             </button>
           </div>
         </div>

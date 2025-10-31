@@ -62,7 +62,7 @@ export function AppCardContent({
       case 'calendar':
         return <Calendar onClose={onClose} metadata={metadata} onDataChange={onDataChange} cardId={cardId} onDragStart={onDragStart} />;
       case 'rss':
-        return <RSSReader onClose={onClose} metadata={metadata} onDataChange={onDataChange} />;
+        return <RSSReader onClose={onClose} metadata={metadata} onDataChange={onDataChange} onDragStart={onDragStart} />;
       case 'analytics':
         return <Analytics onClose={onClose} onDragStart={onDragStart} />;
       case 'kanban':
