@@ -12,19 +12,32 @@ export type Tool =
   | 'image'
   | 'laser';
 
-export interface DrawingElement {
-  id: string;
-  type: Tool;
+export type ElementType = 'path' | 'rectangle' | 'diamond' | 'circle' | 'arrow' | 'line' | 'text' | 'image';
+
+export interface Point {
   x: number;
   y: number;
-  width?: number;
-  height?: number;
-  color?: string;
-  strokeWidth?: number;
+}
+
+export interface DrawingElement {
+  id: string;
+  type: ElementType;
+  points: Point[];
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  strokeColor: string;
+  fillColor: string;
+  strokeWidth: number;
+  opacity: number;
   text?: string;
-  points?: { x: number; y: number }[];
+  fontSize?: number;
+  fontFamily?: string;
   imageUrl?: string;
-  rotation?: number;
+  rotation: number;
+  zIndex: number;
+  locked: boolean;
 }
 
 export interface WhiteboardState {
@@ -32,6 +45,11 @@ export interface WhiteboardState {
   selectedElementIds: string[];
   tool: Tool;
   color: string;
+  fillColor: string;
   strokeWidth: number;
+  opacity: number;
   backgroundColor: string;
+  zoom: number;
+  panX: number;
+  panY: number;
 }

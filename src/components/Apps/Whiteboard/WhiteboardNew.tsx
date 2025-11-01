@@ -5,29 +5,33 @@ import { useCardTheme } from '../../../contexts/CardThemeContext';
 import { HamburgerMenu } from './HamburgerMenu';
 import { FloatingToolbar } from './FloatingToolbar';
 import { SelectionPanel } from './SelectionPanel';
-import { Tool, DrawingElement } from './types';
+import { Tool, DrawingElement, Point } from './types';
+import {
+  createPathElement,
+  createShapeElement,
+  isPointInElement,
+  updateElementPosition,
+  duplicateElement,
+  getMaxZIndex,
+  bringToFront,
+  sendToBack,
+  bringForward,
+  sendBackward
+} from './elementUtils';
+import { renderAllElements, clearCanvas } from './canvasRenderer';
 
 interface WhiteboardProps {
   onClose: () => void;
   onDragStart?: (e: React.MouseEvent) => void;
-  metadata?: { drawing?: string; elements?: DrawingElement[] };
-  onDataChange?: (data: { drawing: string; elements: DrawingElement[] }) => void;
+  metadata?: { elements?: DrawingElement[] };
+  onDataChange?: (data: { elements: DrawingElement[] }) => void;
   cardId?: string;
-}
-
-interface Selection {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  imageData?: ImageData;
-  startX?: number;
-  startY?: number;
 }
 
 export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: WhiteboardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
+  const [elements, setElements] = useState<DrawingElement[]>(metadata?.elements || []);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [tool, setTool] = useState<Tool>('pen');
   const [color, setColor] = useState('#ffffff');
   const [fillColor, setFillColor] = useState('transparent');
@@ -38,16 +42,18 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
   const [language, setLanguage] = useState('fr');
   const [zoom, setZoom] = useState(100);
 
-  // Selection state
-  const [selection, setSelection] = useState<Selection | null>(null);
-  const [isSelecting, setIsSelecting] = useState(false);
-  const [isDraggingSelection, setIsDraggingSelection] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [elements, setElements] = useState<DrawingElement[]>([]);
+  // Drawing state
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [currentPoints, setCurrentPoints] = useState<Point[]>([]);
+  const [startPoint, setStartPoint] = useState<Point | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartPos, setDragStartPos] = useState<Point>({ x: 0, y: 0 });
 
   const { themeColors } = useTheme();
   const { currentCardTheme } = useCardTheme();
   const isTerminalTheme = currentCardTheme.id === 'terminal';
+
+  const bgColor = isTerminalTheme ? '#000000' : '#1f2937';
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -58,115 +64,37 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
 
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect();
-      let oldImageData = null;
-
-      if (canvas.width > 0 && canvas.height > 0) {
-        try {
-          oldImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        } catch (e) {
-          oldImageData = null;
-        }
-      }
-
       canvas.width = rect.width;
       canvas.height = rect.height;
 
-      ctx.fillStyle = isTerminalTheme ? '#000000' : '#1f2937';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      if (metadata?.drawing) {
-        const img = new Image();
-        img.onload = () => {
-          ctx.drawImage(img, 0, 0);
-        };
-        img.src = metadata.drawing;
-      } else if (oldImageData) {
-        try {
-          ctx.putImageData(oldImageData, 0, 0);
-        } catch (e) {
-          // Ignore
-        }
-      }
+      clearCanvas(ctx, canvas.width, canvas.height, bgColor);
+      renderAllElements(ctx, elements, selectedIds);
     };
 
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
     return () => window.removeEventListener('resize', resizeCanvas);
-  }, [metadata?.drawing, isTerminalTheme]);
+  }, []);
 
-  // Draw selection rectangle
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !selection) return;
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const drawSelectionBox = () => {
-      // Redraw canvas
-      if (metadata?.drawing) {
-        const img = new Image();
-        img.onload = () => {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = isTerminalTheme ? '#000000' : '#1f2937';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0);
+    clearCanvas(ctx, canvas.width, canvas.height, bgColor);
+    renderAllElements(ctx, elements, selectedIds);
+  }, [elements, selectedIds, bgColor]);
 
-          // Draw selection
-          drawSelection(ctx);
-        };
-        img.src = metadata.drawing;
-      } else {
-        drawSelection(ctx);
-      }
-    };
+  useEffect(() => {
+    if (onDataChange && elements.length > 0) {
+      onDataChange({ elements });
+    }
+  }, [elements]);
 
-    const drawSelection = (ctx: CanvasRenderingContext2D) => {
-      // Draw selection rectangle
-      ctx.strokeStyle = '#6366f1';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([5, 5]);
-      ctx.strokeRect(selection.x, selection.y, selection.width, selection.height);
-      ctx.setLineDash([]);
-
-      // Draw resize handles
-      const handleSize = 8;
-      const handles = [
-        { x: selection.x, y: selection.y }, // top-left
-        { x: selection.x + selection.width / 2, y: selection.y }, // top-center
-        { x: selection.x + selection.width, y: selection.y }, // top-right
-        { x: selection.x + selection.width, y: selection.y + selection.height / 2 }, // right-center
-        { x: selection.x + selection.width, y: selection.y + selection.height }, // bottom-right
-        { x: selection.x + selection.width / 2, y: selection.y + selection.height }, // bottom-center
-        { x: selection.x, y: selection.y + selection.height }, // bottom-left
-        { x: selection.x, y: selection.y + selection.height / 2 }, // left-center
-      ];
-
-      ctx.fillStyle = '#ffffff';
-      ctx.strokeStyle = '#6366f1';
-      ctx.lineWidth = 2;
-
-      handles.forEach(handle => {
-        ctx.fillRect(
-          handle.x - handleSize / 2,
-          handle.y - handleSize / 2,
-          handleSize,
-          handleSize
-        );
-        ctx.strokeRect(
-          handle.x - handleSize / 2,
-          handle.y - handleSize / 2,
-          handleSize,
-          handleSize
-        );
-      });
-    };
-
-    drawSelectionBox();
-  }, [selection, metadata?.drawing, isTerminalTheme]);
-
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (isLocked) return;
 
     const canvas = canvasRef.current;
@@ -175,169 +103,301 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const point: Point = { x, y };
 
     if (tool === 'select') {
-      // Check if clicking inside existing selection
-      if (selection &&
-          x >= selection.x && x <= selection.x + selection.width &&
-          y >= selection.y && y <= selection.y + selection.height) {
-        setIsDraggingSelection(true);
-        setDragOffset({ x: x - selection.x, y: y - selection.y });
+      const sortedElements = [...elements].sort((a, b) => b.zIndex - a.zIndex);
+      const clickedElement = sortedElements.find(el => isPointInElement(point, el));
+
+      if (clickedElement) {
+        if (!e.shiftKey) {
+          setSelectedIds([clickedElement.id]);
+        } else {
+          setSelectedIds(prev =>
+            prev.includes(clickedElement.id)
+              ? prev.filter(id => id !== clickedElement.id)
+              : [...prev, clickedElement.id]
+          );
+        }
+        setIsDragging(true);
+        setDragStartPos(point);
       } else {
-        // Start new selection
-        setIsSelecting(true);
-        setSelection({
-          x,
-          y,
-          width: 0,
-          height: 0,
-          startX: x,
-          startY: y
-        });
+        setSelectedIds([]);
       }
-    } else if (tool === 'hand') {
-      // Hand tool - no action for now
-      return;
-    } else {
-      // Drawing tools
-      ctx.beginPath();
-      ctx.moveTo(x, y);
+    } else if (tool === 'pen') {
       setIsDrawing(true);
+      setCurrentPoints([point]);
+    } else if (tool === 'rectangle' || tool === 'diamond' || tool === 'circle' || tool === 'line' || tool === 'arrow') {
+      setIsDrawing(true);
+      setStartPoint(point);
+    } else if (tool === 'eraser') {
+      const sortedElements = [...elements].sort((a, b) => b.zIndex - a.zIndex);
+      const clickedElement = sortedElements.find(el => isPointInElement(point, el));
+      if (clickedElement) {
+        setElements(prev => prev.filter(el => el.id !== clickedElement.id));
+        setSelectedIds([]);
+      }
     }
   };
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
+    const point: Point = { x, y };
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (tool === 'select' && isDragging && selectedIds.length > 0) {
+      const deltaX = x - dragStartPos.x;
+      const deltaY = y - dragStartPos.y;
 
-    if (tool === 'select') {
-      if (isSelecting && selection?.startX !== undefined && selection?.startY !== undefined) {
-        // Update selection rectangle
-        const newWidth = x - selection.startX;
-        const newHeight = y - selection.startY;
+      setElements(prev =>
+        prev.map(el =>
+          selectedIds.includes(el.id)
+            ? updateElementPosition(el, deltaX, deltaY)
+            : el
+        )
+      );
 
-        setSelection({
-          ...selection,
-          x: newWidth < 0 ? x : selection.startX,
-          y: newHeight < 0 ? y : selection.startY,
-          width: Math.abs(newWidth),
-          height: Math.abs(newHeight)
-        });
-      } else if (isDraggingSelection && selection) {
-        // Move selection
-        const newX = x - dragOffset.x;
-        const newY = y - dragOffset.y;
+      setDragStartPos(point);
+    } else if (isDrawing && tool === 'pen') {
+      setCurrentPoints(prev => [...prev, point]);
 
-        // Save the selected area if not already saved
-        if (!selection.imageData) {
-          const imageData = ctx.getImageData(
-            selection.x,
-            selection.y,
-            selection.width,
-            selection.height
-          );
-
-          // Clear the original area
-          const eraserColor = isTerminalTheme ? '#000000' : '#1f2937';
-          ctx.fillStyle = eraserColor;
-          ctx.fillRect(selection.x, selection.y, selection.width, selection.height);
-
-          setSelection({ ...selection, imageData, x: newX, y: newY });
-        } else {
-          setSelection({ ...selection, x: newX, y: newY });
-        }
-      }
-    } else if (isDrawing && !isLocked) {
-      if (tool === 'pen') {
+      const ctx = canvas.getContext('2d');
+      if (ctx && currentPoints.length > 0) {
         ctx.globalAlpha = opacity / 100;
         ctx.strokeStyle = color;
         ctx.lineWidth = lineWidth;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
+
+        const lastPoint = currentPoints[currentPoints.length - 1];
+        ctx.beginPath();
+        ctx.moveTo(lastPoint.x, lastPoint.y);
+        ctx.lineTo(point.x, point.y);
+        ctx.stroke();
+      }
+    } else if (isDrawing && startPoint) {
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      clearCanvas(ctx, canvas.width, canvas.height, bgColor);
+      renderAllElements(ctx, elements, selectedIds);
+
+      const width = x - startPoint.x;
+      const height = y - startPoint.y;
+      const tempX = width < 0 ? x : startPoint.x;
+      const tempY = height < 0 ? y : startPoint.y;
+      const tempWidth = Math.abs(width);
+      const tempHeight = Math.abs(height);
+
+      ctx.globalAlpha = opacity / 100;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = fillColor;
+      ctx.lineWidth = lineWidth;
+
+      if (tool === 'rectangle') {
+        if (fillColor !== 'transparent') ctx.fillRect(tempX, tempY, tempWidth, tempHeight);
+        ctx.strokeRect(tempX, tempY, tempWidth, tempHeight);
+      } else if (tool === 'circle') {
+        const centerX = tempX + tempWidth / 2;
+        const centerY = tempY + tempHeight / 2;
+        ctx.beginPath();
+        ctx.ellipse(centerX, centerY, tempWidth / 2, tempHeight / 2, 0, 0, 2 * Math.PI);
+        if (fillColor !== 'transparent') ctx.fill();
+        ctx.stroke();
+      } else if (tool === 'diamond') {
+        const centerX = tempX + tempWidth / 2;
+        const centerY = tempY + tempHeight / 2;
+        ctx.beginPath();
+        ctx.moveTo(centerX, tempY);
+        ctx.lineTo(tempX + tempWidth, centerY);
+        ctx.lineTo(centerX, tempY + tempHeight);
+        ctx.lineTo(tempX, centerY);
+        ctx.closePath();
+        if (fillColor !== 'transparent') ctx.fill();
+        ctx.stroke();
+      } else if (tool === 'line') {
+        ctx.beginPath();
+        ctx.moveTo(startPoint.x, startPoint.y);
         ctx.lineTo(x, y);
         ctx.stroke();
-        ctx.globalAlpha = 1;
-      } else if (tool === 'eraser') {
-        const eraserColor = isTerminalTheme ? '#000000' : '#1f2937';
-        ctx.strokeStyle = eraserColor;
-        ctx.lineWidth = lineWidth * 3;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
+      } else if (tool === 'arrow') {
+        ctx.beginPath();
+        ctx.moveTo(startPoint.x, startPoint.y);
         ctx.lineTo(x, y);
+        ctx.stroke();
+
+        const headLength = 20;
+        const angle = Math.atan2(y - startPoint.y, x - startPoint.x);
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - headLength * Math.cos(angle - Math.PI / 6), y - headLength * Math.sin(angle - Math.PI / 6));
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - headLength * Math.cos(angle + Math.PI / 6), y - headLength * Math.sin(angle + Math.PI / 6));
         ctx.stroke();
       }
     }
   };
 
-  const stopDrawing = () => {
+  const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (tool === 'select') {
-      if (isSelecting) {
-        setIsSelecting(false);
-        // Capture the selected area
-        if (selection && selection.width > 5 && selection.height > 5) {
-          const canvas = canvasRef.current;
-          if (canvas) {
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              const imageData = ctx.getImageData(
-                selection.x,
-                selection.y,
-                selection.width,
-                selection.height
-              );
-              setSelection({ ...selection, imageData });
-            }
-          }
-        } else {
-          setSelection(null);
-        }
-      } else if (isDraggingSelection && selection?.imageData) {
-        // Place the selection
-        const canvas = canvasRef.current;
-        if (canvas) {
-          const ctx = canvas.getContext('2d');
-          if (ctx && selection.imageData) {
-            ctx.putImageData(selection.imageData, selection.x, selection.y);
-            saveDrawing();
-          }
-        }
-        setIsDraggingSelection(false);
-      }
-    } else {
+      setIsDragging(false);
+    } else if (isDrawing && tool === 'pen' && currentPoints.length > 1) {
+      const maxZ = getMaxZIndex(elements);
+      const newElement = createPathElement(currentPoints, color, lineWidth, opacity, maxZ + 1);
+      setElements(prev => [...prev, newElement]);
+      setCurrentPoints([]);
       setIsDrawing(false);
-      saveDrawing();
+    } else if (isDrawing && startPoint) {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const width = x - startPoint.x;
+      const height = y - startPoint.y;
+
+      if (Math.abs(width) > 5 && Math.abs(height) > 5) {
+        const finalX = width < 0 ? x : startPoint.x;
+        const finalY = height < 0 ? y : startPoint.y;
+        const finalWidth = Math.abs(width);
+        const finalHeight = Math.abs(height);
+
+        const maxZ = getMaxZIndex(elements);
+        let elementType: 'rectangle' | 'diamond' | 'circle' | 'line' | 'arrow' = 'rectangle';
+
+        if (tool === 'rectangle') elementType = 'rectangle';
+        else if (tool === 'diamond') elementType = 'diamond';
+        else if (tool === 'circle') elementType = 'circle';
+        else if (tool === 'line') elementType = 'line';
+        else if (tool === 'arrow') elementType = 'arrow';
+
+        const newElement = createShapeElement(
+          elementType,
+          finalX,
+          finalY,
+          finalWidth,
+          finalHeight,
+          color,
+          fillColor,
+          lineWidth,
+          opacity,
+          maxZ + 1
+        );
+
+        setElements(prev => [...prev, newElement]);
+      }
+
+      setStartPoint(null);
+      setIsDrawing(false);
     }
   };
 
-  const saveDrawing = () => {
-    const canvas = canvasRef.current;
-    if (!canvas || !onDataChange) return;
-
-    const dataUrl = canvas.toDataURL();
-    onDataChange({ drawing: dataUrl, elements });
+  const handleClearCanvas = () => {
+    setElements([]);
+    setSelectedIds([]);
   };
 
-  const clearCanvas = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  const handleDeleteSelected = () => {
+    setElements(prev => prev.filter(el => !selectedIds.includes(el.id)));
+    setSelectedIds([]);
+  };
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  const handleDuplicateSelected = () => {
+    if (selectedIds.length === 0) return;
 
-    ctx.fillStyle = isTerminalTheme ? '#000000' : '#1f2937';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    setSelection(null);
-    saveDrawing();
+    const maxZ = getMaxZIndex(elements);
+    const newElements = elements
+      .filter(el => selectedIds.includes(el.id))
+      .map((el, index) => duplicateElement(el, maxZ + index + 1));
+
+    setElements(prev => [...prev, ...newElements]);
+    setSelectedIds(newElements.map(el => el.id));
+  };
+
+  const handleBringToFront = () => {
+    if (selectedIds.length === 0) return;
+    let updatedElements = elements;
+    selectedIds.forEach(id => {
+      updatedElements = bringToFront(updatedElements, id);
+    });
+    setElements(updatedElements);
+  };
+
+  const handleSendToBack = () => {
+    if (selectedIds.length === 0) return;
+    let updatedElements = elements;
+    selectedIds.forEach(id => {
+      updatedElements = sendToBack(updatedElements, id);
+    });
+    setElements(updatedElements);
+  };
+
+  const handleBringForward = () => {
+    if (selectedIds.length === 0) return;
+    let updatedElements = elements;
+    selectedIds.forEach(id => {
+      updatedElements = bringForward(updatedElements, id);
+    });
+    setElements(updatedElements);
+  };
+
+  const handleSendBackward = () => {
+    if (selectedIds.length === 0) return;
+    let updatedElements = elements;
+    selectedIds.forEach(id => {
+      updatedElements = sendBackward(updatedElements, id);
+    });
+    setElements(updatedElements);
+  };
+
+  const handleStrokeColorChange = (newColor: string) => {
+    setColor(newColor);
+    if (selectedIds.length > 0) {
+      setElements(prev =>
+        prev.map(el =>
+          selectedIds.includes(el.id) ? { ...el, strokeColor: newColor } : el
+        )
+      );
+    }
+  };
+
+  const handleFillColorChange = (newColor: string) => {
+    setFillColor(newColor);
+    if (selectedIds.length > 0) {
+      setElements(prev =>
+        prev.map(el =>
+          selectedIds.includes(el.id) ? { ...el, fillColor: newColor } : el
+        )
+      );
+    }
+  };
+
+  const handleStrokeWidthChange = (newWidth: number) => {
+    setLineWidth(newWidth);
+    if (selectedIds.length > 0) {
+      setElements(prev =>
+        prev.map(el =>
+          selectedIds.includes(el.id) ? { ...el, strokeWidth: newWidth } : el
+        )
+      );
+    }
+  };
+
+  const handleOpacityChange = (newOpacity: number) => {
+    setOpacity(newOpacity);
+    if (selectedIds.length > 0) {
+      setElements(prev =>
+        prev.map(el =>
+          selectedIds.includes(el.id) ? { ...el, opacity: newOpacity } : el
+        )
+      );
+    }
   };
 
   const downloadDrawing = () => {
@@ -350,47 +410,8 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
     link.click();
   };
 
-  // Selection actions
-  const handleDeleteSelection = () => {
-    if (!selection) return;
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const eraserColor = isTerminalTheme ? '#000000' : '#1f2937';
-    ctx.fillStyle = eraserColor;
-    ctx.fillRect(selection.x, selection.y, selection.width, selection.height);
-
-    setSelection(null);
-    saveDrawing();
-  };
-
-  const handleDuplicateSelection = () => {
-    if (!selection || !selection.imageData) return;
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Place duplicate slightly offset
-    ctx.putImageData(selection.imageData, selection.x + 20, selection.y + 20);
-
-    setSelection({
-      ...selection,
-      x: selection.x + 20,
-      y: selection.y + 20
-    });
-    saveDrawing();
-  };
-
   const bgMain = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(17, 24, 39)';
   const bgHeader = isTerminalTheme ? 'rgba(0, 0, 0, 0.8)' : 'rgba(31, 41, 55, 0.95)';
-  const bgButton = isTerminalTheme ? 'rgba(255, 255, 255, 0.1)' : 'rgba(55, 65, 81, 0.8)';
   const bgButtonActive = isTerminalTheme ? 'rgba(255, 255, 255, 0.2)' : 'rgba(99, 102, 241, 0.2)';
   const bgButtonHover = isTerminalTheme ? 'rgba(255, 255, 255, 0.15)' : 'rgba(55, 65, 81, 0.5)';
   const textColor = isTerminalTheme ? 'rgb(255, 255, 255)' : 'white';
@@ -398,29 +419,28 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
   const borderColor = isTerminalTheme ? 'rgba(255, 255, 255, 0.2)' : 'rgba(55, 65, 81, 0.5)';
   const primaryColor = isTerminalTheme ? 'rgb(255, 255, 255)' : themeColors.primary;
 
+  const selectedElements = elements.filter(el => selectedIds.includes(el.id));
+
   const getCursorStyle = () => {
     if (tool === 'hand') return 'grab';
-    if (tool === 'select') return 'crosshair';
+    if (tool === 'select') return 'default';
     if (tool === 'text') return 'text';
-    if (tool === 'pen' || tool === 'eraser') return 'crosshair';
     return 'crosshair';
   };
 
   return (
     <div className="flex flex-col h-full rounded-lg overflow-hidden relative" style={{ backgroundColor: bgMain }}>
-      {/* Canvas */}
       <div className="flex-1 relative">
         <canvas
           ref={canvasRef}
-          onMouseDown={startDrawing}
-          onMouseMove={draw}
-          onMouseUp={stopDrawing}
-          onMouseLeave={stopDrawing}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
           className="w-full h-full"
           style={{ cursor: getCursorStyle() }}
         />
 
-        {/* Hamburger Menu - Top Left */}
         <div className="absolute top-4 left-4 z-10">
           <HamburgerMenu
             onOpen={() => console.log('Open')}
@@ -430,7 +450,7 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
             onCommandPalette={() => console.log('Command Palette')}
             onFind={() => console.log('Find')}
             onHelp={() => console.log('Help')}
-            onReset={clearCanvas}
+            onReset={handleClearCanvas}
             theme={theme}
             onThemeChange={setTheme}
             language={language}
@@ -443,25 +463,24 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
           />
         </div>
 
-        {/* Selection Panel - Left Side */}
-        {selection && tool === 'select' && (
+        {selectedElements.length > 0 && (
           <SelectionPanel
-            selectedElements={[selection]}
-            onStrokeColorChange={setColor}
-            onFillColorChange={setFillColor}
-            onStrokeWidthChange={setLineWidth}
-            onOpacityChange={setOpacity}
-            onBringToFront={() => console.log('Bring to front')}
-            onSendToBack={() => console.log('Send to back')}
-            onBringForward={() => console.log('Bring forward')}
-            onSendBackward={() => console.log('Send backward')}
-            onDuplicate={handleDuplicateSelection}
-            onDelete={handleDeleteSelection}
+            selectedElements={selectedElements}
+            onStrokeColorChange={handleStrokeColorChange}
+            onFillColorChange={handleFillColorChange}
+            onStrokeWidthChange={handleStrokeWidthChange}
+            onOpacityChange={handleOpacityChange}
+            onBringToFront={handleBringToFront}
+            onSendToBack={handleSendToBack}
+            onBringForward={handleBringForward}
+            onSendBackward={handleSendBackward}
+            onDuplicate={handleDuplicateSelected}
+            onDelete={handleDeleteSelected}
             onCreateLink={() => console.log('Create link')}
-            strokeColor={color}
-            fillColor={fillColor}
-            strokeWidth={lineWidth}
-            opacity={opacity}
+            strokeColor={selectedElements[0]?.strokeColor || color}
+            fillColor={selectedElements[0]?.fillColor || fillColor}
+            strokeWidth={selectedElements[0]?.strokeWidth || lineWidth}
+            opacity={selectedElements[0]?.opacity || opacity}
             bgColor={bgHeader}
             textColor={textColor}
             textMuted={textMuted}
@@ -470,7 +489,6 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
           />
         )}
 
-        {/* Floating Toolbar - Top Center */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
           <FloatingToolbar
             currentTool={tool}
@@ -487,7 +505,6 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
           />
         </div>
 
-        {/* Right Side Buttons - Partager & Bibliothèque */}
         <div className="absolute top-4 right-4 flex gap-2 z-10">
           <button
             className="px-4 py-2 rounded-lg flex items-center gap-2 transition-colors backdrop-blur-sm"
@@ -498,7 +515,6 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
             }}
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = bgButtonHover)}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = bgHeader)}
-            onClick={() => console.log('Share')}
           >
             <Share2 className="w-4 h-4" />
             <span className="text-sm font-medium">Partager</span>
@@ -513,14 +529,12 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
             }}
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = bgButtonHover)}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = bgHeader)}
-            onClick={() => console.log('Library')}
           >
             <Library className="w-4 h-4" />
             <span className="text-sm font-medium">Bibliothèque</span>
           </button>
         </div>
 
-        {/* Bottom Bar - Zoom & Status */}
         <div
           className="absolute bottom-4 left-4 right-4 flex items-center justify-between backdrop-blur-sm rounded-lg px-4 py-2"
           style={{
@@ -556,7 +570,9 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
 
           <div className="flex items-center gap-2">
             <span className="text-xs" style={{ color: textMuted }}>
-              {selection ? 'Déplacez la sélection ou modifiez ses propriétés' : 'Cliquez et faites glisser, relâchez quand vous avez terminé'}
+              {selectedElements.length > 0
+                ? `${selectedElements.length} élément(s) sélectionné(s)`
+                : 'Dessinez ou sélectionnez des éléments'}
             </span>
           </div>
         </div>
