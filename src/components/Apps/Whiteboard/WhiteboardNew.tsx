@@ -4,14 +4,25 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { useCardTheme } from '../../../contexts/CardThemeContext';
 import { HamburgerMenu } from './HamburgerMenu';
 import { FloatingToolbar } from './FloatingToolbar';
-import { Tool } from './types';
+import { SelectionPanel } from './SelectionPanel';
+import { Tool, DrawingElement } from './types';
 
 interface WhiteboardProps {
   onClose: () => void;
   onDragStart?: (e: React.MouseEvent) => void;
-  metadata?: { drawing?: string };
-  onDataChange?: (data: { drawing: string }) => void;
+  metadata?: { drawing?: string; elements?: DrawingElement[] };
+  onDataChange?: (data: { drawing: string; elements: DrawingElement[] }) => void;
   cardId?: string;
+}
+
+interface Selection {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  imageData?: ImageData;
+  startX?: number;
+  startY?: number;
 }
 
 export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: WhiteboardProps) {
@@ -19,11 +30,20 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
   const [isDrawing, setIsDrawing] = useState(false);
   const [tool, setTool] = useState<Tool>('pen');
   const [color, setColor] = useState('#ffffff');
+  const [fillColor, setFillColor] = useState('transparent');
   const [lineWidth, setLineWidth] = useState(3);
+  const [opacity, setOpacity] = useState(100);
   const [isLocked, setIsLocked] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('dark');
   const [language, setLanguage] = useState('fr');
   const [zoom, setZoom] = useState(100);
+
+  // Selection state
+  const [selection, setSelection] = useState<Selection | null>(null);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [isDraggingSelection, setIsDraggingSelection] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [elements, setElements] = useState<DrawingElement[]>([]);
 
   const { themeColors } = useTheme();
   const { currentCardTheme } = useCardTheme();
@@ -75,8 +95,79 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
     return () => window.removeEventListener('resize', resizeCanvas);
   }, [metadata?.drawing, isTerminalTheme]);
 
+  // Draw selection rectangle
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !selection) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const drawSelectionBox = () => {
+      // Redraw canvas
+      if (metadata?.drawing) {
+        const img = new Image();
+        img.onload = () => {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = isTerminalTheme ? '#000000' : '#1f2937';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0);
+
+          // Draw selection
+          drawSelection(ctx);
+        };
+        img.src = metadata.drawing;
+      } else {
+        drawSelection(ctx);
+      }
+    };
+
+    const drawSelection = (ctx: CanvasRenderingContext2D) => {
+      // Draw selection rectangle
+      ctx.strokeStyle = '#6366f1';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]);
+      ctx.strokeRect(selection.x, selection.y, selection.width, selection.height);
+      ctx.setLineDash([]);
+
+      // Draw resize handles
+      const handleSize = 8;
+      const handles = [
+        { x: selection.x, y: selection.y }, // top-left
+        { x: selection.x + selection.width / 2, y: selection.y }, // top-center
+        { x: selection.x + selection.width, y: selection.y }, // top-right
+        { x: selection.x + selection.width, y: selection.y + selection.height / 2 }, // right-center
+        { x: selection.x + selection.width, y: selection.y + selection.height }, // bottom-right
+        { x: selection.x + selection.width / 2, y: selection.y + selection.height }, // bottom-center
+        { x: selection.x, y: selection.y + selection.height }, // bottom-left
+        { x: selection.x, y: selection.y + selection.height / 2 }, // left-center
+      ];
+
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#6366f1';
+      ctx.lineWidth = 2;
+
+      handles.forEach(handle => {
+        ctx.fillRect(
+          handle.x - handleSize / 2,
+          handle.y - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+        ctx.strokeRect(
+          handle.x - handleSize / 2,
+          handle.y - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+      });
+    };
+
+    drawSelectionBox();
+  }, [selection, metadata?.drawing, isTerminalTheme]);
+
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (isLocked || tool === 'hand' || tool === 'select') return;
+    if (isLocked) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -88,14 +179,37 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    setIsDrawing(true);
+    if (tool === 'select') {
+      // Check if clicking inside existing selection
+      if (selection &&
+          x >= selection.x && x <= selection.x + selection.width &&
+          y >= selection.y && y <= selection.y + selection.height) {
+        setIsDraggingSelection(true);
+        setDragOffset({ x: x - selection.x, y: y - selection.y });
+      } else {
+        // Start new selection
+        setIsSelecting(true);
+        setSelection({
+          x,
+          y,
+          width: 0,
+          height: 0,
+          startX: x,
+          startY: y
+        });
+      }
+    } else if (tool === 'hand') {
+      // Hand tool - no action for now
+      return;
+    } else {
+      // Drawing tools
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      setIsDrawing(true);
+    }
   };
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing || isLocked) return;
-
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -106,27 +220,103 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    if (tool === 'pen') {
-      ctx.strokeStyle = color;
-      ctx.lineWidth = lineWidth;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.lineTo(x, y);
-      ctx.stroke();
-    } else if (tool === 'eraser') {
-      const eraserColor = isTerminalTheme ? '#000000' : '#1f2937';
-      ctx.strokeStyle = eraserColor;
-      ctx.lineWidth = lineWidth * 3;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.lineTo(x, y);
-      ctx.stroke();
+    if (tool === 'select') {
+      if (isSelecting && selection?.startX !== undefined && selection?.startY !== undefined) {
+        // Update selection rectangle
+        const newWidth = x - selection.startX;
+        const newHeight = y - selection.startY;
+
+        setSelection({
+          ...selection,
+          x: newWidth < 0 ? x : selection.startX,
+          y: newHeight < 0 ? y : selection.startY,
+          width: Math.abs(newWidth),
+          height: Math.abs(newHeight)
+        });
+      } else if (isDraggingSelection && selection) {
+        // Move selection
+        const newX = x - dragOffset.x;
+        const newY = y - dragOffset.y;
+
+        // Save the selected area if not already saved
+        if (!selection.imageData) {
+          const imageData = ctx.getImageData(
+            selection.x,
+            selection.y,
+            selection.width,
+            selection.height
+          );
+
+          // Clear the original area
+          const eraserColor = isTerminalTheme ? '#000000' : '#1f2937';
+          ctx.fillStyle = eraserColor;
+          ctx.fillRect(selection.x, selection.y, selection.width, selection.height);
+
+          setSelection({ ...selection, imageData, x: newX, y: newY });
+        } else {
+          setSelection({ ...selection, x: newX, y: newY });
+        }
+      }
+    } else if (isDrawing && !isLocked) {
+      if (tool === 'pen') {
+        ctx.globalAlpha = opacity / 100;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lineWidth;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      } else if (tool === 'eraser') {
+        const eraserColor = isTerminalTheme ? '#000000' : '#1f2937';
+        ctx.strokeStyle = eraserColor;
+        ctx.lineWidth = lineWidth * 3;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      }
     }
   };
 
   const stopDrawing = () => {
-    setIsDrawing(false);
-    saveDrawing();
+    if (tool === 'select') {
+      if (isSelecting) {
+        setIsSelecting(false);
+        // Capture the selected area
+        if (selection && selection.width > 5 && selection.height > 5) {
+          const canvas = canvasRef.current;
+          if (canvas) {
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              const imageData = ctx.getImageData(
+                selection.x,
+                selection.y,
+                selection.width,
+                selection.height
+              );
+              setSelection({ ...selection, imageData });
+            }
+          }
+        } else {
+          setSelection(null);
+        }
+      } else if (isDraggingSelection && selection?.imageData) {
+        // Place the selection
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          if (ctx && selection.imageData) {
+            ctx.putImageData(selection.imageData, selection.x, selection.y);
+            saveDrawing();
+          }
+        }
+        setIsDraggingSelection(false);
+      }
+    } else {
+      setIsDrawing(false);
+      saveDrawing();
+    }
   };
 
   const saveDrawing = () => {
@@ -134,7 +324,7 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
     if (!canvas || !onDataChange) return;
 
     const dataUrl = canvas.toDataURL();
-    onDataChange({ drawing: dataUrl });
+    onDataChange({ drawing: dataUrl, elements });
   };
 
   const clearCanvas = () => {
@@ -146,6 +336,7 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
 
     ctx.fillStyle = isTerminalTheme ? '#000000' : '#1f2937';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    setSelection(null);
     saveDrawing();
   };
 
@@ -159,6 +350,44 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
     link.click();
   };
 
+  // Selection actions
+  const handleDeleteSelection = () => {
+    if (!selection) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const eraserColor = isTerminalTheme ? '#000000' : '#1f2937';
+    ctx.fillStyle = eraserColor;
+    ctx.fillRect(selection.x, selection.y, selection.width, selection.height);
+
+    setSelection(null);
+    saveDrawing();
+  };
+
+  const handleDuplicateSelection = () => {
+    if (!selection || !selection.imageData) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Place duplicate slightly offset
+    ctx.putImageData(selection.imageData, selection.x + 20, selection.y + 20);
+
+    setSelection({
+      ...selection,
+      x: selection.x + 20,
+      y: selection.y + 20
+    });
+    saveDrawing();
+  };
+
   const bgMain = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(17, 24, 39)';
   const bgHeader = isTerminalTheme ? 'rgba(0, 0, 0, 0.8)' : 'rgba(31, 41, 55, 0.95)';
   const bgButton = isTerminalTheme ? 'rgba(255, 255, 255, 0.1)' : 'rgba(55, 65, 81, 0.8)';
@@ -170,20 +399,11 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
   const primaryColor = isTerminalTheme ? 'rgb(255, 255, 255)' : themeColors.primary;
 
   const getCursorStyle = () => {
-    switch (tool) {
-      case 'hand':
-        return 'grab';
-      case 'select':
-        return 'default';
-      case 'text':
-        return 'text';
-      case 'pen':
-        return 'crosshair';
-      case 'eraser':
-        return 'crosshair';
-      default:
-        return 'crosshair';
-    }
+    if (tool === 'hand') return 'grab';
+    if (tool === 'select') return 'crosshair';
+    if (tool === 'text') return 'text';
+    if (tool === 'pen' || tool === 'eraser') return 'crosshair';
+    return 'crosshair';
   };
 
   return (
@@ -222,6 +442,33 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
             hoverBg={bgButtonHover}
           />
         </div>
+
+        {/* Selection Panel - Left Side */}
+        {selection && tool === 'select' && (
+          <SelectionPanel
+            selectedElements={[selection]}
+            onStrokeColorChange={setColor}
+            onFillColorChange={setFillColor}
+            onStrokeWidthChange={setLineWidth}
+            onOpacityChange={setOpacity}
+            onBringToFront={() => console.log('Bring to front')}
+            onSendToBack={() => console.log('Send to back')}
+            onBringForward={() => console.log('Bring forward')}
+            onSendBackward={() => console.log('Send backward')}
+            onDuplicate={handleDuplicateSelection}
+            onDelete={handleDeleteSelection}
+            onCreateLink={() => console.log('Create link')}
+            strokeColor={color}
+            fillColor={fillColor}
+            strokeWidth={lineWidth}
+            opacity={opacity}
+            bgColor={bgHeader}
+            textColor={textColor}
+            textMuted={textMuted}
+            borderColor={borderColor}
+            hoverBg={bgButtonHover}
+          />
+        )}
 
         {/* Floating Toolbar - Top Center */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
@@ -309,7 +556,7 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
 
           <div className="flex items-center gap-2">
             <span className="text-xs" style={{ color: textMuted }}>
-              Cliquez et faites glisser, relâchez quand vous avez terminé
+              {selection ? 'Déplacez la sélection ou modifiez ses propriétés' : 'Cliquez et faites glisser, relâchez quand vous avez terminé'}
             </span>
           </div>
         </div>
