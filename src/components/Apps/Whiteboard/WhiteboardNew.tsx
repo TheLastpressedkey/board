@@ -445,6 +445,22 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
 
   return (
     <div className="flex flex-col h-full rounded-lg overflow-hidden relative" style={{ backgroundColor: bgMain }}>
+      {/* Header draggable */}
+      <div
+        className="absolute top-0 left-0 right-0 h-12 flex items-center justify-center z-20 cursor-move"
+        onMouseDown={onDragStart}
+        style={{
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 100%)',
+          pointerEvents: 'auto'
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <div className="w-1 h-1 rounded-full" style={{ backgroundColor: textMuted }}></div>
+          <div className="w-1 h-1 rounded-full" style={{ backgroundColor: textMuted }}></div>
+          <div className="w-1 h-1 rounded-full" style={{ backgroundColor: textMuted }}></div>
+        </div>
+      </div>
+
       <div className="flex-1 relative">
         <canvas
           ref={canvasRef}
