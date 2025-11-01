@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Share2, Library } from 'lucide-react';
+import { Share2, Library, GripHorizontal, X, Pen } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useCardTheme } from '../../../contexts/CardThemeContext';
 import { HamburgerMenu } from './HamburgerMenu';
@@ -445,6 +445,39 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
 
   return (
     <div className="flex flex-col h-full rounded-lg overflow-hidden relative" style={{ backgroundColor: bgMain }}>
+      {/* Header avec drag & drop */}
+      <div
+        className="p-3"
+        style={{
+          backgroundColor: bgHeader,
+          borderBottom: `1px solid ${borderColor}`,
+          position: 'relative',
+          zIndex: 20
+        }}
+      >
+        <div className="flex items-center justify-between">
+          <div
+            className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
+            onMouseDown={onDragStart}
+          >
+            <GripHorizontal className="w-5 h-5" style={{ color: textMuted }} />
+            <Pen
+              className="w-5 h-5"
+              style={{ color: primaryColor }}
+            />
+            <h2 className="text-lg font-semibold" style={{ color: textColor }}>Whiteboard</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-lg transition-colors"
+            style={{ color: textMuted }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
       <div className="flex-1 relative">
         <canvas
           ref={canvasRef}
