@@ -186,10 +186,18 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
       clearCanvas(ctx, canvas.width, canvas.height, bgColor);
       renderAllElements(ctx, elements, selectedIds);
 
-      const width = x - startPoint.x;
-      const height = y - startPoint.y;
-      const tempX = width < 0 ? x : startPoint.x;
-      const tempY = height < 0 ? y : startPoint.y;
+      let width = x - startPoint.x;
+      let height = y - startPoint.y;
+
+      // Si Shift est enfoncé et que c'est une forme (rectangle, circle, diamond), garder les proportions
+      if (e.shiftKey && (tool === 'rectangle' || tool === 'circle' || tool === 'diamond')) {
+        const size = Math.max(Math.abs(width), Math.abs(height));
+        width = width < 0 ? -size : size;
+        height = height < 0 ? -size : size;
+      }
+
+      const tempX = width < 0 ? startPoint.x + width : startPoint.x;
+      const tempY = height < 0 ? startPoint.y + height : startPoint.y;
       const tempWidth = Math.abs(width);
       const tempHeight = Math.abs(height);
 
@@ -259,12 +267,19 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      const width = x - startPoint.x;
-      const height = y - startPoint.y;
+      let width = x - startPoint.x;
+      let height = y - startPoint.y;
+
+      // Si Shift est enfoncé et que c'est une forme (rectangle, circle, diamond), garder les proportions
+      if (e.shiftKey && (tool === 'rectangle' || tool === 'circle' || tool === 'diamond')) {
+        const size = Math.max(Math.abs(width), Math.abs(height));
+        width = width < 0 ? -size : size;
+        height = height < 0 ? -size : size;
+      }
 
       if (Math.abs(width) > 5 && Math.abs(height) > 5) {
-        const finalX = width < 0 ? x : startPoint.x;
-        const finalY = height < 0 ? y : startPoint.y;
+        const finalX = width < 0 ? startPoint.x + width : startPoint.x;
+        const finalY = height < 0 ? startPoint.y + height : startPoint.y;
         const finalWidth = Math.abs(width);
         const finalHeight = Math.abs(height);
 
