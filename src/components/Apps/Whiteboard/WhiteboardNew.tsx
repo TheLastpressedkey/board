@@ -33,6 +33,8 @@ interface WhiteboardProps {
 export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: WhiteboardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [elements, setElements] = useState<DrawingElement[]>(metadata?.elements || []);
+  const [history, setHistory] = useState<DrawingElement[][]>([metadata?.elements || []]);
+  const [historyIndex, setHistoryIndex] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [tool, setTool] = useState<Tool>('pen');
   const [color, setColor] = useState('#ffffff');
@@ -49,6 +51,7 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [textInput, setTextInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isUndoRedoAction = useRef(false);
 
   // Drawing state
   const [isDrawing, setIsDrawing] = useState(false);
@@ -111,6 +114,16 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
   }, [elements]);
 
   useEffect(() => {
+    if (!isUndoRedoAction.current) {
+      const newHistory = history.slice(0, historyIndex + 1);
+      newHistory.push(elements);
+      setHistory(newHistory);
+      setHistoryIndex(newHistory.length - 1);
+    }
+    isUndoRedoAction.current = false;
+  }, [elements]);
+
+  useEffect(() => {
     if (editingTextId && textareaRef.current) {
       setTimeout(() => {
         textareaRef.current?.focus();
@@ -118,6 +131,21 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
       }, 10);
     }
   }, [editingTextId]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+      } else if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        handleRedo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [historyIndex, history]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (isLocked) return;
@@ -411,6 +439,24 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
       );
       setEditingTextId(null);
       setTextInput('');
+    }
+  };
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      isUndoRedoAction.current = true;
+      setHistoryIndex(historyIndex - 1);
+      setElements(history[historyIndex - 1]);
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      isUndoRedoAction.current = true;
+      setHistoryIndex(historyIndex + 1);
+      setElements(history[historyIndex + 1]);
+      setSelectedIds([]);
     }
   };
 
