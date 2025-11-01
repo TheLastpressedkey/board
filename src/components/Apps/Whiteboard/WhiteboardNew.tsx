@@ -46,6 +46,7 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
   const [fontFamily, setFontFamily] = useState('Arial');
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [textInput, setTextInput] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Drawing state
   const [isDrawing, setIsDrawing] = useState(false);
@@ -107,6 +108,12 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
     }
   }, [elements]);
 
+  useEffect(() => {
+    if (editingTextId && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [editingTextId]);
+
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (isLocked) return;
 
@@ -140,7 +147,7 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
       }
     } else if (tool === 'text') {
       const maxZ = getMaxZIndex(elements);
-      const newTextElement = createTextElement('Double-click to edit', x, y, color, fontSize, fontFamily, opacity, maxZ + 1);
+      const newTextElement = createTextElement('', x, y, color, fontSize, fontFamily, opacity, maxZ + 1);
       setElements(prev => [...prev, newTextElement]);
       setEditingTextId(newTextElement.id);
       setTextInput('');
@@ -386,11 +393,14 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
   const handleTextInputBlur = () => {
     if (editingTextId) {
       setElements(prev =>
-        prev.map(el =>
-          el.id === editingTextId && (!el.text || el.text.trim() === '')
-            ? { ...el, text: 'Text' }
-            : el
-        )
+        prev.filter(el => {
+          if (el.id === editingTextId) {
+            if (!el.text || el.text.trim() === '') {
+              return false;
+            }
+          }
+          return true;
+        })
       );
       setEditingTextId(null);
       setTextInput('');
@@ -583,10 +593,12 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
           const scale = zoom / 100;
           return (
             <textarea
+              ref={textareaRef}
               autoFocus
               value={textInput}
               onChange={handleTextInputChange}
               onBlur={handleTextInputBlur}
+              onMouseDown={(e) => e.stopPropagation()}
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
                   handleTextInputBlur();
@@ -597,17 +609,19 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
               style={{
                 left: `${editingElement.x * scale}px`,
                 top: `${editingElement.y * scale}px`,
-                minWidth: `${Math.max(editingElement.width * scale, 100)}px`,
-                minHeight: `${editingElement.height * scale}px`,
+                minWidth: `${Math.max(editingElement.width * scale, 200)}px`,
+                minHeight: `${Math.max(editingElement.height * scale, 30)}px`,
                 fontSize: `${(editingElement.fontSize || 20) * scale}px`,
                 fontFamily: editingElement.fontFamily || 'Arial',
                 color: editingElement.strokeColor,
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
                 border: '2px solid #6366f1',
                 borderRadius: '4px',
-                padding: '2px',
-                zIndex: 1000
+                padding: '4px',
+                zIndex: 1000,
+                lineHeight: '1.2'
               }}
+              placeholder="Saisir du texte..."
             />
           );
         })()}

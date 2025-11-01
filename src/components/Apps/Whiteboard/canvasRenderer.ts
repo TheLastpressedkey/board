@@ -152,7 +152,7 @@ function renderLine(ctx: CanvasRenderingContext2D, element: DrawingElement): voi
 }
 
 function renderText(ctx: CanvasRenderingContext2D, element: DrawingElement): void {
-  if (!element.text) return;
+  if (!element.text || element.text.trim() === '') return;
 
   const fontSize = element.fontSize || 16;
   const fontFamily = element.fontFamily || 'Arial';
