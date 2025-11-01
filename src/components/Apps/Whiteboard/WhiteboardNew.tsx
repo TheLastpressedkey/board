@@ -68,14 +68,18 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
       canvas.height = rect.height;
 
       clearCanvas(ctx, canvas.width, canvas.height, bgColor);
+      ctx.save();
+      const scale = zoom / 100;
+      ctx.scale(scale, scale);
       renderAllElements(ctx, elements, selectedIds);
+      ctx.restore();
     };
 
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
     return () => window.removeEventListener('resize', resizeCanvas);
-  }, []);
+  }, [zoom]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -85,8 +89,12 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
     if (!ctx) return;
 
     clearCanvas(ctx, canvas.width, canvas.height, bgColor);
+    ctx.save();
+    const scale = zoom / 100;
+    ctx.scale(scale, scale);
     renderAllElements(ctx, elements, selectedIds);
-  }, [elements, selectedIds, bgColor]);
+    ctx.restore();
+  }, [elements, selectedIds, bgColor, zoom]);
 
   useEffect(() => {
     if (onDataChange && elements.length > 0) {
@@ -101,8 +109,9 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const scale = zoom / 100;
+    const x = (e.clientX - rect.left) / scale;
+    const y = (e.clientY - rect.top) / scale;
     const point: Point = { x, y };
 
     if (tool === 'select') {
@@ -145,8 +154,9 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const scale = zoom / 100;
+    const x = (e.clientX - rect.left) / scale;
+    const y = (e.clientY - rect.top) / scale;
     const point: Point = { x, y };
 
     if (tool === 'select' && isDragging && selectedIds.length > 0) {
@@ -264,8 +274,9 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
       if (!canvas) return;
 
       const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const scale = zoom / 100;
+      const x = (e.clientX - rect.left) / scale;
+      const y = (e.clientY - rect.top) / scale;
 
       let width = x - startPoint.x;
       let height = y - startPoint.y;
@@ -478,16 +489,18 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
         </div>
       </div>
 
-      <div className="flex-1 relative">
-        <canvas
-          ref={canvasRef}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          className="w-full h-full"
-          style={{ cursor: getCursorStyle() }}
-        />
+      <div className="flex-1 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-auto">
+          <canvas
+            ref={canvasRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            className="w-full h-full"
+            style={{ cursor: getCursorStyle() }}
+          />
+        </div>
 
         <div className="absolute top-4 left-4 z-10">
           <HamburgerMenu
@@ -584,44 +597,55 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
         </div>
 
         <div
-          className="absolute bottom-4 left-4 right-4 flex items-center justify-between backdrop-blur-sm rounded-lg px-4 py-2"
-          style={{
-            backgroundColor: bgHeader,
-            border: `1px solid ${borderColor}`
-          }}
+          className="absolute bottom-4 left-4 right-4 z-10"
         >
-          <div className="flex items-center gap-4">
+          <div
+            className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 backdrop-blur-sm rounded-lg px-3 py-2"
+            style={{
+              backgroundColor: bgHeader,
+              border: `1px solid ${borderColor}`
+            }}
+          >
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setZoom(Math.max(10, zoom - 10))}
-                className="px-2 py-1 rounded transition-colors text-sm"
-                style={{ color: textMuted }}
+                className="w-8 h-8 flex items-center justify-center rounded transition-colors text-lg font-bold"
+                style={{ color: textColor, backgroundColor: 'rgba(0,0,0,0.2)' }}
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = bgButtonHover)}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.2)')}
               >
                 -
               </button>
-              <span className="text-sm" style={{ color: textColor }}>
+              <span className="text-sm font-medium min-w-[60px] text-center" style={{ color: textColor }}>
                 {zoom}%
               </span>
               <button
                 onClick={() => setZoom(Math.min(500, zoom + 10))}
-                className="px-2 py-1 rounded transition-colors text-sm"
-                style={{ color: textMuted }}
+                className="w-8 h-8 flex items-center justify-center rounded transition-colors text-lg font-bold"
+                style={{ color: textColor, backgroundColor: 'rgba(0,0,0,0.2)' }}
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = bgButtonHover)}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.2)')}
               >
                 +
               </button>
+              <button
+                onClick={() => setZoom(100)}
+                className="px-3 py-1 rounded transition-colors text-xs"
+                style={{ color: textMuted, backgroundColor: 'rgba(0,0,0,0.2)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = bgButtonHover)}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.2)')}
+              >
+                Reset
+              </button>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs" style={{ color: textMuted }}>
-              {selectedElements.length > 0
-                ? `${selectedElements.length} élément(s) sélectionné(s)`
-                : 'Dessinez ou sélectionnez des éléments'}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-center" style={{ color: textMuted }}>
+                {selectedElements.length > 0
+                  ? `${selectedElements.length} élément(s) sélectionné(s)`
+                  : 'Dessinez ou sélectionnez des éléments'}
+              </span>
+            </div>
           </div>
         </div>
       </div>
