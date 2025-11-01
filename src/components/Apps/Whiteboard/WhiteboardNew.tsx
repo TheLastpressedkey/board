@@ -112,7 +112,10 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
 
   useEffect(() => {
     if (editingTextId && textareaRef.current) {
-      textareaRef.current.focus();
+      setTimeout(() => {
+        textareaRef.current?.focus();
+        textareaRef.current?.select();
+      }, 10);
     }
   }, [editingTextId]);
 
@@ -151,8 +154,10 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
       const maxZ = getMaxZIndex(elements);
       const newTextElement = createTextElement('', x, y, currentTextColor, fontSize, fontFamily, opacity, maxZ + 1);
       setElements(prev => [...prev, newTextElement]);
-      setEditingTextId(newTextElement.id);
       setTextInput('');
+      setTimeout(() => {
+        setEditingTextId(newTextElement.id);
+      }, 0);
     } else if (tool === 'pen') {
       setIsDrawing(true);
       setCurrentPoints([point]);
@@ -590,8 +595,12 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
 
         {editingTextId && (() => {
           const editingElement = elements.find(el => el.id === editingTextId);
-          if (!editingElement) return null;
+          if (!editingElement) {
+            console.log('Editing element not found:', editingTextId, 'Elements:', elements.map(e => e.id));
+            return null;
+          }
 
+          console.log('Rendering textarea for element:', editingElement.id);
           const scale = zoom / 100;
           return (
             <textarea
@@ -601,6 +610,7 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
               onChange={handleTextInputChange}
               onBlur={handleTextInputBlur}
               onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
                   handleTextInputBlur();
@@ -616,7 +626,7 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
                 fontSize: `${(editingElement.fontSize || 20) * scale}px`,
                 fontFamily: editingElement.fontFamily || 'Arial',
                 color: editingElement.strokeColor,
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                backgroundColor: 'rgba(0, 0, 0, 0.9)',
                 border: '2px solid #6366f1',
                 borderRadius: '4px',
                 padding: '4px',
