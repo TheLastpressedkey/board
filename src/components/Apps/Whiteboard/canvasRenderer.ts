@@ -115,9 +115,9 @@ function renderCircle(ctx: CanvasRenderingContext2D, element: DrawingElement): v
 function renderArrow(ctx: CanvasRenderingContext2D, element: DrawingElement): void {
   const { x, y, width, height } = element;
   const startX = x;
-  const startY = y + height / 2;
+  const startY = y;
   const endX = x + width;
-  const endY = y + height / 2;
+  const endY = y + height;
 
   // Ligne principale
   ctx.beginPath();
@@ -126,7 +126,8 @@ function renderArrow(ctx: CanvasRenderingContext2D, element: DrawingElement): vo
   ctx.stroke();
 
   // Flèche
-  const headLength = Math.min(20, width / 4);
+  const arrowLength = Math.sqrt(width * width + height * height);
+  const headLength = Math.min(20, arrowLength / 4);
   const angle = Math.atan2(endY - startY, endX - startX);
 
   ctx.beginPath();
