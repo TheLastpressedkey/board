@@ -98,22 +98,27 @@ export function createTextElement(
 export function isPointInElement(point: Point, element: DrawingElement): boolean {
   const { x, y, width, height, rotation } = element;
 
+  const minX = width >= 0 ? x : x + width;
+  const maxX = width >= 0 ? x + width : x;
+  const minY = height >= 0 ? y : y + height;
+  const maxY = height >= 0 ? y + height : y;
+
   if (rotation === 0) {
     return (
-      point.x >= x &&
-      point.x <= x + width &&
-      point.y >= y &&
-      point.y <= y + height
+      point.x >= minX &&
+      point.x <= maxX &&
+      point.y >= minY &&
+      point.y <= maxY
     );
   }
 
   // Pour les rotations, on pourrait implémenter une détection plus sophistiquée
   // Pour l'instant, on utilise la bounding box
   return (
-    point.x >= x &&
-    point.x <= x + width &&
-    point.y >= y &&
-    point.y <= y + height
+    point.x >= minX &&
+    point.x <= maxX &&
+    point.y >= minY &&
+    point.y <= maxY
   );
 }
 
@@ -123,11 +128,13 @@ export function getBoundingBox(element: DrawingElement): {
   width: number;
   height: number;
 } {
+  const minX = element.width >= 0 ? element.x : element.x + element.width;
+  const minY = element.height >= 0 ? element.y : element.y + element.height;
   return {
-    x: element.x,
-    y: element.y,
-    width: element.width,
-    height: element.height
+    x: minX,
+    y: minY,
+    width: Math.abs(element.width),
+    height: Math.abs(element.height)
   };
 }
 

@@ -342,11 +342,6 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
       }
 
       if (Math.abs(width) > 5 && Math.abs(height) > 5) {
-        const finalX = width < 0 ? startPoint.x + width : startPoint.x;
-        const finalY = height < 0 ? startPoint.y + height : startPoint.y;
-        const finalWidth = Math.abs(width);
-        const finalHeight = Math.abs(height);
-
         const maxZ = getMaxZIndex(elements);
         let elementType: 'rectangle' | 'diamond' | 'circle' | 'line' | 'arrow' = 'rectangle';
 
@@ -355,6 +350,20 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
         else if (tool === 'circle') elementType = 'circle';
         else if (tool === 'line') elementType = 'line';
         else if (tool === 'arrow') elementType = 'arrow';
+
+        let finalX, finalY, finalWidth, finalHeight;
+
+        if (tool === 'line' || tool === 'arrow') {
+          finalX = startPoint.x;
+          finalY = startPoint.y;
+          finalWidth = width;
+          finalHeight = height;
+        } else {
+          finalX = width < 0 ? startPoint.x + width : startPoint.x;
+          finalY = height < 0 ? startPoint.y + height : startPoint.y;
+          finalWidth = Math.abs(width);
+          finalHeight = Math.abs(height);
+        }
 
         const newElement = createShapeElement(
           elementType,

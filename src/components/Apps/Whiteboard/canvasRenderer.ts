@@ -184,6 +184,11 @@ function renderImage(ctx: CanvasRenderingContext2D, element: DrawingElement): vo
 function renderSelection(ctx: CanvasRenderingContext2D, element: DrawingElement): void {
   const { x, y, width, height } = element;
 
+  const minX = width >= 0 ? x : x + width;
+  const minY = height >= 0 ? y : y + height;
+  const absWidth = Math.abs(width);
+  const absHeight = Math.abs(height);
+
   ctx.save();
   ctx.globalAlpha = 1;
 
@@ -191,20 +196,20 @@ function renderSelection(ctx: CanvasRenderingContext2D, element: DrawingElement)
   ctx.strokeStyle = '#6366f1';
   ctx.lineWidth = 2;
   ctx.setLineDash([5, 5]);
-  ctx.strokeRect(x - 2, y - 2, width + 4, height + 4);
+  ctx.strokeRect(minX - 2, minY - 2, absWidth + 4, absHeight + 4);
   ctx.setLineDash([]);
 
   // Poignées de redimensionnement
   const handleSize = 8;
   const handles = [
-    { x: x, y: y },
-    { x: x + width / 2, y: y },
-    { x: x + width, y: y },
-    { x: x + width, y: y + height / 2 },
-    { x: x + width, y: y + height },
-    { x: x + width / 2, y: y + height },
-    { x: x, y: y + height },
-    { x: x, y: y + height / 2 }
+    { x: minX, y: minY },
+    { x: minX + absWidth / 2, y: minY },
+    { x: minX + absWidth, y: minY },
+    { x: minX + absWidth, y: minY + absHeight / 2 },
+    { x: minX + absWidth, y: minY + absHeight },
+    { x: minX + absWidth / 2, y: minY + absHeight },
+    { x: minX, y: minY + absHeight },
+    { x: minX, y: minY + absHeight / 2 }
   ];
 
   ctx.fillStyle = '#ffffff';
