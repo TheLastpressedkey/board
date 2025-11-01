@@ -64,6 +64,37 @@ export function createShapeElement(
   };
 }
 
+export function createTextElement(
+  text: string,
+  x: number,
+  y: number,
+  strokeColor: string,
+  fontSize: number,
+  fontFamily: string,
+  opacity: number,
+  zIndex: number
+): DrawingElement {
+  return {
+    id: createUniqueId(),
+    type: 'text',
+    points: [],
+    x,
+    y,
+    width: 100,
+    height: fontSize * 1.2,
+    strokeColor,
+    fillColor: 'transparent',
+    strokeWidth: 1,
+    opacity,
+    text,
+    fontSize,
+    fontFamily,
+    rotation: 0,
+    zIndex,
+    locked: false
+  };
+}
+
 export function isPointInElement(point: Point, element: DrawingElement): boolean {
   const { x, y, width, height, rotation } = element;
 

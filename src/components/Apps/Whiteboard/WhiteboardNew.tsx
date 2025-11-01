@@ -9,6 +9,7 @@ import { Tool, DrawingElement, Point } from './types';
 import {
   createPathElement,
   createShapeElement,
+  createTextElement,
   isPointInElement,
   updateElementPosition,
   duplicateElement,
@@ -41,6 +42,10 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('dark');
   const [language, setLanguage] = useState('fr');
   const [zoom, setZoom] = useState(100);
+  const [fontSize, setFontSize] = useState(20);
+  const [fontFamily, setFontFamily] = useState('Arial');
+  const [editingTextId, setEditingTextId] = useState<string | null>(null);
+  const [textInput, setTextInput] = useState('');
 
   // Drawing state
   const [isDrawing, setIsDrawing] = useState(false);
@@ -133,6 +138,12 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
       } else {
         setSelectedIds([]);
       }
+    } else if (tool === 'text') {
+      const maxZ = getMaxZIndex(elements);
+      const newTextElement = createTextElement('Double-click to edit', x, y, color, fontSize, fontFamily, opacity, maxZ + 1);
+      setElements(prev => [...prev, newTextElement]);
+      setEditingTextId(newTextElement.id);
+      setTextInput('');
     } else if (tool === 'pen') {
       setIsDrawing(true);
       setCurrentPoints([point]);
@@ -324,6 +335,68 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
     }
   };
 
+  const handleDoubleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (tool !== 'select') return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const scale = zoom / 100;
+    const x = (e.clientX - rect.left) / scale;
+    const y = (e.clientY - rect.top) / scale;
+    const point: Point = { x, y };
+
+    const sortedElements = [...elements].sort((a, b) => b.zIndex - a.zIndex);
+    const clickedElement = sortedElements.find(el => isPointInElement(point, el));
+
+    if (clickedElement && clickedElement.type === 'text') {
+      setEditingTextId(clickedElement.id);
+      setTextInput(clickedElement.text || '');
+    }
+  };
+
+  const handleTextInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    setTextInput(newText);
+
+    if (editingTextId) {
+      setElements(prev =>
+        prev.map(el => {
+          if (el.id === editingTextId) {
+            const ctx = canvasRef.current?.getContext('2d');
+            if (ctx) {
+              ctx.font = `${el.fontSize || 20}px ${el.fontFamily || 'Arial'}`;
+              const lines = newText.split('\n');
+              const maxWidth = Math.max(...lines.map(line => ctx.measureText(line).width), 100);
+              return {
+                ...el,
+                text: newText,
+                width: maxWidth + 10,
+                height: (el.fontSize || 20) * 1.2 * lines.length
+              };
+            }
+          }
+          return el;
+        })
+      );
+    }
+  };
+
+  const handleTextInputBlur = () => {
+    if (editingTextId) {
+      setElements(prev =>
+        prev.map(el =>
+          el.id === editingTextId && (!el.text || el.text.trim() === '')
+            ? { ...el, text: 'Text' }
+            : el
+        )
+      );
+      setEditingTextId(null);
+      setTextInput('');
+    }
+  };
+
   const handleClearCanvas = () => {
     setElements([]);
     setSelectedIds([]);
@@ -497,10 +570,47 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+            onDoubleClick={handleDoubleClick}
             className="w-full h-full"
             style={{ cursor: getCursorStyle() }}
           />
         </div>
+
+        {editingTextId && (() => {
+          const editingElement = elements.find(el => el.id === editingTextId);
+          if (!editingElement) return null;
+
+          const scale = zoom / 100;
+          return (
+            <textarea
+              autoFocus
+              value={textInput}
+              onChange={handleTextInputChange}
+              onBlur={handleTextInputBlur}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  handleTextInputBlur();
+                }
+                e.stopPropagation();
+              }}
+              className="absolute outline-none resize-none overflow-hidden"
+              style={{
+                left: `${editingElement.x * scale}px`,
+                top: `${editingElement.y * scale}px`,
+                minWidth: `${Math.max(editingElement.width * scale, 100)}px`,
+                minHeight: `${editingElement.height * scale}px`,
+                fontSize: `${(editingElement.fontSize || 20) * scale}px`,
+                fontFamily: editingElement.fontFamily || 'Arial',
+                color: editingElement.strokeColor,
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                border: '2px solid #6366f1',
+                borderRadius: '4px',
+                padding: '2px',
+                zIndex: 1000
+              }}
+            />
+          );
+        })()}
 
         <div className="absolute top-4 left-4 z-10">
           <HamburgerMenu
