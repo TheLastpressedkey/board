@@ -5,6 +5,7 @@ import { useCardTheme } from '../../../contexts/CardThemeContext';
 import { HamburgerMenu } from './HamburgerMenu';
 import { FloatingToolbar } from './FloatingToolbar';
 import { SelectionPanel } from './SelectionPanel';
+import { TextPanel } from './TextPanel';
 import { Tool, DrawingElement, Point } from './types';
 import {
   createPathElement,
@@ -44,6 +45,7 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
   const [zoom, setZoom] = useState(100);
   const [fontSize, setFontSize] = useState(20);
   const [fontFamily, setFontFamily] = useState('Arial');
+  const [currentTextColor, setCurrentTextColor] = useState('#ffffff');
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [textInput, setTextInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -147,7 +149,7 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
       }
     } else if (tool === 'text') {
       const maxZ = getMaxZIndex(elements);
-      const newTextElement = createTextElement('', x, y, color, fontSize, fontFamily, opacity, maxZ + 1);
+      const newTextElement = createTextElement('', x, y, currentTextColor, fontSize, fontFamily, opacity, maxZ + 1);
       setElements(prev => [...prev, newTextElement]);
       setEditingTextId(newTextElement.id);
       setTextInput('');
@@ -673,6 +675,21 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
             hoverBg={bgButtonHover}
           />
         )}
+
+        <TextPanel
+          isVisible={tool === 'text'}
+          fontSize={fontSize}
+          fontFamily={fontFamily}
+          textColor={currentTextColor}
+          onFontSizeChange={setFontSize}
+          onFontFamilyChange={setFontFamily}
+          onTextColorChange={setCurrentTextColor}
+          bgColor={bgHeader}
+          textColorTheme={textColor}
+          textMuted={textMuted}
+          borderColor={borderColor}
+          hoverBg={bgButtonHover}
+        />
 
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
           <FloatingToolbar
