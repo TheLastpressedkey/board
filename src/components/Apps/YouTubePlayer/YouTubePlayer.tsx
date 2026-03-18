@@ -45,6 +45,11 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddUrl, setQuickAddUrl] = useState('');
+  const [isHoveringPlayer, setIsHoveringPlayer] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [autoHideControls, setAutoHideControls] = useState(metadata?.autoHideControls ?? true);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   const addVideo = async (url: string, title?: string) => {
     const videoId = getYoutubeVideoId(url);
@@ -295,6 +300,15 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
               >
                 <List className="w-5 h-5" style={{ color: showPlaylist ? themeColors.primary : 'rgba(255,255,255,0.7)' }} />
               </button>
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                onMouseDown={(e) => e.stopPropagation()}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                style={showSettings ? { color: themeColors.primary } : {}}
+                title="Settings"
+              >
+                <Settings className="w-5 h-5" style={{ color: showSettings ? themeColors.primary : 'rgba(255,255,255,0.7)' }} />
+              </button>
             </>
           )}
           <button
@@ -310,7 +324,11 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Video Player - Fullscreen */}
-        <div className="flex-1 flex flex-col">
+        <div
+          className="flex-1 flex flex-col relative"
+          onMouseEnter={() => setIsHoveringPlayer(true)}
+          onMouseLeave={() => setIsHoveringPlayer(false)}
+        >
           {currentVideo ? (
             <>
               <VideoPlayer
@@ -320,6 +338,13 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
                 onEnded={handleVideoEnd}
                 onPlayStateChange={setIsPlaying}
                 playMode={playMode}
+                onTimeUpdate={(time, dur) => {
+                  setCurrentTime(time);
+                  setDuration(dur);
+                }}
+                onSeek={(time) => {
+                  // Fonction exposée via window pour permettre le seek
+                }}
               />
               <VideoControls
                 isPlaying={isPlaying}
@@ -333,6 +358,10 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
                 currentVideo={currentVideo}
                 hasNext={playlist.length > 1}
                 hasPrevious={playlist.length > 1}
+                isVisible={autoHideControls ? isHoveringPlayer : true}
+                currentTime={currentTime}
+                duration={duration}
+                immersiveMode={autoHideControls}
               />
             </>
           ) : (
@@ -350,17 +379,85 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
           )}
         </div>
 
-        {/* Playlist Sidebar - Toggle */}
+        {/* Playlist Sidebar */}
         {showPlaylist && playlist.length > 0 && (
-          <PlaylistManager
-            playlist={playlist}
-            currentIndex={currentIndex}
-            onVideoSelect={handleVideoSelect}
-            onAddVideo={addVideo}
-            onRemoveVideo={removeVideo}
-            onMoveVideo={moveVideo}
-            onUpdateTitle={updateVideoTitle}
-          />
+          <div className="absolute right-0 top-0 bottom-0 w-72 sm:w-80 md:w-96 bg-gray-900/98 backdrop-blur-xl z-40 flex flex-col border-l border-white/10 shadow-2xl">
+            <div className="p-3 sm:p-4 border-b border-white/10 flex items-center justify-between">
+              <div>
+                <h3 className="text-white font-semibold text-base sm:text-lg">Playlist</h3>
+                <p className="text-gray-400 text-xs mt-0.5">{playlist.length} {playlist.length === 1 ? 'video' : 'videos'}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowQuickAdd(true)}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className="p-2 rounded-lg transition-colors hover:bg-white/10"
+                  style={{ color: themeColors.primary }}
+                  title="Add video"
+                >
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                </button>
+                <button
+                  onClick={() => setShowPlaylist(false)}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className="p-2 rounded-lg transition-colors hover:bg-white/10"
+                  title="Close playlist"
+                >
+                  <X className="w-4 h-4 sm:w-5 sm:h-5 text-white/70" />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto card-scrollbar">
+              {playlist.map((video, index) => (
+                <div
+                  key={video.id + index}
+                  onClick={() => {
+                    handleVideoSelect(index);
+                  }}
+                  className={`group relative px-3 sm:px-4 py-2 sm:py-3 cursor-pointer transition-all border-b border-white/5 ${
+                    index === currentIndex
+                      ? 'bg-white/10'
+                      : 'hover:bg-white/5 active:bg-white/10'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="flex-shrink-0 w-5 sm:w-6 text-center">
+                      {index === currentIndex ? (
+                        <div className="flex items-center justify-center">
+                          <div className="w-0.5 sm:w-1 h-2 sm:h-3 bg-pink-500 rounded-full animate-pulse" style={{ marginRight: '2px' }} />
+                          <div className="w-0.5 sm:w-1 h-3 sm:h-4 bg-pink-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+                          <div className="w-0.5 sm:w-1 h-2 sm:h-3 bg-pink-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s', marginLeft: '2px' }} />
+                        </div>
+                      ) : (
+                        <span className="text-gray-500 text-xs sm:text-sm font-medium">{index + 1}</span>
+                      )}
+                    </div>
+                    <img
+                      src={video.thumbnail}
+                      alt={video.title}
+                      className="w-16 h-10 sm:w-20 sm:h-12 object-cover rounded flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs sm:text-sm font-medium truncate ${
+                        index === currentIndex ? 'text-white' : 'text-gray-300'
+                      }`}>
+                        {video.title}
+                      </p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeVideo(index);
+                      }}
+                      className="flex-shrink-0 p-1 sm:p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20"
+                    >
+                      <X className="w-3 h-3 sm:w-4 sm:h-4 text-red-400" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
 
@@ -400,6 +497,66 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
                 style={{ backgroundColor: themeColors.primary }}
               >
                 Add
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <>
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40 rounded-lg"
+            onClick={() => setShowSettings(false)}
+          />
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md rounded-lg shadow-2xl z-50 p-4 sm:p-6"
+            style={{ backgroundColor: themeColors.menuBg }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-4">Settings</h3>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg">
+                <div>
+                  <p className="text-white font-medium">Auto-hide Controls</p>
+                  <p className="text-gray-400 text-sm">Controls hide when not hovering</p>
+                </div>
+                <button
+                  onClick={() => {
+                    const newValue = !autoHideControls;
+                    setAutoHideControls(newValue);
+                    if (onDataChange) {
+                      onDataChange({
+                        playlist,
+                        currentIndex,
+                        playMode,
+                        volume,
+                        autoHideControls: newValue
+                      });
+                    }
+                  }}
+                  className={`relative w-12 h-6 rounded-full transition-colors ${
+                    autoHideControls ? 'bg-gradient-to-r from-pink-500 to-purple-500' : 'bg-gray-600'
+                  }`}
+                >
+                  <div
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
+                      autoHideControls ? 'translate-x-6' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-6">
+              <button
+                onClick={() => setShowSettings(false)}
+                className="flex-1 px-3 sm:px-4 py-2 text-white text-sm sm:text-base rounded-lg transition-colors"
+                style={{ backgroundColor: themeColors.primary }}
+              >
+                Done
               </button>
             </div>
           </div>

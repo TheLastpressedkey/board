@@ -7,6 +7,8 @@ interface VideoPlayerProps {
   onEnded: () => void;
   onPlayStateChange: (isPlaying: boolean) => void;
   playMode: 'sequential' | 'loop' | 'loop-one' | 'shuffle';
+  onTimeUpdate?: (currentTime: number, duration: number) => void;
+  onSeek?: (time: number) => void;
 }
 
 declare global {
@@ -22,11 +24,34 @@ export function VideoPlayer({
   volume,
   onEnded,
   onPlayStateChange,
-  playMode
+  playMode,
+  onTimeUpdate,
+  onSeek
 }: VideoPlayerProps) {
   const playerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isReady, setIsReady] = useState(false);
+  const timeUpdateIntervalRef = useRef<number | null>(null);
+
+  // Exposer la fonction seekTo pour permettre le contrôle externe
+  useEffect(() => {
+    if (!playerRef.current || !onSeek) return;
+
+    const handleSeek = (time: number) => {
+      try {
+        playerRef.current.seekTo(time, true);
+      } catch (error) {
+        console.error('Error seeking:', error);
+      }
+    };
+
+    // Stocker la fonction dans window pour y accéder depuis VideoControls
+    (window as any).youtubeSeek = handleSeek;
+
+    return () => {
+      delete (window as any).youtubeSeek;
+    };
+  }, [onSeek]);
 
   // Charger l'API YouTube
   useEffect(() => {
@@ -56,11 +81,14 @@ export function VideoPlayer({
       videoId,
       playerVars: {
         autoplay: 1,
-        controls: 1,
+        controls: 0,
         rel: 0,
         modestbranding: 1,
         loop: playMode === 'loop-one' ? 1 : 0,
-        playlist: playMode === 'loop-one' ? videoId : undefined
+        playlist: playMode === 'loop-one' ? videoId : undefined,
+        showinfo: 0,
+        iv_load_policy: 3,
+        disablekb: 1
       },
       events: {
         onReady: (event: any) => {
@@ -114,6 +142,38 @@ export function VideoPlayer({
       console.error('Error setting volume:', error);
     }
   }, [volume]);
+
+  // Mettre à jour le temps de lecture
+  useEffect(() => {
+    if (!playerRef.current || !onTimeUpdate) return;
+
+    const updateTime = () => {
+      try {
+        const currentTime = playerRef.current.getCurrentTime();
+        const duration = playerRef.current.getDuration();
+        if (currentTime !== undefined && duration !== undefined) {
+          onTimeUpdate(currentTime, duration);
+        }
+      } catch (error) {
+        // Ignore errors during time updates
+      }
+    };
+
+    if (isPlaying) {
+      timeUpdateIntervalRef.current = window.setInterval(updateTime, 500);
+    } else {
+      if (timeUpdateIntervalRef.current) {
+        clearInterval(timeUpdateIntervalRef.current);
+        timeUpdateIntervalRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timeUpdateIntervalRef.current) {
+        clearInterval(timeUpdateIntervalRef.current);
+      }
+    };
+  }, [isPlaying, onTimeUpdate]);
 
   return (
     <div className="flex-1 bg-black">
