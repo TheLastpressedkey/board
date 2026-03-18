@@ -10,6 +10,7 @@ import { EmailApp } from '../Apps/Email/EmailApp';
 import { DocumentManager } from '../Apps/DocumentEditor/DocumentManager';
 import { FileManager } from '../Apps/FileManager/FileManager';
 import { WhiteboardNew } from '../Apps/Whiteboard/WhiteboardNew';
+import { YouTubePlayer } from '../Apps/YouTubePlayer/YouTubePlayer';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCardTheme } from '../../contexts/CardThemeContext';
 import { GripHorizontal, X, AlertCircle } from 'lucide-react';
@@ -85,6 +86,8 @@ export function AppCardContent({
         return <FileManager onClose={onClose} onDragStart={onDragStart} />;
       case 'whiteboard':
         return <WhiteboardNew onClose={onClose} onDragStart={onDragStart} metadata={metadata} onDataChange={onDataChange} cardId={cardId} />;
+      case 'youtube-player':
+        return <YouTubePlayer onClose={onClose} metadata={metadata} onDataChange={onDataChange} onDragStart={onDragStart} cardId={cardId} />;
       default:
         return (
           <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
