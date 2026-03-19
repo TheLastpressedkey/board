@@ -37,8 +37,7 @@ Thumbs.db
 # Backend PHP (exclu du repository)
 backend/
 
-# Documentation et base de données (exclu du repository)
-doc/
+# Base de données (exclu du repository)
 db/
 sql/
 
