@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail, FileText, FolderOpen, Pencil, Youtube } from 'lucide-react';
+import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail, FileText, FolderOpen, Pencil, Youtube, Cloud } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppStoreProps {
@@ -114,6 +114,14 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
       description: 'Create playlists and watch YouTube videos in continuous mode',
       icon: Youtube,
       category: 'Media',
+      author: 'Core Apps'
+    },
+    {
+      id: 'driveplus',
+      name: 'Drive+',
+      description: 'Cloud storage powered by UploadThing - upload, manage and share files',
+      icon: Cloud,
+      category: 'Storage',
       author: 'Core Apps'
     }
   ];
