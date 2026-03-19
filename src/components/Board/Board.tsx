@@ -15,18 +15,20 @@ interface BoardProps {
   onAddCard: (type: ContentType, position: { x: number; y: number }, dimensions?: { width: number; height: number }) => void;
   onUpdateCardDimensions: (id: string, dimensions: { width: number; height: number }) => void;
   onUpdateCardMetadata: (id: string, metadata: any) => void;
+  onToggleCardPin?: (id: string) => void;
   onAutoArrange?: () => void;
 }
 
-export function Board({ 
-  board, 
-  onDeleteCard, 
-  onUpdateCardPosition, 
-  onContentChange, 
+export function Board({
+  board,
+  onDeleteCard,
+  onUpdateCardPosition,
+  onContentChange,
   onScrollProgress,
   onAddCard,
   onUpdateCardDimensions,
   onUpdateCardMetadata,
+  onToggleCardPin,
   onAutoArrange
 }: BoardProps) {
   const boardRef = useRef<HTMLDivElement>(null);
@@ -175,6 +177,7 @@ export function Board({
                   onContentChange={onContentChange}
                   onDimensionsChange={onUpdateCardDimensions}
                   onMetadataChange={onUpdateCardMetadata}
+                  onTogglePin={onToggleCardPin}
                   isMobile={true}
                 />
               </div>
@@ -193,6 +196,7 @@ export function Board({
               onContentChange={onContentChange}
               onDimensionsChange={onUpdateCardDimensions}
               onMetadataChange={onUpdateCardMetadata}
+              onTogglePin={onToggleCardPin}
               isMobile={false}
             />
           ))}

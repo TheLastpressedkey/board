@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import { X, Code, Eye, Pencil, Settings } from 'lucide-react';
+import { X, Code, Eye, Pencil, Settings, Pin } from 'lucide-react';
 import { Card as CardType } from '../../types';
 import { useDraggable } from '../../hooks/useDraggable';
 import { useResizable } from '../../hooks/useResizable';
@@ -21,16 +21,18 @@ interface CardProps {
   onContentChange: (id: string, content: string) => void;
   onDimensionsChange?: (id: string, dimensions: { width: number; height: number }) => void;
   onMetadataChange?: (id: string, metadata: any) => void;
+  onTogglePin?: (id: string) => void;
   isMobile?: boolean;
 }
 
-export function Card({ 
-  card, 
-  onDelete, 
-  onPositionChange, 
+export function Card({
+  card,
+  onDelete,
+  onPositionChange,
   onContentChange,
   onDimensionsChange,
   onMetadataChange,
+  onTogglePin,
   isMobile = false
 }: CardProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -254,6 +256,22 @@ export function Card({
                   <Settings
                     className="w-4 h-4"
                     style={{ color: headerStyle.iconColor || 'rgb(107, 114, 128)' }}
+                  />
+                </button>
+              )}
+              {onTogglePin && (
+                <button
+                  onClick={() => onTogglePin(card.id)}
+                  className="p-1 hover:bg-black/10 rounded-full flex-shrink-0 transition-colors"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  title={card.isPinned ? 'Unpin card' : 'Pin card'}
+                >
+                  <Pin
+                    className="w-4 h-4"
+                    style={{
+                      color: card.isPinned ? (headerStyle.iconColor || 'rgb(107, 114, 128)') : (headerStyle.iconColor || 'rgb(156, 163, 175)'),
+                      fill: card.isPinned ? (headerStyle.iconColor || 'rgb(107, 114, 128)') : 'none'
+                    }}
                   />
                 </button>
               )}

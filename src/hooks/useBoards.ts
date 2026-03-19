@@ -193,10 +193,16 @@ export function useBoards() {
       if (board.id !== currentBoard) return board;
 
       const cards = [...(board.cards || [])];
-      const totalCards = cards.length;
+
+      // Séparer les cartes épinglées et non épinglées
+      const pinnedCards = cards.filter(card => card.isPinned);
+      const unpinnedCards = cards.filter(card => !card.isPinned);
+
+      const totalCards = unpinnedCards.length;
       const cardsPerRow = Math.ceil(totalCards / ROWS);
 
-      const arrangedCards = cards.map((card, index) => {
+      // Réarranger seulement les cartes non épinglées
+      const arrangedUnpinnedCards = unpinnedCards.map((card, index) => {
         const row = Math.floor(index / cardsPerRow);
         const col = index % cardsPerRow;
 
@@ -212,6 +218,9 @@ export function useBoards() {
           }
         };
       });
+
+      // Combiner les cartes épinglées (inchangées) avec les cartes réarrangées
+      const arrangedCards = [...pinnedCards, ...arrangedUnpinnedCards];
 
       return { ...board, cards: arrangedCards };
     }));
@@ -234,6 +243,22 @@ export function useBoards() {
     }
   }, [boards, currentBoard]);
 
+  const toggleCardPin = useCallback((cardId: string) => {
+    setBoards(prevBoards => prevBoards.map(board => {
+      if (board.id !== currentBoard) return board;
+
+      return {
+        ...board,
+        cards: board.cards?.map(card =>
+          card.id === cardId
+            ? { ...card, isPinned: !card.isPinned }
+            : card
+        ) || []
+      };
+    }));
+    setUnsavedChanges(true);
+  }, [currentBoard]);
+
   return {
     boards,
     currentBoard,
@@ -251,6 +276,7 @@ export function useBoards() {
     saveBoards,
     hasUnsavedChanges,
     currentBoardData: currentBoard ? boards.find(b => b.id === currentBoard) : null,
-    autoArrangeCards
+    autoArrangeCards,
+    toggleCardPin
   };
 }

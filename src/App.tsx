@@ -19,15 +19,15 @@ export default function App() {
   const defaultUsername = user?.email?.split('@')[0] || 'User';
   const { username, updateUsername, loading: profileLoading } = useUserProfile(defaultUsername);
   
-  const { 
-    boards, 
-    currentBoard, 
-    setCurrentBoard, 
+  const {
+    boards,
+    currentBoard,
+    setCurrentBoard,
     createBoard,
     deleteBoard,
     addCard,
-    addLinkCard, 
-    deleteCard, 
+    addLinkCard,
+    deleteCard,
     updateCardPosition,
     updateCardContent,
     updateCardDimensions,
@@ -36,7 +36,8 @@ export default function App() {
     loadBoards,
     saveBoards,
     hasUnsavedChanges,
-    autoArrangeCards
+    autoArrangeCards,
+    toggleCardPin
   } = useBoards();
   
   const { contextMenu, setContextMenu, handleContextMenu } = useContextMenu();
@@ -151,6 +152,7 @@ export default function App() {
               onAddCard={handleCardTypeSelect}
               onUpdateCardDimensions={updateCardDimensions}
               onUpdateCardMetadata={updateCardMetadata}
+              onToggleCardPin={toggleCardPin}
               onAutoArrange={autoArrangeCards}
             />
           )}

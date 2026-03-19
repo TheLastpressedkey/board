@@ -26,6 +26,7 @@ export interface Card {
     width: number;
     height: number;
   };
+  isPinned?: boolean;
 }
 
 export interface BoardState {

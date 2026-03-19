@@ -6,6 +6,7 @@ import { X, GripHorizontal, List, Settings, Plus } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useYouTubePlayer } from './useYouTubePlayer';
 import { getYoutubeVideoId, fetchYouTubeTitle } from '../../../utils/youtubeUtils';
+import { saveCrossPlayState, loadCrossPlayState, clearCrossPlayState } from '../../../utils/crossPlayStorage';
 
 export interface Video {
   id: string;
@@ -25,6 +26,12 @@ interface YouTubePlayerProps {
 
 export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, cardId }: YouTubePlayerProps) {
   const { themeColors } = useTheme();
+
+  // Vérifier si on doit charger l'état cross-play
+  const crossPlayEnabled = metadata?.crossPlay ?? false;
+  const savedState = crossPlayEnabled ? loadCrossPlayState() : null;
+  const shouldUseSavedState = savedState && savedState.cardId === cardId;
+
   const {
     playlist,
     currentIndex,
@@ -35,21 +42,33 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
     setPlayMode,
     setVolume
   } = useYouTubePlayer(
-    metadata?.playlist,
-    metadata?.currentIndex,
-    metadata?.playMode,
-    metadata?.volume
+    shouldUseSavedState ? savedState.playlist : metadata?.playlist,
+    shouldUseSavedState ? savedState.currentIndex : metadata?.currentIndex,
+    shouldUseSavedState ? savedState.playMode : metadata?.playMode,
+    shouldUseSavedState ? savedState.volume : metadata?.volume
   );
 
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(shouldUseSavedState ? savedState.isPlaying : false);
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddUrl, setQuickAddUrl] = useState('');
   const [isHoveringPlayer, setIsHoveringPlayer] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [autoHideControls, setAutoHideControls] = useState(metadata?.autoHideControls ?? true);
-  const [currentTime, setCurrentTime] = useState(0);
+  const [crossPlay, setCrossPlay] = useState(crossPlayEnabled);
+  const [currentTime, setCurrentTime] = useState(shouldUseSavedState ? savedState.currentTime : 0);
   const [duration, setDuration] = useState(0);
+  const [shouldSeekOnLoad, setShouldSeekOnLoad] = useState(shouldUseSavedState && savedState.currentTime > 0);
+
+  const updateData = (data: any) => {
+    if (onDataChange) {
+      onDataChange({
+        ...data,
+        autoHideControls,
+        crossPlay
+      });
+    }
+  };
 
   const addVideo = async (url: string, title?: string) => {
     const videoId = getYoutubeVideoId(url);
@@ -71,14 +90,12 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
     const newPlaylist = [...playlist, newVideo];
     setPlaylist(newPlaylist);
 
-    if (onDataChange) {
-      onDataChange({
-        playlist: newPlaylist,
-        currentIndex,
-        playMode,
-        volume
-      });
-    }
+    updateData({
+      playlist: newPlaylist,
+      currentIndex,
+      playMode,
+      volume
+    });
 
     // Si c'est la première vidéo, la lire automatiquement
     if (playlist.length === 0) {
@@ -102,14 +119,12 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
     setPlaylist(newPlaylist);
     setCurrentIndex(newIndex);
 
-    if (onDataChange) {
-      onDataChange({
-        playlist: newPlaylist,
-        currentIndex: newIndex,
-        playMode,
-        volume
-      });
-    }
+    updateData({
+      playlist: newPlaylist,
+      currentIndex: newIndex,
+      playMode,
+      volume
+    });
   };
 
   const moveVideo = (fromIndex: number, toIndex: number) => {
@@ -131,14 +146,12 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
       setCurrentIndex(currentIndex + 1);
     }
 
-    if (onDataChange) {
-      onDataChange({
-        playlist: newPlaylist,
-        currentIndex: newIndex,
-        playMode,
-        volume
-      });
-    }
+    updateData({
+      playlist: newPlaylist,
+      currentIndex: newIndex,
+      playMode,
+      volume
+    });
   };
 
   const updateVideoTitle = (index: number, newTitle: string) => {
@@ -146,14 +159,12 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
     newPlaylist[index] = { ...newPlaylist[index], title: newTitle };
     setPlaylist(newPlaylist);
 
-    if (onDataChange) {
-      onDataChange({
-        playlist: newPlaylist,
-        currentIndex,
-        playMode,
-        volume
-      });
-    }
+    updateData({
+      playlist: newPlaylist,
+      currentIndex,
+      playMode,
+      volume
+    });
   };
 
   const handleVideoEnd = () => {
@@ -185,14 +196,12 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
         break;
     }
 
-    if (onDataChange) {
-      onDataChange({
-        playlist,
-        currentIndex: newIndex,
-        playMode,
-        volume
-      });
-    }
+    updateData({
+      playlist,
+      currentIndex: newIndex,
+      playMode,
+      volume
+    });
   };
 
   const handleNext = () => {
@@ -203,14 +212,12 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
     setCurrentIndex(newIndex);
     setIsPlaying(true);
 
-    if (onDataChange) {
-      onDataChange({
-        playlist,
-        currentIndex: newIndex,
-        playMode,
-        volume
-      });
-    }
+    updateData({
+      playlist,
+      currentIndex: newIndex,
+      playMode,
+      volume
+    });
   };
 
   const handlePrevious = () => {
@@ -221,54 +228,81 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
     setCurrentIndex(newIndex);
     setIsPlaying(true);
 
-    if (onDataChange) {
-      onDataChange({
-        playlist,
-        currentIndex: newIndex,
-        playMode,
-        volume
-      });
-    }
+    updateData({
+      playlist,
+      currentIndex: newIndex,
+      playMode,
+      volume
+    });
   };
 
   const handlePlayModeChange = (newMode: 'sequential' | 'loop' | 'loop-one' | 'shuffle') => {
     setPlayMode(newMode);
-    if (onDataChange) {
-      onDataChange({
-        playlist,
-        currentIndex,
-        playMode: newMode,
-        volume
-      });
-    }
+    updateData({
+      playlist,
+      currentIndex,
+      playMode: newMode,
+      volume
+    });
   };
 
   const handleVolumeChange = (newVolume: number) => {
     setVolume(newVolume);
-    if (onDataChange) {
-      onDataChange({
-        playlist,
-        currentIndex,
-        playMode,
-        volume: newVolume
-      });
-    }
+    updateData({
+      playlist,
+      currentIndex,
+      playMode,
+      volume: newVolume
+    });
   };
 
   const handleVideoSelect = (index: number) => {
     setCurrentIndex(index);
     setIsPlaying(true);
-    if (onDataChange) {
-      onDataChange({
-        playlist,
-        currentIndex: index,
-        playMode,
-        volume
-      });
-    }
+    updateData({
+      playlist,
+      currentIndex: index,
+      playMode,
+      volume
+    });
   };
 
   const currentVideo = playlist[currentIndex];
+
+  // Restaurer la position de lecture si cross-play activé
+  useEffect(() => {
+    if (shouldSeekOnLoad && (window as any).youtubeSeek) {
+      const timeToSeek = shouldUseSavedState ? savedState.currentTime : 0;
+      setTimeout(() => {
+        (window as any).youtubeSeek(timeToSeek);
+        setShouldSeekOnLoad(false);
+      }, 1000); // Attendre que le player soit prêt
+    }
+  }, [shouldSeekOnLoad]);
+
+  // Sauvegarder l'état cross-play si activé
+  useEffect(() => {
+    if (crossPlay && cardId) {
+      saveCrossPlayState({
+        playlist,
+        currentIndex,
+        playMode,
+        volume,
+        isPlaying,
+        currentTime,
+        cardId
+      });
+    }
+  }, [crossPlay, playlist, currentIndex, playMode, volume, isPlaying, currentTime, cardId]);
+
+  // Nettoyer au démontage si cross-play désactivé
+  useEffect(() => {
+    return () => {
+      if (!crossPlay) {
+        clearCrossPlayState();
+      }
+    };
+  }, [crossPlay]);
 
   return (
     <div className="h-full flex flex-col bg-black relative overflow-hidden rounded-lg">
@@ -527,15 +561,14 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
                   onClick={() => {
                     const newValue = !autoHideControls;
                     setAutoHideControls(newValue);
-                    if (onDataChange) {
-                      onDataChange({
-                        playlist,
-                        currentIndex,
-                        playMode,
-                        volume,
-                        autoHideControls: newValue
-                      });
-                    }
+                    updateData({
+                      playlist,
+                      currentIndex,
+                      playMode,
+                      volume,
+                      autoHideControls: newValue,
+                      crossPlay
+                    });
                   }}
                   className={`relative w-12 h-6 rounded-full transition-colors ${
                     autoHideControls ? 'bg-gradient-to-r from-pink-500 to-purple-500' : 'bg-gray-600'
@@ -544,6 +577,36 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
                   <div
                     className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
                       autoHideControls ? 'translate-x-6' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg">
+                <div>
+                  <p className="text-white font-medium">Cross Play</p>
+                  <p className="text-gray-400 text-sm">Continue playback when switching boards</p>
+                </div>
+                <button
+                  onClick={() => {
+                    const newValue = !crossPlay;
+                    setCrossPlay(newValue);
+                    updateData({
+                      playlist,
+                      currentIndex,
+                      playMode,
+                      volume,
+                      autoHideControls,
+                      crossPlay: newValue
+                    });
+                  }}
+                  className={`relative w-12 h-6 rounded-full transition-colors ${
+                    crossPlay ? 'bg-gradient-to-r from-pink-500 to-purple-500' : 'bg-gray-600'
+                  }`}
+                >
+                  <div
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
+                      crossPlay ? 'translate-x-6' : 'translate-x-0'
                     }`}
                   />
                 </button>

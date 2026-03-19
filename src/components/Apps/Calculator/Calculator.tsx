@@ -1,14 +1,16 @@
 import React from 'react';
+import { GripHorizontal, X } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useCardTheme } from '../../../contexts/CardThemeContext';
 
 interface CalculatorProps {
   onClose: () => void;
+  onDragStart?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 type Operation = '+' | '-' | '*' | '/' | null;
 
-export function Calculator({ onClose }: CalculatorProps) {
+export function Calculator({ onClose, onDragStart }: CalculatorProps) {
   const [display, setDisplay] = React.useState('0');
   const [firstNumber, setFirstNumber] = React.useState<number | null>(null);
   const [operation, setOperation] = React.useState<Operation>(null);
@@ -83,6 +85,22 @@ export function Calculator({ onClose }: CalculatorProps) {
 
   return (
     <div className="flex flex-col h-full rounded-lg overflow-hidden" style={{ backgroundColor: bgMain }}>
+      {/* Header */}
+      <div className="flex items-center justify-between p-2 border-b" style={{ borderColor: borderColor, backgroundColor: bgMain }}>
+        <div
+          className="cursor-move p-1 hover:bg-white/10 rounded transition-colors"
+          onMouseDown={onDragStart}
+        >
+          <GripHorizontal className="w-5 h-5" style={{ color: textColor }} />
+        </div>
+        <button
+          onClick={onClose}
+          className="p-1 hover:bg-white/10 rounded transition-colors"
+        >
+          <X className="w-5 h-5" style={{ color: textColor }} />
+        </button>
+      </div>
+
       {/* Display */}
       <div className="p-4" style={{ backgroundColor: bgMain }}>
         <div className="p-4 rounded-lg" style={{ backgroundColor: bgDisplay, border: `1px solid ${borderColor}` }}>

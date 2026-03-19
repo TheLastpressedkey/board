@@ -65,7 +65,7 @@ export function AppCardContent({
   const renderApp = () => {
     switch (appType) {
       case 'calculator':
-        return <Calculator onClose={onClose} />;
+        return <Calculator onClose={onClose} onDragStart={onDragStart} />;
       case 'clock':
         return <Clock onClose={onClose} onDragStart={onDragStart} />;
       case 'todolist':
