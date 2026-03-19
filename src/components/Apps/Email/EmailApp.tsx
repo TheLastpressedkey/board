@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
-import { Mail, GripHorizontal, X, Send, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Mail, Send, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useCardTheme } from '../../../contexts/CardThemeContext';
 import { email } from '../../../services/email';
+import { AppHeader } from '../../Common/Headers/AppHeader';
 
 interface EmailAppProps {
   onClose: () => void;
   onDragStart?: (e: React.MouseEvent) => void;
+  onTogglePin?: () => void;
+  isPinned?: boolean;
 }
 
-export function EmailApp({ onClose, onDragStart }: EmailAppProps) {
+export function EmailApp({ onClose, onDragStart, onTogglePin, isPinned }: EmailAppProps) {
   const [to, setTo] = useState('');
   const [subject, setSubject] = useState('');
   const [content, setContent] = useState('');
@@ -74,33 +77,24 @@ export function EmailApp({ onClose, onDragStart }: EmailAppProps) {
 
   return (
     <div className="flex flex-col h-full rounded-lg overflow-hidden" style={{ backgroundColor: bgMain }}>
-      {/* Header */}
-      <div
+      <AppHeader
+        onClose={onClose}
+        onDragStart={onDragStart}
+        onTogglePin={onTogglePin}
+        isPinned={isPinned}
+        title="Email"
+        backgroundColor={bgHeader}
+        borderColor={borderColor}
+        textColor={textColor}
         className="p-4"
-        style={{ backgroundColor: bgHeader, borderBottom: `1px solid ${borderColor}` }}
-      >
-        <div className="flex items-center justify-between">
-          <div
-            className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
-            onMouseDown={onDragStart}
-          >
-            <GripHorizontal className="w-5 h-5" style={{ color: textMuted }} />
-            <Mail
-              className="w-5 h-5"
-              style={{ color: primaryColor }}
-            />
-            <h2 className="text-lg font-semibold" style={{ color: textColor }}>Email</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-lg transition-colors"
-            onMouseDown={(e) => e.stopPropagation()}
-            style={{ color: textMuted }}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+        customButtons={[
+          <Mail
+            key="icon"
+            className="w-5 h-5 mr-2"
+            style={{ color: primaryColor }}
+          />
+        ]}
+      />
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 analytics-scrollbar">

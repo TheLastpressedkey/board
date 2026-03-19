@@ -1,20 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, GripHorizontal, Loader2, X } from 'lucide-react';
+import { Layout, Loader2 } from 'lucide-react';
 import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useCardTheme } from '../../../contexts/CardThemeContext';
 import { kanban, KanbanBoard, KanbanTask } from '../../../services/kanban';
 import { KanbanColumn } from './KanbanColumn';
 import { KanbanTaskForm } from './KanbanTaskForm';
+import { AppHeader } from '../../Common/Headers/AppHeader';
 
 interface KanbanAppProps {
   onClose: () => void;
   onDragStart?: (e: React.MouseEvent) => void;
   metadata?: { boardId: string };
   onDataChange?: (data: { boardId: string }) => void;
+  onTogglePin?: () => void;
+  isPinned?: boolean;
 }
 
-export function KanbanApp({ onClose, onDragStart, metadata, onDataChange }: KanbanAppProps) {
+export function KanbanApp({ onClose, onDragStart, metadata, onDataChange, onTogglePin, isPinned }: KanbanAppProps) {
   const [board, setBoard] = useState<KanbanBoard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -202,33 +205,24 @@ export function KanbanApp({ onClose, onDragStart, metadata, onDataChange }: Kanb
 
   return (
     <div className="flex flex-col h-full rounded-lg overflow-hidden" style={{ backgroundColor: bgMain }}>
-      {/* En-tête */}
-      <div
+      <AppHeader
+        onClose={onClose}
+        onDragStart={onDragStart}
+        onTogglePin={onTogglePin}
+        isPinned={isPinned}
+        title="Tableau Kanban"
+        backgroundColor={bgHeader}
+        borderColor={borderColor}
+        textColor={textColor}
         className="p-4"
-        style={{ backgroundColor: bgHeader, borderBottom: `1px solid ${borderColor}` }}
-      >
-        <div className="flex items-center justify-between">
-          <div
-            className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
-            onMouseDown={onDragStart}
-          >
-            <GripHorizontal className="w-5 h-5" style={{ color: textMuted }} />
-            <Layout
-              className="w-5 h-5"
-              style={{ color: iconColor }}
-            />
-            <h2 className="text-lg font-semibold" style={{ color: textColor }}>Tableau Kanban</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-lg transition-colors"
-            onMouseDown={(e) => e.stopPropagation()}
-            style={{ color: textMuted }}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+        customButtons={[
+          <Layout
+            key="icon"
+            className="w-5 h-5 mr-2"
+            style={{ color: iconColor }}
+          />
+        ]}
+      />
 
       {/* Contenu */}
       <DragDropContext onDragEnd={handleDragEnd}>

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Calendar as CalendarIcon, GripHorizontal, X } from 'lucide-react';
+import { Calendar as CalendarIcon } from 'lucide-react';
 import { CalendarHeader } from './CalendarHeader';
 import { CalendarGrid } from './CalendarGrid';
 import { EventForm } from './EventForm';
@@ -8,6 +8,7 @@ import { useCalendar } from './useCalendar';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useCardTheme } from '../../../contexts/CardThemeContext';
 import { Event } from './types';
+import { AppHeader } from '../../Common/Headers/AppHeader';
 
 interface CalendarProps {
   onClose: () => void;
@@ -15,9 +16,11 @@ interface CalendarProps {
   onDataChange?: (data: { events: Event[] }) => void;
   cardId?: string;
   onDragStart?: (e: React.MouseEvent) => void;
+  onTogglePin?: () => void;
+  isPinned?: boolean;
 }
 
-export function Calendar({ onClose, metadata, onDataChange, cardId, onDragStart }: CalendarProps) {
+export function Calendar({ onClose, metadata, onDataChange, cardId, onDragStart, onTogglePin, isPinned }: CalendarProps) {
   const { themeColors } = useTheme();
   const { currentCardTheme } = useCardTheme();
   const isTerminalTheme = currentCardTheme.id === 'terminal';
@@ -96,33 +99,24 @@ export function Calendar({ onClose, metadata, onDataChange, cardId, onDragStart 
       ref={containerRef}
       style={{ backgroundColor: bgMain }}
     >
-      {/* Header */}
-      <div
+      <AppHeader
+        onClose={onClose}
+        onDragStart={onDragStart}
+        onTogglePin={onTogglePin}
+        isPinned={isPinned}
+        title="Calendar"
+        backgroundColor={bgHeader}
+        borderColor={borderColor}
+        textColor={textColor}
         className="p-4"
-        style={{ backgroundColor: bgHeader, borderBottom: `1px solid ${borderColor}` }}
-      >
-        <div className="flex items-center justify-between">
-          <div
-            className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
-            onMouseDown={onDragStart}
-          >
-            <GripHorizontal className="w-5 h-5" style={{ color: textMuted }} />
-            <CalendarIcon
-              className="w-5 h-5"
-              style={{ color: iconColor }}
-            />
-            <h2 className="text-lg font-semibold" style={{ color: textColor }}>Calendar</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-lg transition-colors"
-            style={{ color: textMuted }}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+        customButtons={[
+          <CalendarIcon
+            key="icon"
+            className="w-5 h-5 mr-2"
+            style={{ color: iconColor }}
+          />
+        ]}
+      />
 
       {/* Calendar Content */}
       <div className="flex-1 flex gap-4 p-4 min-h-0">

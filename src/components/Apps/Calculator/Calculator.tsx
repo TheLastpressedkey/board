@@ -1,16 +1,18 @@
 import React from 'react';
-import { GripHorizontal, X } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useCardTheme } from '../../../contexts/CardThemeContext';
+import { AppHeader } from '../../Common/Headers/AppHeader';
 
 interface CalculatorProps {
   onClose: () => void;
   onDragStart?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onTogglePin?: () => void;
+  isPinned?: boolean;
 }
 
 type Operation = '+' | '-' | '*' | '/' | null;
 
-export function Calculator({ onClose, onDragStart }: CalculatorProps) {
+export function Calculator({ onClose, onDragStart, onTogglePin, isPinned }: CalculatorProps) {
   const [display, setDisplay] = React.useState('0');
   const [firstNumber, setFirstNumber] = React.useState<number | null>(null);
   const [operation, setOperation] = React.useState<Operation>(null);
@@ -85,21 +87,15 @@ export function Calculator({ onClose, onDragStart }: CalculatorProps) {
 
   return (
     <div className="flex flex-col h-full rounded-lg overflow-hidden" style={{ backgroundColor: bgMain }}>
-      {/* Header */}
-      <div className="flex items-center justify-between p-2 border-b" style={{ borderColor: borderColor, backgroundColor: bgMain }}>
-        <div
-          className="cursor-move p-1 hover:bg-white/10 rounded transition-colors"
-          onMouseDown={onDragStart}
-        >
-          <GripHorizontal className="w-5 h-5" style={{ color: textColor }} />
-        </div>
-        <button
-          onClick={onClose}
-          className="p-1 hover:bg-white/10 rounded transition-colors"
-        >
-          <X className="w-5 h-5" style={{ color: textColor }} />
-        </button>
-      </div>
+      <AppHeader
+        onClose={onClose}
+        onDragStart={onDragStart}
+        onTogglePin={onTogglePin}
+        isPinned={isPinned}
+        backgroundColor={bgMain}
+        borderColor={borderColor}
+        textColor={textColor}
+      />
 
       {/* Display */}
       <div className="p-4" style={{ backgroundColor: bgMain }}>

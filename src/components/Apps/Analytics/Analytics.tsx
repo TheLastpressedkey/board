@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, PieChart, Activity, Layout, FileText, Loader2, GripHorizontal, X } from 'lucide-react';
+import { BarChart, PieChart, Activity, Layout, FileText, Loader2 } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useCardTheme } from '../../../contexts/CardThemeContext';
 import { StatCard } from './StatCard';
 import { ChartCard } from './ChartCard';
 import { analytics } from '../../../services/analytics';
+import { AppHeader } from '../../Common/Headers/AppHeader';
 
 interface AnalyticsProps {
   onClose: () => void;
   onDragStart?: (e: React.MouseEvent) => void;
+  onTogglePin?: () => void;
+  isPinned?: boolean;
 }
 
 interface Stats {
@@ -16,7 +19,7 @@ interface Stats {
   kanbanBoards: any[];
 }
 
-export function Analytics({ onClose, onDragStart }: AnalyticsProps) {
+export function Analytics({ onClose, onDragStart, onTogglePin, isPinned }: AnalyticsProps) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -132,33 +135,24 @@ export function Analytics({ onClose, onDragStart }: AnalyticsProps) {
 
   return (
     <div className="flex flex-col h-full rounded-lg overflow-hidden" style={{ backgroundColor: bgMain }}>
-      {/* En-tête */}
-      <div
+      <AppHeader
+        onClose={onClose}
+        onDragStart={onDragStart}
+        onTogglePin={onTogglePin}
+        isPinned={isPinned}
+        title="Analytiques"
+        backgroundColor={bgHeader}
+        borderColor={borderColor}
+        textColor={textColor}
         className="p-4"
-        style={{ backgroundColor: bgHeader, borderBottom: `1px solid ${borderColor}` }}
-      >
-        <div className="flex items-center justify-between">
-          <div
-            className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
-            onMouseDown={onDragStart}
-          >
-            <GripHorizontal className="w-5 h-5" style={{ color: textMuted }} />
-            <Activity
-              className="w-5 h-5"
-              style={{ color: iconColor }}
-            />
-            <h2 className="text-lg font-semibold" style={{ color: textColor }}>Analytiques</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-lg transition-colors"
-            onMouseDown={(e) => e.stopPropagation()}
-            style={{ color: textMuted }}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+        customButtons={[
+          <Activity
+            key="icon"
+            className="w-5 h-5 mr-2"
+            style={{ color: iconColor }}
+          />
+        ]}
+      />
 
       {/* Contenu */}
       <div className="flex-1 overflow-y-auto analytics-scrollbar p-4 space-y-4">

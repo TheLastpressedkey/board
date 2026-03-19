@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Grid, List, GripHorizontal, X, FolderOpen, FolderPlus } from 'lucide-react';
+import { Upload, Grid, List, FolderOpen, FolderPlus } from 'lucide-react';
+import { AppHeader } from '../../Common/Headers/AppHeader';
 import { fileManagerService } from '../../../services/fileManager';
 import { FileUpload } from './FileUpload';
 import { FileGrid } from './FileGrid';
@@ -30,12 +31,16 @@ export interface FileManagerProps {
   onClose: () => void;
   onDragStart?: (e: React.MouseEvent) => void;
   className?: string;
+  onTogglePin?: () => void;
+  isPinned?: boolean;
 }
 
-export const FileManager: React.FC<FileManagerProps> = ({ 
-  onClose, 
-  onDragStart, 
-  className = '' 
+export const FileManager: React.FC<FileManagerProps> = ({
+  onClose,
+  onDragStart,
+  className = '',
+  onTogglePin,
+  isPinned
 }) => {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [currentPath, setCurrentPath] = useState('/');
@@ -169,33 +174,24 @@ export const FileManager: React.FC<FileManagerProps> = ({
 
   return (
     <div className={`flex flex-col h-full rounded-lg overflow-hidden ${className}`} style={{ backgroundColor: bgMain }}>
-      {/* Header avec drag handle */}
-      <div
+      <AppHeader
+        onClose={onClose}
+        onDragStart={onDragStart}
+        onTogglePin={onTogglePin}
+        isPinned={isPinned}
+        title="Gestionnaire de fichiers"
+        backgroundColor={bgHeader}
+        borderColor={borderColor}
+        textColor={textColor}
         className="p-4"
-        style={{ backgroundColor: bgHeader, borderBottom: `1px solid ${borderColor}` }}
-      >
-        <div className="flex items-center justify-between">
-          <div
-            className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
-            onMouseDown={onDragStart}
-          >
-            <GripHorizontal className="w-5 h-5" style={{ color: textMuted }} />
-            <FolderOpen
-              className="w-5 h-5"
-              style={{ color: primaryColor }}
-            />
-            <h2 className="text-lg font-semibold" style={{ color: textColor }}>Gestionnaire de fichiers</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-lg transition-colors"
-            onMouseDown={(e) => e.stopPropagation()}
-            style={{ color: textMuted }}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+        customButtons={[
+          <FolderOpen
+            key="icon"
+            className="w-5 h-5 mr-2"
+            style={{ color: primaryColor }}
+          />
+        ]}
+      />
 
       {/* Barre d'outils */}
       <div className="flex items-center justify-between p-4" style={{ borderBottom: `1px solid ${borderColor}` }}>

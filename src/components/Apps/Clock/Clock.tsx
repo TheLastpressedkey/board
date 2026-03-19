@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { GripHorizontal, X } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useCardTheme } from '../../../contexts/CardThemeContext';
+import { AppHeader } from '../../Common/Headers/AppHeader';
 
 interface ClockProps {
   onClose: () => void;
   onDragStart?: (e: React.MouseEvent) => void;
+  onTogglePin?: () => void;
+  isPinned?: boolean;
 }
 
-export function Clock({ onClose, onDragStart }: ClockProps) {
+export function Clock({ onClose, onDragStart, onTogglePin, isPinned }: ClockProps) {
   const [time, setTime] = useState(new Date());
   const [clockSize, setClockSize] = useState(200);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -58,32 +60,22 @@ export function Clock({ onClose, onDragStart }: ClockProps) {
   const iconColor = isTerminalTheme ? 'rgb(255, 255, 255)' : 'white';
 
   return (
-    <div 
+    <div
       ref={containerRef}
-      className="flex flex-col h-full overflow-hidden" 
+      className="flex flex-col h-full overflow-hidden"
       style={{ backgroundColor: 'transparent' }}
     >
-      {/* En-tête avec poignée de déplacement */}
-      <div className="absolute top-2 left-2 z-10">
-        <div
-          className="flex items-center gap-2 cursor-grab active:cursor-grabbing p-2 rounded-lg"
-          style={{ backgroundColor: bgOverlay }}
-          onMouseDown={onDragStart}
-        >
-          <GripHorizontal className="w-4 h-4" style={{ color: iconColor, opacity: 0.7 }} />
-        </div>
-      </div>
-
-      {/* Bouton de fermeture */}
-      <div className="absolute top-2 right-2 z-10">
-        <button
-          onClick={onClose}
-          className="p-2 rounded-lg hover:bg-black/20 transition-colors"
-          style={{ backgroundColor: bgOverlay }}
-          onMouseDown={(e) => e.stopPropagation()}
-        >
-          <X className="w-4 h-4" style={{ color: iconColor, opacity: 0.7 }} />
-        </button>
+      <div className="absolute top-2 left-0 right-0 z-10 px-2">
+        <AppHeader
+          onClose={onClose}
+          onDragStart={onDragStart}
+          onTogglePin={onTogglePin}
+          isPinned={isPinned}
+          backgroundColor={bgOverlay}
+          borderColor="transparent"
+          textColor={iconColor}
+          className="rounded-lg"
+        />
       </div>
 
       <div className="flex-1 flex items-center justify-center">

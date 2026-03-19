@@ -23,6 +23,8 @@ interface AppCardContentProps {
   onDataChange?: (data: any) => void;
   onDragStart?: (e: React.MouseEvent) => void;
   cardId?: string;
+  onTogglePin?: () => void;
+  isPinned?: boolean;
 }
 
 export function AppCardContent({
@@ -32,7 +34,9 @@ export function AppCardContent({
   metadata,
   onDataChange,
   onDragStart,
-  cardId
+  cardId,
+  onTogglePin,
+  isPinned
 }: AppCardContentProps) {
   const { themeColors } = useTheme();
   const { currentCardTheme } = useCardTheme();
@@ -65,29 +69,29 @@ export function AppCardContent({
   const renderApp = () => {
     switch (appType) {
       case 'calculator':
-        return <Calculator onClose={onClose} onDragStart={onDragStart} />;
+        return <Calculator onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'clock':
-        return <Clock onClose={onClose} onDragStart={onDragStart} />;
+        return <Clock onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'todolist':
-        return <TodoList onClose={onClose} metadata={metadata} onDataChange={onDataChange} cardId={cardId} onDragStart={onDragStart} />;
+        return <TodoList onClose={onClose} metadata={metadata} onDataChange={onDataChange} cardId={cardId} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'calendar':
-        return <Calendar onClose={onClose} metadata={metadata} onDataChange={onDataChange} cardId={cardId} onDragStart={onDragStart} />;
+        return <Calendar onClose={onClose} metadata={metadata} onDataChange={onDataChange} cardId={cardId} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'rss':
-        return <RSSReader onClose={onClose} metadata={metadata} onDataChange={onDataChange} onDragStart={onDragStart} />;
+        return <RSSReader onClose={onClose} metadata={metadata} onDataChange={onDataChange} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'analytics':
-        return <Analytics onClose={onClose} onDragStart={onDragStart} />;
+        return <Analytics onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'kanban':
-        return <KanbanApp onClose={onClose} onDragStart={onDragStart} metadata={metadata} onDataChange={onDataChange} />;
+        return <KanbanApp onClose={onClose} onDragStart={onDragStart} metadata={metadata} onDataChange={onDataChange} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'email':
-        return <EmailApp onClose={onClose} onDragStart={onDragStart} />;
+        return <EmailApp onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'document-editor':
-        return <DocumentManager onClose={onClose} onDragStart={onDragStart} />;
+        return <DocumentManager onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'file-manager':
-        return <FileManager onClose={onClose} onDragStart={onDragStart} />;
+        return <FileManager onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'whiteboard':
-        return <WhiteboardNew onClose={onClose} onDragStart={onDragStart} metadata={metadata} onDataChange={onDataChange} cardId={cardId} />;
+        return <WhiteboardNew onClose={onClose} onDragStart={onDragStart} metadata={metadata} onDataChange={onDataChange} cardId={cardId} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'youtube-player':
-        return <YouTubePlayer onClose={onClose} metadata={metadata} onDataChange={onDataChange} onDragStart={onDragStart} cardId={cardId} />;
+        return <YouTubePlayer onClose={onClose} metadata={metadata} onDataChange={onDataChange} onDragStart={onDragStart} cardId={cardId} onTogglePin={onTogglePin} isPinned={isPinned} />;
       default:
         return (
           <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">

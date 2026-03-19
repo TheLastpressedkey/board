@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Plus, Search, Trash2, Edit, Calendar, Tag, GripHorizontal, X } from 'lucide-react';
+import { FileText, Plus, Search, Trash2, Edit, Calendar, Tag } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useCardTheme } from '../../../contexts/CardThemeContext';
 import { documents, Document } from '../../../services/documents';
 import { DocumentEditor } from './DocumentEditor';
+import { AppHeader } from '../../Common/Headers/AppHeader';
 
 interface DocumentManagerProps {
   onClose: () => void;
   onDragStart?: (e: React.MouseEvent) => void;
+  onTogglePin?: () => void;
+  isPinned?: boolean;
 }
 
-export function DocumentManager({ onClose, onDragStart }: DocumentManagerProps) {
+export function DocumentManager({ onClose, onDragStart, onTogglePin, isPinned }: DocumentManagerProps) {
   const [documentsList, setDocumentsList] = useState<Document[]>([]);
   const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -103,6 +106,24 @@ export function DocumentManager({ onClose, onDragStart }: DocumentManagerProps) 
   const primaryColor = isTerminalTheme ? 'rgb(255, 255, 255)' : themeColors.primary;
   const bgButtonText = isTerminalTheme ? 'rgb(0, 0, 0)' : 'white';
 
+  const customButtons = [
+    <FileText
+      key="icon"
+      className="w-5 h-5 mr-2"
+      style={{ color: primaryColor }}
+    />,
+    <button
+      key="new"
+      onClick={() => setSelectedDocument('new')}
+      className="px-3 py-1.5 text-sm rounded-lg flex items-center gap-2"
+      style={{ backgroundColor: primaryColor, color: bgButtonText }}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      <Plus className="w-4 h-4" />
+      Nouveau
+    </button>
+  ];
+
   return (
     <div className="flex flex-col h-full rounded-lg overflow-hidden" style={{ backgroundColor: bgMain }}>
       {/* Header */}
@@ -110,38 +131,18 @@ export function DocumentManager({ onClose, onDragStart }: DocumentManagerProps) 
         className="p-4"
         style={{ backgroundColor: bgHeader, borderBottom: `1px solid ${borderColor}` }}
       >
-        <div className="flex items-center justify-between">
-          <div
-            className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
-            onMouseDown={onDragStart}
-          >
-            <GripHorizontal className="w-5 h-5" style={{ color: textMuted }} />
-            <FileText
-              className="w-5 h-5"
-              style={{ color: primaryColor }}
-            />
-            <h2 className="text-lg font-semibold" style={{ color: textColor }}>Gestionnaire de Documents</h2>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSelectedDocument('new')}
-              className="px-3 py-1.5 text-sm rounded-lg flex items-center gap-2"
-              style={{ backgroundColor: primaryColor, color: bgButtonText }}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <Plus className="w-4 h-4" />
-              Nouveau
-            </button>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg transition-colors"
-              onMouseDown={(e) => e.stopPropagation()}
-              style={{ color: textMuted }}
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+        <AppHeader
+          onClose={onClose}
+          onDragStart={onDragStart}
+          onTogglePin={onTogglePin}
+          isPinned={isPinned}
+          title="Gestionnaire de Documents"
+          customButtons={customButtons}
+          backgroundColor="transparent"
+          borderColor="transparent"
+          textColor={textColor}
+          className="p-0 border-none mb-3"
+        />
 
         {/* Search */}
         <div className="mt-3 relative">

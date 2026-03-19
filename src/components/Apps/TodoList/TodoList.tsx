@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { CheckSquare, GripHorizontal, X } from 'lucide-react';
+import { CheckSquare } from 'lucide-react';
 import { TodoItem } from './TodoItem';
 import { TodoInput } from './TodoInput';
 import { useTodoList } from './useTodoList';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useCardTheme } from '../../../contexts/CardThemeContext';
+import { AppHeader } from '../../Common/Headers/AppHeader';
 
 interface TodoListProps {
   onClose: () => void;
@@ -12,9 +13,11 @@ interface TodoListProps {
   onDataChange?: (data: any) => void;
   cardId?: string;
   onDragStart?: (e: React.MouseEvent) => void;
+  onTogglePin?: () => void;
+  isPinned?: boolean;
 }
 
-export function TodoList({ onClose, metadata, onDataChange, cardId, onDragStart }: TodoListProps) {
+export function TodoList({ onClose, metadata, onDataChange, cardId, onDragStart, onTogglePin, isPinned }: TodoListProps) {
   const { todos, addTodo, toggleTodo, deleteTodo, isLoaded } = useTodoList(metadata?.todos, onDataChange, cardId);
   const [newTodo, setNewTodo] = useState('');
   const { themeColors } = useTheme();
@@ -37,33 +40,24 @@ export function TodoList({ onClose, metadata, onDataChange, cardId, onDragStart 
 
   return (
     <div className="flex flex-col h-full rounded-lg overflow-hidden" style={{ backgroundColor: bgMain }}>
-      {/* Header */}
-      <div
+      <AppHeader
+        onClose={onClose}
+        onDragStart={onDragStart}
+        onTogglePin={onTogglePin}
+        isPinned={isPinned}
+        title="Todo List"
+        backgroundColor={bgHeader}
+        borderColor={borderColor}
+        textColor={textColor}
         className="p-4"
-        style={{ backgroundColor: bgHeader, borderBottom: `1px solid ${borderColor}` }}
-      >
-        <div className="flex items-center justify-between">
-          <div
-            className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
-            onMouseDown={onDragStart}
-          >
-            <GripHorizontal className="w-5 h-5" style={{ color: textMuted }} />
-            <CheckSquare
-              className="w-5 h-5"
-              style={{ color: isTerminalTheme ? 'rgb(255, 255, 255)' : themeColors.primary }}
-            />
-            <h2 className="text-lg font-semibold" style={{ color: textColor }}>Todo List</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-lg transition-colors"
-            style={{ color: textMuted }}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+        customButtons={[
+          <CheckSquare
+            key="icon"
+            className="w-5 h-5 mr-2"
+            style={{ color: isTerminalTheme ? 'rgb(255, 255, 255)' : themeColors.primary }}
+          />
+        ]}
+      />
 
       {/* Content */}
       <div className="flex flex-col h-full">

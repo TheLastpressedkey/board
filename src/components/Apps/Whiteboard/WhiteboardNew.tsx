@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Share2, Library, GripHorizontal, X, Pen } from 'lucide-react';
+import { Share2, Library, Pen } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useCardTheme } from '../../../contexts/CardThemeContext';
 import { HamburgerMenu } from './HamburgerMenu';
@@ -7,6 +7,7 @@ import { FloatingToolbar } from './FloatingToolbar';
 import { SelectionPanel } from './SelectionPanel';
 import { TextPanel } from './TextPanel';
 import { Tool, DrawingElement, Point } from './types';
+import { AppHeader } from '../../Common/Headers/AppHeader';
 import {
   createPathElement,
   createShapeElement,
@@ -28,9 +29,11 @@ interface WhiteboardProps {
   metadata?: { elements?: DrawingElement[] };
   onDataChange?: (data: { elements: DrawingElement[] }) => void;
   cardId?: string;
+  onTogglePin?: () => void;
+  isPinned?: boolean;
 }
 
-export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: WhiteboardProps) {
+export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange, onTogglePin, isPinned }: WhiteboardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [elements, setElements] = useState<DrawingElement[]>(metadata?.elements || []);
   const [history, setHistory] = useState<DrawingElement[][]>([metadata?.elements || []]);
@@ -601,37 +604,25 @@ export function WhiteboardNew({ onClose, onDragStart, metadata, onDataChange }: 
 
   return (
     <div className="flex flex-col h-full rounded-lg overflow-hidden relative" style={{ backgroundColor: bgMain }}>
-      {/* Header avec drag & drop */}
-      <div
-        className="p-3"
-        style={{
-          backgroundColor: bgHeader,
-          borderBottom: `1px solid ${borderColor}`,
-          position: 'relative',
-          zIndex: 20
-        }}
-      >
-        <div className="flex items-center justify-between">
-          <div
-            className="flex items-center gap-2 cursor-grab active:cursor-grabbing"
-            onMouseDown={onDragStart}
-          >
-            <GripHorizontal className="w-5 h-5" style={{ color: textMuted }} />
+      <div style={{ position: 'relative', zIndex: 20 }}>
+        <AppHeader
+          onClose={onClose}
+          onDragStart={onDragStart}
+          onTogglePin={onTogglePin}
+          isPinned={isPinned}
+          title="Whiteboard"
+          backgroundColor={bgHeader}
+          borderColor={borderColor}
+          textColor={textColor}
+          className="p-3"
+          customButtons={[
             <Pen
-              className="w-5 h-5"
+              key="icon"
+              className="w-5 h-5 mr-2"
               style={{ color: primaryColor }}
             />
-            <h2 className="text-lg font-semibold" style={{ color: textColor }}>Whiteboard</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-lg transition-colors"
-            style={{ color: textMuted }}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+          ]}
+        />
       </div>
 
       <div className="flex-1 relative overflow-hidden">

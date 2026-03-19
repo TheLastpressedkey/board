@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { VideoPlayer } from './VideoPlayer';
 import { PlaylistManager } from './PlaylistManager';
 import { VideoControls } from './VideoControls';
-import { X, GripHorizontal, List, Settings, Plus } from 'lucide-react';
+import { List, Settings, Plus } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useYouTubePlayer } from './useYouTubePlayer';
 import { getYoutubeVideoId, fetchYouTubeTitle } from '../../../utils/youtubeUtils';
 import { saveCrossPlayState, loadCrossPlayState, clearCrossPlayState } from '../../../utils/crossPlayStorage';
+import { AppHeader } from '../../Common/Headers/AppHeader';
 
 export interface Video {
   id: string;
@@ -22,9 +23,11 @@ interface YouTubePlayerProps {
   onDataChange?: (data: any) => void;
   onDragStart?: (e: React.MouseEvent) => void;
   cardId?: string;
+  onTogglePin?: () => void;
+  isPinned?: boolean;
 }
 
-export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, cardId }: YouTubePlayerProps) {
+export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, cardId, onTogglePin, isPinned }: YouTubePlayerProps) {
   const { themeColors } = useTheme();
 
   // Vérifier si on doit charger l'état cross-play
@@ -304,56 +307,49 @@ export function YouTubePlayer({ onClose, metadata, onDataChange, onDragStart, ca
     };
   }, [crossPlay]);
 
+  const customButtons = playlist.length > 0 ? [
+    <button
+      key="add"
+      onClick={() => setShowQuickAdd(true)}
+      onMouseDown={(e) => e.stopPropagation()}
+      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+      title="Add video"
+    >
+      <Plus className="w-5 h-5 text-white/70" />
+    </button>,
+    <button
+      key="playlist"
+      onClick={() => setShowPlaylist(!showPlaylist)}
+      onMouseDown={(e) => e.stopPropagation()}
+      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+      title="Playlist"
+    >
+      <List className="w-5 h-5" style={{ color: showPlaylist ? themeColors.primary : 'rgba(255,255,255,0.7)' }} />
+    </button>,
+    <button
+      key="settings"
+      onClick={() => setShowSettings(!showSettings)}
+      onMouseDown={(e) => e.stopPropagation()}
+      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+      title="Settings"
+    >
+      <Settings className="w-5 h-5" style={{ color: showSettings ? themeColors.primary : 'rgba(255,255,255,0.7)' }} />
+    </button>
+  ] : [];
+
   return (
     <div className="h-full flex flex-col bg-black relative overflow-hidden rounded-lg">
-      {/* Top Bar - Minimal */}
-      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-2 bg-gradient-to-b from-black/80 to-transparent">
-        <div
-          className="flex items-center gap-2 cursor-grab active:cursor-grabbing p-2 rounded-lg hover:bg-white/10"
-          onMouseDown={onDragStart}
-        >
-          <GripHorizontal className="w-5 h-5 text-white/70" />
-        </div>
-        <div className="flex items-center gap-2">
-          {playlist.length > 0 && (
-            <>
-              <button
-                onClick={() => setShowQuickAdd(true)}
-                onMouseDown={(e) => e.stopPropagation()}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                title="Add video"
-              >
-                <Plus className="w-5 h-5 text-white/70" />
-              </button>
-              <button
-                onClick={() => setShowPlaylist(!showPlaylist)}
-                onMouseDown={(e) => e.stopPropagation()}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                style={showPlaylist ? { color: themeColors.primary } : {}}
-                title="Playlist"
-              >
-                <List className="w-5 h-5" style={{ color: showPlaylist ? themeColors.primary : 'rgba(255,255,255,0.7)' }} />
-              </button>
-              <button
-                onClick={() => setShowSettings(!showSettings)}
-                onMouseDown={(e) => e.stopPropagation()}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                style={showSettings ? { color: themeColors.primary } : {}}
-                title="Settings"
-              >
-                <Settings className="w-5 h-5" style={{ color: showSettings ? themeColors.primary : 'rgba(255,255,255,0.7)' }} />
-              </button>
-            </>
-          )}
-          <button
-            onClick={onClose}
-            onMouseDown={(e) => e.stopPropagation()}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-white/70" />
-          </button>
-        </div>
-      </div>
+      <AppHeader
+        onClose={onClose}
+        onDragStart={onDragStart}
+        onTogglePin={onTogglePin}
+        isPinned={isPinned}
+        customButtons={customButtons}
+        backgroundColor="transparent"
+        borderColor="transparent"
+        textColor="rgba(255,255,255,0.7)"
+        className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent border-none"
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">

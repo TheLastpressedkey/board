@@ -115,7 +115,12 @@ export function Card({
           : {};
         return (
           <div style={containerStyle} className="h-full">
-            <Analytics onClose={() => onDelete(card.id)} onDragStart={handleMouseDown} />
+            <Analytics
+              onClose={() => onDelete(card.id)}
+              onDragStart={handleMouseDown}
+              onTogglePin={onTogglePin ? () => onTogglePin(card.id) : undefined}
+              isPinned={card.isPinned}
+            />
           </div>
         );
       }
@@ -131,6 +136,8 @@ export function Card({
               onDragStart={handleMouseDown}
               metadata={card.metadata}
               onDataChange={handleDataChange}
+              onTogglePin={onTogglePin ? () => onTogglePin(card.id) : undefined}
+              isPinned={card.isPinned}
             />
           </div>
         );
@@ -145,6 +152,8 @@ export function Card({
           onDataChange={handleDataChange}
           onDragStart={handleMouseDown}
           cardId={card.id}
+          onTogglePin={onTogglePin ? () => onTogglePin(card.id) : undefined}
+          isPinned={card.isPinned}
         />
       );
     }
