@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { VideoPlayer } from './VideoPlayer';
 import { PlaylistManager } from './PlaylistManager';
 import { VideoControls } from './VideoControls';
-import { List, Settings, Plus } from 'lucide-react';
+import { List, Settings, Plus, X } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useYouTubePlayer } from './useYouTubePlayer';
 import { getYoutubeVideoId, fetchYouTubeTitle } from '../../../utils/youtubeUtils';

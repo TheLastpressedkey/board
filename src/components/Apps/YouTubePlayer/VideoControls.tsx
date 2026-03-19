@@ -84,7 +84,7 @@ export function VideoControls({
 
   return (
     <div
-      className={`${immersiveMode ? 'absolute bottom-0 left-0 right-0' : ''} p-2 sm:p-3 md:p-4 border-t transition-all duration-300 ${
+      className={`absolute bottom-0 left-0 right-0 p-2 sm:p-3 md:p-4 border-t transition-all duration-300 ${
         immersiveMode && !isVisible ? 'opacity-0 translate-y-full pointer-events-none' : 'opacity-100 translate-y-0'
       }`}
       style={{ borderColor: `${themeColors.primary}40`, backgroundColor: themeColors.menuBg }}
