@@ -42,6 +42,7 @@ export function DrivePlus({ onClose, onDragStart, onTogglePin, isPinned }: Drive
   const [shareUrl, setShareUrl] = useState('');
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [isLoadingConfig, setIsLoadingConfig] = useState(true);
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false);
   const [toast, setToast] = useState<{
     show: boolean;
     message: string;
@@ -69,13 +70,61 @@ export function DrivePlus({ onClose, onDragStart, onTogglePin, isPinned }: Drive
     loadApiKey();
   }, []);
 
-  // Charger les fichiers depuis localStorage
-  useEffect(() => {
-    const savedFiles = localStorage.getItem(STORAGE_KEY);
-    if (savedFiles) {
-      setFiles(JSON.parse(savedFiles));
+  // Charger les fichiers depuis UploadThing
+  const loadFilesFromUploadThing = async () => {
+    if (!apiKey) return;
+
+    setIsLoadingFiles(true);
+    try {
+      const response = await fetch('https://api.uploadthing.com/v6/listFiles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Uploadthing-Api-Key': apiKey,
+        },
+        body: JSON.stringify({
+          limit: 500, // Récupérer jusqu'à 500 fichiers
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch files from UploadThing');
+      }
+
+      const data = await response.json();
+
+      // Transformer les données UploadThing en format DriveFile
+      const uploadThingFiles: DriveFile[] = (data.files || []).map((file: any) => ({
+        id: file.key,
+        name: file.name,
+        url: `https://utfs.io/f/${file.key}`,
+        size: file.size,
+        type: file.type || 'application/octet-stream',
+        uploadedAt: file.uploadedAt || new Date().toISOString(),
+        key: file.key,
+      }));
+
+      setFiles(uploadThingFiles);
+      // Sauvegarder en cache localStorage
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(uploadThingFiles));
+    } catch (error) {
+      console.error('Error loading files from UploadThing:', error);
+      // En cas d'erreur, charger depuis localStorage en fallback
+      const savedFiles = localStorage.getItem(STORAGE_KEY);
+      if (savedFiles) {
+        setFiles(JSON.parse(savedFiles));
+      }
+    } finally {
+      setIsLoadingFiles(false);
     }
-  }, []);
+  };
+
+  // Charger les fichiers quand la clé API est disponible
+  useEffect(() => {
+    if (apiKey) {
+      loadFilesFromUploadThing();
+    }
+  }, [apiKey]);
 
   // Sauvegarder les fichiers dans localStorage
   const saveFiles = (newFiles: DriveFile[]) => {
@@ -300,11 +349,13 @@ export function DrivePlus({ onClose, onDragStart, onTogglePin, isPinned }: Drive
       />
 
       {/* Loading state */}
-      {isLoadingConfig && (
+      {(isLoadingConfig || isLoadingFiles) && (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderBottomColor: themeColors.primary }}></div>
-            <p className="text-sm" style={{ color: textMuted }}>Chargement de la configuration...</p>
+            <p className="text-sm" style={{ color: textMuted }}>
+              {isLoadingConfig ? 'Chargement de la configuration...' : 'Chargement des fichiers...'}
+            </p>
           </div>
         </div>
       )}
@@ -356,8 +407,8 @@ export function DrivePlus({ onClose, onDragStart, onTogglePin, isPinned }: Drive
         </div>
       )}
 
-      {/* Contenu principal - visible seulement si clé API configurée */}
-      {!isLoadingConfig && apiKey && (
+      {/* Contenu principal - visible seulement si clé API configurée et fichiers chargés */}
+      {!isLoadingConfig && !isLoadingFiles && apiKey && (
         <>
       {/* Barre d'outils */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 sm:p-4" style={{ borderBottom: `1px solid ${borderColor}` }}>
