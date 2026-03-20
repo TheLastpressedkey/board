@@ -189,7 +189,10 @@ export function TerminalView({
   }
 
   return (
-    <div className="flex-1 flex flex-col relative">
+    <div
+      className="flex-1 flex flex-col relative"
+      onContextMenu={(e) => e.stopPropagation()}
+    >
       {/* Loading overlay */}
       {isConnecting && (
         <div className="absolute inset-0 z-10 flex items-center justify-center" style={{ backgroundColor: `${bgMain}CC` }}>

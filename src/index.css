@@ -253,3 +253,23 @@
 .brush-slider::-moz-range-thumb:active {
   transform: scale(1.1);
 }
+
+/* Terminal scrollbar styles */
+.xterm .xterm-viewport::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.xterm .xterm-viewport::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.xterm .xterm-viewport::-webkit-scrollbar-thumb {
+  background: var(--theme-scrollbar);
+  border-radius: 4px;
+}
+
+.xterm .xterm-viewport::-webkit-scrollbar-corner {
+  background: transparent;
+}

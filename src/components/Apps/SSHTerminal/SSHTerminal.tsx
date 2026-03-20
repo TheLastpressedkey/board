@@ -272,7 +272,7 @@ export function SSHTerminal({ onClose, onDragStart, onTogglePin, isPinned }: SSH
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto card-scrollbar">
               {/* Liste des serveurs */}
               {!showForm && (
                 <div className="p-3">
