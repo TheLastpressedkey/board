@@ -34,8 +34,8 @@ build/
 ehthumbs.db
 Thumbs.db
 
-# Backend PHP (exclu du repository)
-backend/
+# Claude Code configuration (local only)
+.claude/
 
 # Base de données (exclu du repository)
 db/

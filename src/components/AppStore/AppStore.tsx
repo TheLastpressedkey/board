@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail, FileText, FolderOpen, Pencil, Youtube, Cloud } from 'lucide-react';
+import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail, FileText, FolderOpen, Pencil, Youtube, Cloud, Terminal } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppStoreProps {
@@ -122,6 +122,14 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
       description: 'Cloud storage powered by UploadThing - upload, manage and share files',
       icon: Cloud,
       category: 'Storage',
+      author: 'Core Apps'
+    },
+    {
+      id: 'ssh-terminal',
+      name: 'SSH Terminal',
+      description: 'Connect to remote servers via SSH with a full-featured terminal emulator',
+      icon: Terminal,
+      category: 'Developer',
       author: 'Core Apps'
     }
   ];

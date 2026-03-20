@@ -12,6 +12,7 @@ import { FileManager } from '../Apps/FileManager/FileManager';
 import { WhiteboardNew } from '../Apps/Whiteboard/WhiteboardNew';
 import { YouTubePlayer } from '../Apps/YouTubePlayer/YouTubePlayer';
 import { DrivePlus } from '../Apps/DrivePlus/DrivePlus';
+import { SSHTerminal } from '../Apps/SSHTerminal/SSHTerminal';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCardTheme } from '../../contexts/CardThemeContext';
 import { GripHorizontal, X, AlertCircle } from 'lucide-react';
@@ -95,6 +96,8 @@ export function AppCardContent({
         return <YouTubePlayer onClose={onClose} metadata={metadata} onDataChange={onDataChange} onDragStart={onDragStart} cardId={cardId} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'driveplus':
         return <DrivePlus onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
+      case 'ssh-terminal':
+        return <SSHTerminal onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
       default:
         return (
           <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
