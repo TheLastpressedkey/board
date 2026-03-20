@@ -208,7 +208,7 @@ export function TerminalView({
       {/* Terminal */}
       <div
         ref={terminalRef}
-        className="flex-1 p-2"
+        className="flex-1 p-2 overflow-hidden"
         style={{ backgroundColor: bgMain }}
       />
     </div>

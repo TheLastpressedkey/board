@@ -18,6 +18,7 @@ interface AppInfo {
 
 export function AppStore({ onSelect, onClose }: AppStoreProps) {
   const { themeColors } = useTheme();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const apps: AppInfo[] = [
     {
@@ -134,6 +135,15 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
     }
   ];
 
+  const filteredApps = apps.filter(app => {
+    const query = searchQuery.toLowerCase();
+    return (
+      app.name.toLowerCase().includes(query) ||
+      app.description.toLowerCase().includes(query) ||
+      app.category.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <>
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" onClick={onClose} />
@@ -159,6 +169,8 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
             <input
               type="text"
               placeholder="Search apps..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-gray-700/50 text-white rounded-lg focus:outline-none focus:ring-2"
               style={{ '--tw-ring-color': themeColors.primary } as React.CSSProperties}
               autoFocus
@@ -168,8 +180,19 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
 
         {/* Apps Grid */}
         <div className="flex-1 overflow-y-auto p-6 card-scrollbar">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {apps.map((app) => (
+          {filteredApps.length === 0 ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <Search className="w-16 h-16 mx-auto mb-4 text-gray-600" />
+                <p className="text-gray-400 text-lg mb-2">Aucune application trouvée</p>
+                <p className="text-gray-500 text-sm">
+                  Essayez un autre terme de recherche
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filteredApps.map((app) => (
               <button
                 key={app.id}
                 onClick={() => {
@@ -211,8 +234,9 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
                   </div>
                 </div>
               </button>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </>

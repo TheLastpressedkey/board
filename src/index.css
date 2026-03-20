@@ -255,6 +255,10 @@
 }
 
 /* Terminal scrollbar styles */
+.xterm .xterm-viewport {
+  overflow-y: auto !important;
+}
+
 .xterm .xterm-viewport::-webkit-scrollbar {
   width: 4px;
   height: 4px;
@@ -268,6 +272,10 @@
 .xterm .xterm-viewport::-webkit-scrollbar-thumb {
   background: var(--theme-scrollbar);
   border-radius: 4px;
+}
+
+.xterm .xterm-viewport::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-scrollbar);
 }
 
 .xterm .xterm-viewport::-webkit-scrollbar-corner {
