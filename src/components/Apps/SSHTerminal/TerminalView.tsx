@@ -56,6 +56,8 @@ export function TerminalView({
       },
       cols: 80,
       rows: 24,
+      scrollback: 10000,
+      allowProposedApi: true,
     });
 
     fitAddon.current = new FitAddon();
@@ -208,7 +210,7 @@ export function TerminalView({
       {/* Terminal */}
       <div
         ref={terminalRef}
-        className="flex-1 p-2 overflow-hidden"
+        className="flex-1 p-2"
         style={{ backgroundColor: bgMain }}
       />
     </div>

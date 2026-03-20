@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail, FileText, FolderOpen, Pencil, Youtube, Cloud, Terminal } from 'lucide-react';
+import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail, FileText, FolderOpen, Pencil, Youtube, Cloud, Terminal, ClipboardList } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppStoreProps {
@@ -90,6 +90,14 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
       name: 'Document Editor',
       description: 'Create and edit documents with advanced formatting and markdown support',
       icon: FileText,
+      category: 'Productivity',
+      author: 'Core Apps'
+    },
+    {
+      id: 'form',
+      name: 'Form',
+      description: 'Create custom forms, share them with a link and collect responses',
+      icon: ClipboardList,
       category: 'Productivity',
       author: 'Core Apps'
     },

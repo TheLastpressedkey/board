@@ -8,6 +8,7 @@ import { Analytics } from '../Apps/Analytics/Analytics';
 import { KanbanApp } from '../Apps/Kanban/KanbanApp';
 import { EmailApp } from '../Apps/Email/EmailApp';
 import { DocumentManager } from '../Apps/DocumentEditor/DocumentManager';
+import { Form } from '../Apps/Form/Form';
 import { FileManager } from '../Apps/FileManager/FileManager';
 import { WhiteboardNew } from '../Apps/Whiteboard/WhiteboardNew';
 import { YouTubePlayer } from '../Apps/YouTubePlayer/YouTubePlayer';
@@ -98,6 +99,8 @@ export function AppCardContent({
         return <DrivePlus onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'ssh-terminal':
         return <SSHTerminal onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
+      case 'form':
+        return <Form onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} metadata={metadata} onDataChange={onDataChange} />;
       default:
         return (
           <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden">
