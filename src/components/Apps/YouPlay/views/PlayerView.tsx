@@ -9,16 +9,36 @@ interface PlayerViewProps {
   playlist: Playlist;
   onBack: () => void;
   themeColor: string;
+  currentIndex: number;
+  isPlaying: boolean;
+  onCurrentIndexChange: (index: number) => void;
+  onIsPlayingChange: (playing: boolean) => void;
+  volume: number;
+  onVolumeChange: (volume: number) => void;
+  playMode: 'sequential' | 'loop' | 'loop-one' | 'shuffle';
+  onPlayModeChange: (mode: 'sequential' | 'loop' | 'loop-one' | 'shuffle') => void;
+  currentTime: number;
+  duration: number;
+  onTimeUpdate: (time: number, duration: number) => void;
 }
 
-export function PlayerView({ playlist: initialPlaylist, onBack, themeColor }: PlayerViewProps) {
+export function PlayerView({
+  playlist: initialPlaylist,
+  onBack,
+  themeColor,
+  currentIndex,
+  isPlaying,
+  onCurrentIndexChange,
+  onIsPlayingChange,
+  volume,
+  onVolumeChange,
+  playMode,
+  onPlayModeChange,
+  currentTime,
+  duration,
+  onTimeUpdate
+}: PlayerViewProps) {
   const [playlist, setPlaylist] = useState<Playlist>(initialPlaylist);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(100);
-  const [playMode, setPlayMode] = useState<'sequential' | 'loop' | 'loop-one' | 'shuffle'>('sequential');
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
 
@@ -32,24 +52,24 @@ export function PlayerView({ playlist: initialPlaylist, onBack, themeColor }: Pl
   const handleVideoEnd = () => {
     switch (playMode) {
       case 'loop-one':
-        setIsPlaying(true);
+        onIsPlayingChange(true);
         return;
       case 'loop':
         const nextIndex = (currentIndex + 1) % playlist.videos.length;
-        setCurrentIndex(nextIndex);
-        setIsPlaying(true);
+        onCurrentIndexChange(nextIndex);
+        onIsPlayingChange(true);
         break;
       case 'shuffle':
         const randomIndex = Math.floor(Math.random() * playlist.videos.length);
-        setCurrentIndex(randomIndex);
-        setIsPlaying(true);
+        onCurrentIndexChange(randomIndex);
+        onIsPlayingChange(true);
         break;
       case 'sequential':
         if (currentIndex < playlist.videos.length - 1) {
-          setCurrentIndex(currentIndex + 1);
-          setIsPlaying(true);
+          onCurrentIndexChange(currentIndex + 1);
+          onIsPlayingChange(true);
         } else {
-          setIsPlaying(false);
+          onIsPlayingChange(false);
         }
         break;
     }
@@ -60,8 +80,8 @@ export function PlayerView({ playlist: initialPlaylist, onBack, themeColor }: Pl
       ? Math.floor(Math.random() * playlist.videos.length)
       : (currentIndex + 1) % playlist.videos.length;
 
-    setCurrentIndex(nextIndex);
-    setIsPlaying(true);
+    onCurrentIndexChange(nextIndex);
+    onIsPlayingChange(true);
   };
 
   const handlePrevious = () => {
@@ -69,13 +89,13 @@ export function PlayerView({ playlist: initialPlaylist, onBack, themeColor }: Pl
       ? Math.floor(Math.random() * playlist.videos.length)
       : (currentIndex - 1 + playlist.videos.length) % playlist.videos.length;
 
-    setCurrentIndex(prevIndex);
-    setIsPlaying(true);
+    onCurrentIndexChange(prevIndex);
+    onIsPlayingChange(true);
   };
 
   const handleVideoSelect = (index: number) => {
-    setCurrentIndex(index);
-    setIsPlaying(true);
+    onCurrentIndexChange(index);
+    onIsPlayingChange(true);
     setShowPlaylist(false);
   };
 
@@ -122,25 +142,22 @@ export function PlayerView({ playlist: initialPlaylist, onBack, themeColor }: Pl
               isPlaying={isPlaying}
               volume={volume}
               onEnded={handleVideoEnd}
-              onPlayStateChange={setIsPlaying}
+              onPlayStateChange={onIsPlayingChange}
               playMode={playMode}
-              onTimeUpdate={(time, dur) => {
-                setCurrentTime(time);
-                setDuration(dur);
-              }}
+              onTimeUpdate={onTimeUpdate}
               onSeek={(time) => {
                 // Fonction exposée via window pour permettre le seek
               }}
             />
             <VideoControls
               isPlaying={isPlaying}
-              onPlayPause={() => setIsPlaying(!isPlaying)}
+              onPlayPause={() => onIsPlayingChange(!isPlaying)}
               onNext={handleNext}
               onPrevious={handlePrevious}
               playMode={playMode}
-              onPlayModeChange={setPlayMode}
+              onPlayModeChange={onPlayModeChange}
               volume={volume}
-              onVolumeChange={setVolume}
+              onVolumeChange={onVolumeChange}
               currentVideo={currentVideo}
               hasNext={playlist.videos.length > 1}
               hasPrevious={playlist.videos.length > 1}

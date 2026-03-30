@@ -5,6 +5,7 @@ import { Playlist } from '../../../services/youtubePlaylistStorage';
 import { LibraryView } from './views/LibraryView';
 import { PlaylistEditorView } from './views/PlaylistEditorView';
 import { PlayerView } from './views/PlayerView';
+import { VideoPlayer } from '../YouTubePlayer/VideoPlayer';
 import { Music2 } from 'lucide-react';
 
 interface YouPlayProps {
@@ -33,6 +34,15 @@ export function YouPlay({
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const [previousTheme, setPreviousTheme] = useState(theme);
 
+  // Global player state for mini-player
+  const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(100);
+  const [playMode, setPlayMode] = useState<'sequential' | 'loop' | 'loop-one' | 'shuffle'>('sequential');
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+
   // Switch to YouPlay theme on mount, restore on unmount
   useEffect(() => {
     setPreviousTheme(theme);
@@ -50,6 +60,9 @@ export function YouPlay({
 
   const handlePlaylistSelect = (playlist: Playlist) => {
     setSelectedPlaylist(playlist);
+    setActivePlaylist(playlist);
+    setCurrentIndex(0);
+    setIsPlaying(true);
     setViewMode('player');
   };
 
@@ -60,12 +73,70 @@ export function YouPlay({
 
   const handleLoadInPlayer = (playlist: Playlist) => {
     setSelectedPlaylist(playlist);
+    setActivePlaylist(playlist);
+    setCurrentIndex(0);
+    setIsPlaying(true);
     setViewMode('player');
   };
 
   const handleBackToLibrary = () => {
     setViewMode('library');
     setSelectedPlaylist(null);
+    // Don't reset activePlaylist - keep playing in background
+  };
+
+  const handleExpandPlayer = () => {
+    if (activePlaylist) {
+      setSelectedPlaylist(activePlaylist);
+      setViewMode('player');
+    }
+  };
+
+  const handleStopPlayback = () => {
+    setActivePlaylist(null);
+    setIsPlaying(false);
+  };
+
+  const handleNext = () => {
+    if (!activePlaylist) return;
+    const nextIndex = (currentIndex + 1) % activePlaylist.videos.length;
+    setCurrentIndex(nextIndex);
+    setIsPlaying(true);
+  };
+
+  const handlePrevious = () => {
+    if (!activePlaylist) return;
+    const prevIndex = (currentIndex - 1 + activePlaylist.videos.length) % activePlaylist.videos.length;
+    setCurrentIndex(prevIndex);
+    setIsPlaying(true);
+  };
+
+  const handleVideoEnd = () => {
+    if (!activePlaylist) return;
+
+    switch (playMode) {
+      case 'loop-one':
+        setIsPlaying(true);
+        return;
+      case 'loop':
+        const nextIndex = (currentIndex + 1) % activePlaylist.videos.length;
+        setCurrentIndex(nextIndex);
+        setIsPlaying(true);
+        break;
+      case 'shuffle':
+        const randomIndex = Math.floor(Math.random() * activePlaylist.videos.length);
+        setCurrentIndex(randomIndex);
+        setIsPlaying(true);
+        break;
+      case 'sequential':
+        if (currentIndex < activePlaylist.videos.length - 1) {
+          setCurrentIndex(currentIndex + 1);
+          setIsPlaying(true);
+        } else {
+          setIsPlaying(false);
+        }
+        break;
+    }
   };
 
   const getHeaderTitle = () => {
@@ -94,8 +165,29 @@ export function YouPlay({
     }
   };
 
+  const currentVideo = activePlaylist?.videos[currentIndex];
+
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-white/5 to-transparent text-white/90 overflow-hidden">
+      {/* Global Hidden Video Player - Always mounted when activePlaylist exists */}
+      {activePlaylist && currentVideo && viewMode !== 'player' && (
+        <div className="absolute" style={{ width: 0, height: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+          <VideoPlayer
+            videoId={currentVideo.id}
+            isPlaying={isPlaying}
+            volume={volume}
+            onEnded={handleVideoEnd}
+            onPlayStateChange={setIsPlaying}
+            playMode={playMode}
+            onTimeUpdate={(time, dur) => {
+              setCurrentTime(time);
+              setDuration(dur);
+            }}
+            onSeek={(time) => {}}
+          />
+        </div>
+      )}
+
       {/* Header */}
       {viewMode === 'library' && (
         <AppHeader
@@ -118,6 +210,14 @@ export function YouPlay({
             onPlaylistSelect={handlePlaylistSelect}
             onPlaylistEdit={handlePlaylistEdit}
             themeColor={themeColors.primary}
+            activePlaylist={activePlaylist}
+            currentIndex={currentIndex}
+            isPlaying={isPlaying}
+            onPlayPause={() => setIsPlaying(!isPlaying)}
+            onNext={handleNext}
+            onPrevious={handlePrevious}
+            onExpandPlayer={handleExpandPlayer}
+            onStopPlayback={handleStopPlayback}
           />
         )}
 
@@ -135,6 +235,20 @@ export function YouPlay({
             playlist={selectedPlaylist}
             onBack={handleBackToLibrary}
             themeColor={themeColors.primary}
+            currentIndex={currentIndex}
+            isPlaying={isPlaying}
+            onCurrentIndexChange={setCurrentIndex}
+            onIsPlayingChange={setIsPlaying}
+            volume={volume}
+            onVolumeChange={setVolume}
+            playMode={playMode}
+            onPlayModeChange={setPlayMode}
+            currentTime={currentTime}
+            duration={duration}
+            onTimeUpdate={(time, dur) => {
+              setCurrentTime(time);
+              setDuration(dur);
+            }}
           />
         )}
       </div>

@@ -5,6 +5,7 @@ import { PlaylistGrid } from '../components/PlaylistGrid';
 import { VideoSearchBar } from '../components/VideoSearchBar';
 import { CategoryFilter } from '../components/CategoryFilter';
 import { CreatePlaylistModal } from '../components/CreatePlaylistModal';
+import { MiniPlayer } from '../components/MiniPlayer';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { useContainerSize } from '../hooks/useContainerSize';
 
@@ -12,9 +13,28 @@ interface LibraryViewProps {
   onPlaylistSelect: (playlist: Playlist) => void;
   onPlaylistEdit: (playlist: Playlist) => void;
   themeColor: string;
+  activePlaylist: Playlist | null;
+  currentIndex: number;
+  isPlaying: boolean;
+  onPlayPause: () => void;
+  onNext: () => void;
+  onPrevious: () => void;
+  onExpandPlayer: () => void;
+  onStopPlayback: () => void;
 }
 
-export function LibraryView({ onPlaylistSelect, onPlaylistEdit }: LibraryViewProps) {
+export function LibraryView({
+  onPlaylistSelect,
+  onPlaylistEdit,
+  activePlaylist,
+  currentIndex,
+  isPlaying,
+  onPlayPause,
+  onNext,
+  onPrevious,
+  onExpandPlayer,
+  onStopPlayback
+}: LibraryViewProps) {
   const { themeColors } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const { layoutSize } = useContainerSize(containerRef);
@@ -173,13 +193,20 @@ export function LibraryView({ onPlaylistSelect, onPlaylistEdit }: LibraryViewPro
   }
 
   // Adaptive layout based on container size
+  const hasMiniPlayer = activePlaylist !== null;
   const headerPadding = layoutSize === 'compact' ? 'px-3 pt-3 pb-2' : layoutSize === 'normal' ? 'px-4 pt-4 pb-3' : 'px-6 pt-6 pb-4';
-  const contentPadding = layoutSize === 'compact' ? 'px-3 pb-16' : layoutSize === 'normal' ? 'px-4 pb-16' : 'px-6 pb-20';
+  const contentPadding = layoutSize === 'compact'
+    ? (hasMiniPlayer ? 'px-3 pb-24' : 'px-3 pb-16')
+    : layoutSize === 'normal'
+    ? (hasMiniPlayer ? 'px-4 pb-24' : 'px-4 pb-16')
+    : (hasMiniPlayer ? 'px-6 pb-28' : 'px-6 pb-20');
   const titleSize = layoutSize === 'compact' ? 'text-lg' : layoutSize === 'normal' ? 'text-xl' : 'text-2xl';
   const iconSize = layoutSize === 'compact' ? 'w-4 h-4' : 'w-5 h-5';
   const buttonPadding = layoutSize === 'compact' ? 'p-2' : 'p-2.5';
   const fabSize = layoutSize === 'compact' ? 'w-12 h-12' : 'w-14 h-14';
-  const fabPosition = layoutSize === 'compact' ? 'bottom-4 right-4' : 'bottom-6 right-6';
+  const fabPosition = hasMiniPlayer
+    ? (layoutSize === 'compact' ? 'bottom-24 right-4' : 'bottom-28 right-6')
+    : (layoutSize === 'compact' ? 'bottom-4 right-4' : 'bottom-6 right-6');
 
   return (
     <div
@@ -357,6 +384,21 @@ export function LibraryView({ onPlaylistSelect, onPlaylistEdit }: LibraryViewPro
           onClose={() => setShowCreateModal(false)}
           onCreate={handleCreatePlaylist}
           layoutSize={layoutSize}
+        />
+      )}
+
+      {/* Mini Player */}
+      {activePlaylist && (
+        <MiniPlayer
+          playlist={activePlaylist}
+          currentIndex={currentIndex}
+          isPlaying={isPlaying}
+          onPlayPause={onPlayPause}
+          onNext={onNext}
+          onPrevious={onPrevious}
+          onExpand={onExpandPlayer}
+          onClose={onStopPlayback}
+          themeColor={themeColors.primary}
         />
       )}
     </div>
