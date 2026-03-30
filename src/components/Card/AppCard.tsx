@@ -15,7 +15,6 @@ import { YouTubePlayer } from '../Apps/YouTubePlayer/YouTubePlayer';
 import { YouPlay } from '../Apps/YouPlay/YouPlay';
 import { DrivePlus } from '../Apps/DrivePlus/DrivePlus';
 import { SSHTerminal } from '../Apps/SSHTerminal/SSHTerminal';
-import { AgentHub } from '../Apps/AgentHub/AgentHubNew';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCardTheme } from '../../contexts/CardThemeContext';
 import { GripHorizontal, X, AlertCircle } from 'lucide-react';
@@ -103,8 +102,6 @@ export function AppCardContent({
         return <DrivePlus onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'ssh-terminal':
         return <SSHTerminal onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
-      case 'agent-hub':
-        return <AgentHub onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'form':
         return <Form onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} metadata={metadata} onDataChange={onDataChange} />;
       default:
