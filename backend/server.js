@@ -19,6 +19,24 @@ const io = new Server(httpServer, {
 app.use(cors());
 app.use(express.json());
 
+// RAG Routes (lazy loaded to avoid blocking startup)
+app.use('/api/rag', async (req, res, next) => {
+  const { default: ragRoutes } = await import('./routes/rag.js');
+  ragRoutes(req, res, next);
+});
+
+// LLM Routes
+app.use('/api/llm', async (req, res, next) => {
+  const { default: llmRoutes } = await import('./routes/llm.js');
+  llmRoutes(req, res, next);
+});
+
+// Agent Routes
+app.use('/api/agents', async (req, res, next) => {
+  const { default: agentRoutes } = await import('./routes/agents.js');
+  agentRoutes(req, res, next);
+});
+
 // Health check endpoint
 app.get('/', (req, res) => {
   res.json({ status: 'Weboard SSH Backend Running', version: '1.0.0' });

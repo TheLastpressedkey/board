@@ -7,6 +7,7 @@ import { liveblocks } from '../../services/liveblocks';
 import { SMTPForm } from './SMTPForm';
 import { CardThemeSelector } from './CardThemeSelector';
 import { EmailSettings } from './EmailSettings';
+import { LLMProviderManager } from './LLMProviderManager';
 
 interface UserSettingsProps {
   username: string;
@@ -853,8 +854,18 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
                 )}
 
                 {activeSection === 'ai' && (
-                  <div className="space-y-6">
+                  <div className="space-y-8">
+                    {/* LLM Provider Configuration */}
                     <div>
+                      <LLMProviderManager
+                        themeColors={themeColors}
+                        onSave={() => showMessage('LLM provider configuration saved successfully')}
+                        onError={(message) => showMessage(message, true)}
+                      />
+                    </div>
+
+                    {/* System Prompt Configuration */}
+                    <div className="border-t border-gray-800 pt-6">
                       <h3 className="text-lg font-medium text-white mb-4">AI Assistant Settings</h3>
                       <div className="space-y-4">
                         <div className="flex items-center gap-2 mb-4">
@@ -862,8 +873,8 @@ export function UserSettings({ username, email, onUpdateUsername, onClose }: Use
                             type="checkbox"
                             id="useCustomPrompt"
                             checked={settings.useCustomPrompt}
-                            onChange={(e) => setSettings(prev => ({ 
-                              ...prev, 
+                            onChange={(e) => setSettings(prev => ({
+                              ...prev,
                               useCustomPrompt: e.target.checked,
                               systemPrompt: e.target.checked ? prev.systemPrompt : ''
                             }))}

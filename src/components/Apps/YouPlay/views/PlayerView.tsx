@@ -100,13 +100,13 @@ export function PlayerView({
   };
 
   return (
-    <div className="flex flex-col h-full bg-black overflow-hidden">
+    <div className="flex flex-col h-full bg-black overflow-hidden relative">
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent p-4">
         <div className="flex items-center justify-between">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-white/70 hover:text-white transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5" />
             <div className="text-left">
@@ -121,7 +121,7 @@ export function PlayerView({
             </span>
             <button
               onClick={() => setShowPlaylist(!showPlaylist)}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
             >
               <List className="w-5 h-5" style={{ color: showPlaylist ? themeColor : 'rgba(255,255,255,0.7)' }} />
             </button>
@@ -129,48 +129,30 @@ export function PlayerView({
         </div>
       </div>
 
-      {/* Player */}
+      {/* Controls Overlay - VideoPlayer is rendered in YouPlay.tsx */}
       <div
-        className="flex-1 flex flex-col relative"
+        className="absolute inset-0 flex items-end"
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
-        {currentVideo ? (
-          <>
-            <VideoPlayer
-              videoId={currentVideo.id}
-              isPlaying={isPlaying}
-              volume={volume}
-              onEnded={handleVideoEnd}
-              onPlayStateChange={onIsPlayingChange}
-              playMode={playMode}
-              onTimeUpdate={onTimeUpdate}
-              onSeek={(time) => {
-                // Fonction exposée via window pour permettre le seek
-              }}
-            />
-            <VideoControls
-              isPlaying={isPlaying}
-              onPlayPause={() => onIsPlayingChange(!isPlaying)}
-              onNext={handleNext}
-              onPrevious={handlePrevious}
-              playMode={playMode}
-              onPlayModeChange={onPlayModeChange}
-              volume={volume}
-              onVolumeChange={onVolumeChange}
-              currentVideo={currentVideo}
-              hasNext={playlist.videos.length > 1}
-              hasPrevious={playlist.videos.length > 1}
-              isVisible={isHovering}
-              currentTime={currentTime}
-              duration={duration}
-              immersiveMode={true}
-            />
-          </>
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-white/50">No videos in playlist</p>
-          </div>
+        {currentVideo && (
+          <VideoControls
+            isPlaying={isPlaying}
+            onPlayPause={() => onIsPlayingChange(!isPlaying)}
+            onNext={handleNext}
+            onPrevious={handlePrevious}
+            playMode={playMode}
+            onPlayModeChange={onPlayModeChange}
+            volume={volume}
+            onVolumeChange={onVolumeChange}
+            currentVideo={currentVideo}
+            hasNext={playlist.videos.length > 1}
+            hasPrevious={playlist.videos.length > 1}
+            isVisible={isHovering}
+            currentTime={currentTime}
+            duration={duration}
+            immersiveMode={true}
+          />
         )}
       </div>
 

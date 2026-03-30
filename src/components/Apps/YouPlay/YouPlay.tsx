@@ -169,9 +169,12 @@ export function YouPlay({
 
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-white/5 to-transparent text-white/90 overflow-hidden">
-      {/* Global Hidden Video Player - Always mounted when activePlaylist exists */}
-      {activePlaylist && currentVideo && viewMode !== 'player' && (
-        <div className="absolute" style={{ width: 0, height: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      {/* Global Video Player - Always mounted when activePlaylist exists, hidden when not in player view */}
+      {activePlaylist && currentVideo && (
+        <div
+          className={viewMode === 'player' ? 'flex-1 flex flex-col bg-black' : 'absolute'}
+          style={viewMode === 'player' ? {} : { width: 0, height: 0, overflow: 'hidden', pointerEvents: 'none' }}
+        >
           <VideoPlayer
             videoId={currentVideo.id}
             isPlaying={isPlaying}
