@@ -1,7 +1,6 @@
 import React from 'react';
 import { AlertCircle, CheckCircle, XCircle, Info, X } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { useCardTheme } from '../../../contexts/CardThemeContext';
 
 export type AlertType = 'success' | 'error' | 'warning' | 'info';
 
@@ -29,16 +28,14 @@ export function AlertDialog({
   showCancel = false
 }: AlertDialogProps) {
   const { themeColors } = useTheme();
-  const { currentCardTheme } = useCardTheme();
-  const isTerminalTheme = currentCardTheme.id === 'terminal';
 
   if (!isOpen) return null;
 
-  const bgMain = isTerminalTheme ? 'rgb(0, 0, 0)' : 'rgb(17, 24, 39)';
-  const bgCard = isTerminalTheme ? 'rgb(20, 20, 20)' : 'rgb(31, 41, 55)';
-  const textColor = isTerminalTheme ? 'rgb(255, 255, 255)' : 'white';
-  const textMuted = isTerminalTheme ? 'rgba(255, 255, 255, 0.5)' : 'rgb(156, 163, 175)';
-  const borderColor = isTerminalTheme ? 'rgba(255, 255, 255, 0.3)' : 'rgba(55, 65, 81, 0.5)';
+  const bgMain = 'rgb(17, 24, 39)';
+  const bgCard = 'rgb(31, 41, 55)';
+  const textColor = 'white';
+  const textMuted = 'rgb(156, 163, 175)';
+  const borderColor = 'rgba(55, 65, 81, 0.5)';
 
   const getIcon = () => {
     const iconClass = 'w-6 h-6';
