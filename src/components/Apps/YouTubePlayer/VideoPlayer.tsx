@@ -176,7 +176,7 @@ export function VideoPlayer({
   }, [isPlaying, onTimeUpdate]);
 
   return (
-    <div className="flex-1 bg-black relative">
+    <div className="w-full h-full bg-black relative">
       <div ref={containerRef} className="absolute inset-0 w-full h-full" />
     </div>
   );
