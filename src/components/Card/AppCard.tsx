@@ -12,8 +12,10 @@ import { Form } from '../Apps/Form/Form';
 import { FileManager } from '../Apps/FileManager/FileManager';
 import { WhiteboardNew } from '../Apps/Whiteboard/WhiteboardNew';
 import { YouTubePlayer } from '../Apps/YouTubePlayer/YouTubePlayer';
+import { YouPlay } from '../Apps/YouPlay/YouPlay';
 import { DrivePlus } from '../Apps/DrivePlus/DrivePlus';
 import { SSHTerminal } from '../Apps/SSHTerminal/SSHTerminal';
+import { AgentHub } from '../Apps/AgentHub/AgentHubNew';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCardTheme } from '../../contexts/CardThemeContext';
 import { GripHorizontal, X, AlertCircle } from 'lucide-react';
@@ -95,10 +97,14 @@ export function AppCardContent({
         return <WhiteboardNew onClose={onClose} onDragStart={onDragStart} metadata={metadata} onDataChange={onDataChange} cardId={cardId} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'youtube-player':
         return <YouTubePlayer onClose={onClose} metadata={metadata} onDataChange={onDataChange} onDragStart={onDragStart} cardId={cardId} onTogglePin={onTogglePin} isPinned={isPinned} />;
+      case 'youplay-plus':
+        return <YouPlay onClose={onClose} metadata={metadata} onDataChange={onDataChange} onDragStart={onDragStart} cardId={cardId} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'driveplus':
         return <DrivePlus onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'ssh-terminal':
         return <SSHTerminal onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
+      case 'agent-hub':
+        return <AgentHub onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} />;
       case 'form':
         return <Form onClose={onClose} onDragStart={onDragStart} onTogglePin={onTogglePin} isPinned={isPinned} metadata={metadata} onDataChange={onDataChange} />;
       default:

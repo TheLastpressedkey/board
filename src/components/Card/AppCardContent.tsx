@@ -6,6 +6,7 @@ import { TodoList } from '../Apps/TodoList/TodoList';
 import { Calendar } from '../Apps/Calendar/Calendar';
 import { RSSReader } from '../Apps/RSS/RSSReader';
 import { YouTubePlayer } from '../Apps/YouTubePlayer/YouTubePlayer';
+import { YouPlay } from '../Apps/YouPlay/YouPlay';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppCardContentProps {
@@ -60,6 +61,8 @@ export function AppCardContent({
         return <RSSReader onClose={onClose} metadata={metadata} onDataChange={onDataChange} />;
       case 'youtube-player':
         return <YouTubePlayer onClose={onClose} metadata={metadata} onDataChange={onDataChange} />;
+      case 'youplay-plus':
+        return <YouPlay onClose={onClose} metadata={metadata} onDataChange={onDataChange} />;
       default:
         return (
           <div className="h-full flex items-center justify-center text-gray-500">

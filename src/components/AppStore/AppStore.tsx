@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail, FileText, FolderOpen, Pencil, Youtube, Cloud, Terminal, ClipboardList } from 'lucide-react';
+import { Calculator, Table, X, Search, Plus, Clock, ListTodo, Calendar, Rss, Activity, Layout, Mail, FileText, FolderOpen, Pencil, Youtube, Cloud, Terminal, ClipboardList, Database, Music2 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppStoreProps {
@@ -126,6 +126,14 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
       author: 'Core Apps'
     },
     {
+      id: 'youplay-plus',
+      name: 'YouPlay+',
+      description: 'Advanced YouTube playlist manager with library, categories, search and more',
+      icon: Music2,
+      category: 'Media',
+      author: 'Core Apps'
+    },
+    {
       id: 'driveplus',
       name: 'Drive+',
       description: 'Cloud storage powered by UploadThing - upload, manage and share files',
@@ -139,6 +147,14 @@ export function AppStore({ onSelect, onClose }: AppStoreProps) {
       description: 'Connect to remote servers via SSH with a full-featured terminal emulator',
       icon: Terminal,
       category: 'Developer',
+      author: 'Core Apps'
+    },
+    {
+      id: 'agent-hub',
+      name: 'Agent Hub',
+      description: 'Create RAG collections, upload documents and chat with your knowledge base using AI',
+      icon: Database,
+      category: 'AI',
       author: 'Core Apps'
     }
   ];

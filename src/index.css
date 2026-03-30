@@ -81,6 +81,13 @@
   --theme-menuHover: rgba(159, 18, 57, 0.5);
 }
 
+.theme-youplay {
+  --theme-primary: #0891B2;
+  --theme-scrollbar: #0891B2;
+  --theme-menuBg: rgba(8, 145, 178, 0.1);
+  --theme-menuHover: rgba(8, 145, 178, 0.2);
+}
+
 .bg-dots {
   background-color: #1a1a1a;
   background-image: radial-gradient(circle, #333 1px, transparent 1px);

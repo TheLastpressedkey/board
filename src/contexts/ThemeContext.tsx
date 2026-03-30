@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { userProfile } from '../services/userProfile';
 
-export type ThemeType = 'default' | 'ocean' | 'sunset' | 'forest' | 'purple' | 'cyberpunk' | 'minimal' | 'dark-blue' | 'emerald' | 'rose';
+export type ThemeType = 'default' | 'ocean' | 'sunset' | 'forest' | 'purple' | 'cyberpunk' | 'minimal' | 'dark-blue' | 'emerald' | 'rose' | 'youplay';
 
 interface ThemeContextType {
   theme: ThemeType;
@@ -74,6 +74,12 @@ const themeColors = {
     scrollbar: 'rgb(244, 63, 94)',
     menuBg: 'rgba(136, 19, 55, 0.4)',
     menuHover: 'hover:bg-rose-800/50'
+  },
+  youplay: {
+    primary: '#0891B2', // cyan-600
+    scrollbar: '#0891B2',
+    menuBg: 'rgba(8, 145, 178, 0.1)',
+    menuHover: 'hover:bg-cyan-600/20'
   }
 };
 
