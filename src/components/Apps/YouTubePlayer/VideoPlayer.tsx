@@ -32,6 +32,7 @@ export function VideoPlayer({
   const containerRef = useRef<HTMLDivElement>(null);
   const [isReady, setIsReady] = useState(false);
   const timeUpdateIntervalRef = useRef<number | null>(null);
+  const previousVideoIdRef = useRef<string>(videoId);
 
   // Exposer la fonction seekTo pour permettre le contrôle externe
   useEffect(() => {
@@ -69,13 +70,10 @@ export function VideoPlayer({
     }
   }, []);
 
-  // Initialiser le lecteur
+  // Initialiser le lecteur (une seule fois)
   useEffect(() => {
     if (!isReady || !containerRef.current) return;
-
-    if (playerRef.current) {
-      playerRef.current.destroy();
-    }
+    if (playerRef.current) return; // Déjà initialisé
 
     playerRef.current = new window.YT.Player(containerRef.current, {
       videoId,
@@ -113,9 +111,37 @@ export function VideoPlayer({
     return () => {
       if (playerRef.current) {
         playerRef.current.destroy();
+        playerRef.current = null;
       }
     };
-  }, [isReady, videoId]);
+  }, [isReady]);
+
+  // Changer de vidéo sans recréer le player
+  useEffect(() => {
+    if (!playerRef.current || !isReady) return;
+
+    // Si c'est une nouvelle vidéo (pas la première initialisation)
+    if (previousVideoIdRef.current !== videoId) {
+      previousVideoIdRef.current = videoId;
+
+      try {
+        // Charger et lancer automatiquement la nouvelle vidéo
+        playerRef.current.loadVideoById({
+          videoId: videoId,
+          startSeconds: 0
+        });
+
+        // Forcer le play après un court délai, même en arrière-plan
+        setTimeout(() => {
+          if (playerRef.current && isPlaying) {
+            playerRef.current.playVideo();
+          }
+        }, 500);
+      } catch (error) {
+        console.error('Error loading video:', error);
+      }
+    }
+  }, [videoId, isReady]);
 
   // Gérer play/pause
   useEffect(() => {

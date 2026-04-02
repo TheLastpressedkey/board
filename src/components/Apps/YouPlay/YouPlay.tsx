@@ -166,6 +166,25 @@ export function YouPlay({
   };
 
   const currentVideo = activePlaylist?.videos[currentIndex];
+  const hasHandledEndRef = React.useRef(false);
+
+  // Detect when video is about to end and trigger next track
+  const handleTimeUpdate = (time: number, dur: number) => {
+    setCurrentTime(time);
+    setDuration(dur);
+
+    const remaining = dur - time;
+    // If we're within 1 second of the end and haven't handled it yet
+    if (dur > 0 && time > 0 && remaining < 1 && !hasHandledEndRef.current) {
+      hasHandledEndRef.current = true;
+      handleVideoEnd();
+    }
+  };
+
+  // Reset the flag when video changes
+  React.useEffect(() => {
+    hasHandledEndRef.current = false;
+  }, [currentVideo?.id]);
 
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-white/5 to-transparent text-white/90 overflow-hidden relative">
@@ -182,10 +201,7 @@ export function YouPlay({
             onEnded={handleVideoEnd}
             onPlayStateChange={setIsPlaying}
             playMode={playMode}
-            onTimeUpdate={(time, dur) => {
-              setCurrentTime(time);
-              setDuration(dur);
-            }}
+            onTimeUpdate={handleTimeUpdate}
             onSeek={(time) => {}}
           />
         </div>
