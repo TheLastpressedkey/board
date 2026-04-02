@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Repeat, Repeat1, Shuffle } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Repeat, Repeat1, Shuffle, Heart } from 'lucide-react';
 import { Video } from './YouTubePlayer';
 import { useTheme } from '../../../contexts/ThemeContext';
 
@@ -19,6 +19,8 @@ interface VideoControlsProps {
   currentTime?: number;
   duration?: number;
   immersiveMode?: boolean;
+  onLike?: () => void;
+  isLiked?: boolean;
 }
 
 export function VideoControls({
@@ -36,7 +38,9 @@ export function VideoControls({
   isVisible = true,
   currentTime = 0,
   duration = 0,
-  immersiveMode = false
+  immersiveMode = false,
+  onLike,
+  isLiked = false
 }: VideoControlsProps) {
   const { themeColors } = useTheme();
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
@@ -173,6 +177,21 @@ export function VideoControls({
         >
           <SkipForward className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
         </button>
+
+        {/* Like */}
+        {onLike && (
+          <button
+            onClick={onLike}
+            className="p-1.5 sm:p-2 hover:bg-gray-700/50 rounded-lg transition-all"
+            title={isLiked ? 'Unlike' : 'Like'}
+          >
+            <Heart
+              className="w-5 h-5 sm:w-6 sm:h-6 transition-all"
+              style={{ color: isLiked ? '#FF6B9D' : 'white' }}
+              fill={isLiked ? '#FF6B9D' : 'none'}
+            />
+          </button>
+        )}
 
         {/* Volume */}
         <div

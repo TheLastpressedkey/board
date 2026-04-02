@@ -41,6 +41,7 @@ export function PlayerView({
   const [playlist, setPlaylist] = useState<Playlist>(initialPlaylist);
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
     // Increment play count when loading playlist
@@ -48,6 +49,25 @@ export function PlayerView({
   }, [playlist.id]);
 
   const currentVideo = playlist.videos[currentIndex];
+
+  // Check if current video is liked
+  useEffect(() => {
+    if (!currentVideo) return;
+
+    youtubePlaylistStorage.isVideoLiked(currentVideo.id).then(setIsLiked);
+  }, [currentVideo?.id]);
+
+  const handleLike = async () => {
+    if (!currentVideo) return;
+
+    if (isLiked) {
+      await youtubePlaylistStorage.unlikeVideo(currentVideo.id);
+      setIsLiked(false);
+    } else {
+      await youtubePlaylistStorage.likeVideo(currentVideo);
+      setIsLiked(true);
+    }
+  };
 
   const handleVideoEnd = () => {
     switch (playMode) {
@@ -152,6 +172,8 @@ export function PlayerView({
             currentTime={currentTime}
             duration={duration}
             immersiveMode={true}
+            onLike={handleLike}
+            isLiked={isLiked}
           />
         )}
       </div>

@@ -22,6 +22,14 @@ export interface Playlist {
   playCount: number;
   totalDuration: number; // en secondes
   isPublic: boolean;
+  isFavorite?: boolean; // Playlist spéciale pour les vidéos likées
+}
+
+export interface PlaybackState {
+  playlistId: string;
+  videoIndex: number;
+  timestamp: number; // Position en secondes
+  lastPlayed: number; // Timestamp de la dernière lecture
 }
 
 export interface YouPlayData {
@@ -33,6 +41,7 @@ export interface YouPlayData {
     timestamp: number;
     duration: number;
   }>;
+  playbackStates?: PlaybackState[]; // État de lecture pour chaque playlist
   version: string;
 }
 
@@ -70,11 +79,16 @@ class YouTubePlaylistStorage {
         playlists: [],
         activePlaylistId: null,
         playHistory: [],
+        playbackStates: [],
         version: '1.0.0'
       };
       await this.save();
     } else {
       this.data = appData.data as YouPlayData;
+      // Ensure playbackStates exists for existing data
+      if (!this.data.playbackStates) {
+        this.data.playbackStates = [];
+      }
     }
 
     return this.data!;
@@ -404,12 +418,117 @@ class YouTubePlaylistStorage {
     return DEFAULT_COLORS[Math.floor(Math.random() * DEFAULT_COLORS.length)];
   }
 
+  // ==================== Favorites ====================
+
+  async getFavoritesPlaylist(): Promise<Playlist | null> {
+    const data = await this.ensureData();
+    return data.playlists.find(p => p.isFavorite === true) || null;
+  }
+
+  private async ensureFavoritesPlaylist(): Promise<Playlist> {
+    let favorites = await this.getFavoritesPlaylist();
+
+    if (!favorites) {
+      const data = await this.ensureData();
+      favorites = {
+        id: this.generateId(),
+        name: '❤️ Favorites',
+        description: 'Your liked videos',
+        category: 'music',
+        color: '#FF6B9D',
+        videos: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        playCount: 0,
+        totalDuration: 0,
+        isPublic: false,
+        isFavorite: true
+      };
+      data.playlists.unshift(favorites); // Ajouter en premier
+      await this.save();
+    }
+
+    return favorites;
+  }
+
+  async likeVideo(video: Video): Promise<void> {
+    const favorites = await this.ensureFavoritesPlaylist();
+
+    // Vérifier si déjà présent
+    const exists = favorites.videos.some(v => v.id === video.id);
+    if (exists) return;
+
+    await this.addVideoToPlaylist(favorites.id, video);
+  }
+
+  async unlikeVideo(videoId: string): Promise<void> {
+    const favorites = await this.getFavoritesPlaylist();
+    if (!favorites) return;
+
+    await this.removeVideoFromPlaylist(favorites.id, videoId);
+  }
+
+  async isVideoLiked(videoId: string): Promise<boolean> {
+    const favorites = await this.getFavoritesPlaylist();
+    if (!favorites) return false;
+
+    return favorites.videos.some(v => v.id === videoId);
+  }
+
+  // ==================== Playback State ====================
+
+  async savePlaybackState(
+    playlistId: string,
+    videoIndex: number,
+    timestamp: number
+  ): Promise<void> {
+    const data = await this.ensureData();
+
+    if (!data.playbackStates) {
+      data.playbackStates = [];
+    }
+
+    const existingIndex = data.playbackStates.findIndex(s => s.playlistId === playlistId);
+    const newState: PlaybackState = {
+      playlistId,
+      videoIndex,
+      timestamp,
+      lastPlayed: Date.now()
+    };
+
+    if (existingIndex !== -1) {
+      data.playbackStates[existingIndex] = newState;
+    } else {
+      data.playbackStates.push(newState);
+    }
+
+    await this.save();
+  }
+
+  async getPlaybackState(playlistId: string): Promise<PlaybackState | null> {
+    const data = await this.ensureData();
+
+    if (!data.playbackStates) return null;
+
+    return data.playbackStates.find(s => s.playlistId === playlistId) || null;
+  }
+
+  async clearPlaybackState(playlistId: string): Promise<void> {
+    const data = await this.ensureData();
+
+    if (!data.playbackStates) return;
+
+    data.playbackStates = data.playbackStates.filter(s => s.playlistId !== playlistId);
+    await this.save();
+  }
+
   // Reset for testing
   async reset(): Promise<void> {
     this.data = {
       playlists: [],
       activePlaylistId: null,
       playHistory: [],
+      playbackStates: [],
       version: '1.0.0'
     };
     await this.save();

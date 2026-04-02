@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppHeader } from '../../Common/Headers/AppHeader';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { Playlist } from '../../../services/youtubePlaylistStorage';
+import { Playlist, youtubePlaylistStorage } from '../../../services/youtubePlaylistStorage';
 import { LibraryView } from './views/LibraryView';
 import { PlaylistEditorView } from './views/PlaylistEditorView';
 import { PlayerView } from './views/PlayerView';
@@ -42,6 +42,7 @@ export function YouPlay({
   const [playMode, setPlayMode] = useState<'sequential' | 'loop' | 'loop-one' | 'shuffle'>('sequential');
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [initialSeekTime, setInitialSeekTime] = useState<number | undefined>(undefined);
 
   // Switch to YouPlay theme on mount, restore on unmount
   useEffect(() => {
@@ -58,10 +59,37 @@ export function YouPlay({
     };
   }, []);
 
-  const handlePlaylistSelect = (playlist: Playlist) => {
+  // Auto-save playback state every 5 seconds
+  useEffect(() => {
+    if (!activePlaylist || !isPlaying) return;
+
+    const interval = setInterval(() => {
+      youtubePlaylistStorage.savePlaybackState(
+        activePlaylist.id,
+        currentIndex,
+        currentTime
+      );
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [activePlaylist, currentIndex, currentTime, isPlaying]);
+
+  const handlePlaylistSelect = async (playlist: Playlist) => {
     setSelectedPlaylist(playlist);
     setActivePlaylist(playlist);
-    setCurrentIndex(0);
+
+    // Charger l'état de lecture sauvegardé
+    const savedState = await youtubePlaylistStorage.getPlaybackState(playlist.id);
+    if (savedState && savedState.videoIndex < playlist.videos.length) {
+      setCurrentIndex(savedState.videoIndex);
+      setCurrentTime(savedState.timestamp);
+      setInitialSeekTime(savedState.timestamp);
+    } else {
+      setCurrentIndex(0);
+      setCurrentTime(0);
+      setInitialSeekTime(undefined);
+    }
+
     setIsPlaying(true);
     setViewMode('player');
   };
@@ -184,6 +212,10 @@ export function YouPlay({
   // Reset the flag when video changes
   React.useEffect(() => {
     hasHandledEndRef.current = false;
+    // Clear initialSeekTime after video changes to avoid seeking again
+    if (initialSeekTime !== undefined) {
+      setTimeout(() => setInitialSeekTime(undefined), 1000);
+    }
   }, [currentVideo?.id]);
 
   return (
@@ -203,6 +235,7 @@ export function YouPlay({
             playMode={playMode}
             onTimeUpdate={handleTimeUpdate}
             onSeek={(time) => {}}
+            initialSeekTime={initialSeekTime}
           />
         </div>
       )}

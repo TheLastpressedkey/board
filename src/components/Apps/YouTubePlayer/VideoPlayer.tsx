@@ -9,6 +9,7 @@ interface VideoPlayerProps {
   playMode: 'sequential' | 'loop' | 'loop-one' | 'shuffle';
   onTimeUpdate?: (currentTime: number, duration: number) => void;
   onSeek?: (time: number) => void;
+  initialSeekTime?: number; // Timestamp to seek to after video loads
 }
 
 declare global {
@@ -26,7 +27,8 @@ export function VideoPlayer({
   onPlayStateChange,
   playMode,
   onTimeUpdate,
-  onSeek
+  onSeek,
+  initialSeekTime
 }: VideoPlayerProps) {
   const playerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -128,7 +130,7 @@ export function VideoPlayer({
         // Charger et lancer automatiquement la nouvelle vidéo
         playerRef.current.loadVideoById({
           videoId: videoId,
-          startSeconds: 0
+          startSeconds: initialSeekTime || 0
         });
 
         // Forcer le play après un court délai, même en arrière-plan
@@ -141,7 +143,7 @@ export function VideoPlayer({
         console.error('Error loading video:', error);
       }
     }
-  }, [videoId, isReady]);
+  }, [videoId, isReady, initialSeekTime]);
 
   // Gérer play/pause
   useEffect(() => {
