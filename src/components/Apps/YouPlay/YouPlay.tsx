@@ -176,41 +176,11 @@ export function YouPlay({
         )}
       </div>
 
-      {/* Player View - Video container + Controls */}
+      {/* Player View - GlobalVideoPlayer se positionne ici */}
       {viewMode === 'player' && selectedPlaylist && (
-        <div
-          className="absolute inset-0 flex flex-col bg-black"
-          onDoubleClick={handleBackToLibrary}
-        >
-          {/* Draggable Header for Player Mode */}
-          <div
-            onMouseDown={onDragStart}
-            className="absolute top-0 left-0 right-0 h-12 z-50 cursor-move"
-            style={{ pointerEvents: 'auto' }}
-          />
-
-          {/* Video Container - GlobalVideoPlayer will be rendered here via Portal */}
+        <div className="absolute inset-0 flex flex-col bg-black">
+          {/* Container marker for GlobalVideoPlayer positioning */}
           <div id="youplay-video-container" className="flex-1 relative bg-black" />
-
-          {/* Controls Overlay */}
-          <div className="absolute inset-0">
-            <PlayerView
-              playlist={selectedPlaylist}
-              onBack={handleBackToLibrary}
-              themeColor={themeColors.primary}
-              currentIndex={globalPlayer.currentIndex}
-              isPlaying={globalPlayer.isPlaying}
-              onCurrentIndexChange={globalPlayer.setCurrentIndex}
-              onIsPlayingChange={globalPlayer.setIsPlaying}
-              volume={globalPlayer.volume}
-              onVolumeChange={globalPlayer.setVolume}
-              playMode={globalPlayer.playMode}
-              onPlayModeChange={globalPlayer.setPlayMode}
-              currentTime={globalPlayer.currentTime}
-              duration={globalPlayer.duration}
-              onTimeUpdate={globalPlayer.handleTimeUpdate}
-            />
-          </div>
         </div>
       )}
     </div>

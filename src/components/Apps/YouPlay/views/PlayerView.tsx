@@ -120,7 +120,7 @@ export function PlayerView({
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden relative pointer-events-none">
+    <div className="flex flex-col h-full overflow-hidden relative">
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent p-4 pointer-events-auto">
         <div className="flex items-center justify-between">

@@ -45,7 +45,7 @@ export default function App() {
   const { contextMenu, setContextMenu, handleContextMenu } = useContextMenu();
   const [scrollProgress, setScrollProgress] = React.useState(0);
   const [showLinkInput, setShowLinkInput] = React.useState(false);
-  const [lastMousePosition, setLastMousePosition] = React.useState({ x: 0, y: 0 });
+  const lastMousePosition = React.useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     if (user) {
@@ -56,7 +56,7 @@ export default function App() {
   // Track mouse position for paste functionality
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setLastMousePosition({ x: e.clientX, y: e.clientY });
+      lastMousePosition.current = { x: e.clientX, y: e.clientY };
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -90,7 +90,7 @@ export default function App() {
           addLinkCard(relativePosition, text);
         } else {
           // Use current mouse position for paste
-          const relativePosition = getRelativePositionFromGlobal(lastMousePosition.x, lastMousePosition.y);
+          const relativePosition = getRelativePositionFromGlobal(lastMousePosition.current.x, lastMousePosition.current.y);
           addLinkCard(relativePosition, text);
         }
       }
@@ -98,7 +98,7 @@ export default function App() {
 
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
-  }, [addLinkCard, contextMenu, lastMousePosition, getRelativePositionFromGlobal]);
+  }, [addLinkCard, contextMenu, getRelativePositionFromGlobal]);
 
   const handleCardTypeSelect = (type: ContentType, position?: { x: number; y: number }, dimensions?: { width: number; height: number }) => {
     if (type === 'link' && contextMenu) {

@@ -42,7 +42,9 @@ export function VideoPlayer({
 
     const handleSeek = (time: number) => {
       try {
-        playerRef.current.seekTo(time, true);
+        if (playerRef.current && typeof playerRef.current.seekTo === 'function') {
+          playerRef.current.seekTo(time, true);
+        }
       } catch (error) {
         console.error('Error seeking:', error);
       }
@@ -133,18 +135,21 @@ export function VideoPlayer({
       previousVideoIdRef.current = videoId;
 
       try {
-        // Charger et lancer automatiquement la nouvelle vidéo
-        playerRef.current.loadVideoById({
-          videoId: videoId,
-          startSeconds: initialSeekTime || 0
-        });
+        // Vérifier que le player est complètement initialisé
+        if (typeof playerRef.current.loadVideoById === 'function') {
+          // Charger et lancer automatiquement la nouvelle vidéo
+          playerRef.current.loadVideoById({
+            videoId: videoId,
+            startSeconds: initialSeekTime || 0
+          });
 
-        // Forcer le play après un court délai, même en arrière-plan
-        setTimeout(() => {
-          if (playerRef.current && isPlaying) {
-            playerRef.current.playVideo();
-          }
-        }, 500);
+          // Forcer le play après un court délai, même en arrière-plan
+          setTimeout(() => {
+            if (playerRef.current && isPlaying && typeof playerRef.current.playVideo === 'function') {
+              playerRef.current.playVideo();
+            }
+          }, 500);
+        }
       } catch (error) {
         console.error('Error loading video:', error);
       }
@@ -156,9 +161,9 @@ export function VideoPlayer({
     if (!playerRef.current) return;
 
     try {
-      if (isPlaying) {
+      if (isPlaying && typeof playerRef.current.playVideo === 'function') {
         playerRef.current.playVideo();
-      } else {
+      } else if (!isPlaying && typeof playerRef.current.pauseVideo === 'function') {
         playerRef.current.pauseVideo();
       }
     } catch (error) {
@@ -171,7 +176,9 @@ export function VideoPlayer({
     if (!playerRef.current) return;
 
     try {
-      playerRef.current.setVolume(volume);
+      if (typeof playerRef.current.setVolume === 'function') {
+        playerRef.current.setVolume(volume);
+      }
     } catch (error) {
       console.error('Error setting volume:', error);
     }
@@ -183,10 +190,14 @@ export function VideoPlayer({
 
     const updateTime = () => {
       try {
-        const currentTime = playerRef.current.getCurrentTime();
-        const duration = playerRef.current.getDuration();
-        if (currentTime !== undefined && duration !== undefined) {
-          onTimeUpdate(currentTime, duration);
+        if (playerRef.current &&
+            typeof playerRef.current.getCurrentTime === 'function' &&
+            typeof playerRef.current.getDuration === 'function') {
+          const currentTime = playerRef.current.getCurrentTime();
+          const duration = playerRef.current.getDuration();
+          if (currentTime !== undefined && duration !== undefined) {
+            onTimeUpdate(currentTime, duration);
+          }
         }
       } catch (error) {
         // Ignore errors during time updates
