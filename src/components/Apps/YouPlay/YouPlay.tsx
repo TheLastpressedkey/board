@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { AppHeader } from '../../Common/Headers/AppHeader';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { Playlist, youtubePlaylistStorage } from '../../../services/youtubePlaylistStorage';
+import { useGlobalMusicPlayer } from '../../../contexts/GlobalMusicPlayerContext';
+import { Playlist } from '../../../services/youtubePlaylistStorage';
 import { LibraryView } from './views/LibraryView';
 import { PlaylistEditorView } from './views/PlaylistEditorView';
 import { PlayerView } from './views/PlayerView';
-import { VideoPlayer } from '../YouTubePlayer/VideoPlayer';
 import { Music2 } from 'lucide-react';
 
 interface YouPlayProps {
@@ -30,19 +30,10 @@ export function YouPlay({
   isPinned
 }: YouPlayProps) {
   const { themeColors, theme, setTheme } = useTheme();
+  const globalPlayer = useGlobalMusicPlayer();
   const [viewMode, setViewMode] = useState<ViewMode>('library');
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const [previousTheme, setPreviousTheme] = useState(theme);
-
-  // Global player state for mini-player
-  const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(100);
-  const [playMode, setPlayMode] = useState<'sequential' | 'loop' | 'loop-one' | 'shuffle'>('sequential');
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [initialSeekTime, setInitialSeekTime] = useState<number | undefined>(undefined);
 
   // Switch to YouPlay theme on mount, restore on unmount
   useEffect(() => {
@@ -56,41 +47,23 @@ export function YouPlay({
       if (theme === 'youplay') {
         setTheme(previousTheme);
       }
+      // Stop playback when closing the app
+      globalPlayer.stopPlayback();
     };
   }, []);
 
-  // Auto-save playback state every 5 seconds
+  // Sync display mode with view mode
   useEffect(() => {
-    if (!activePlaylist || !isPlaying) return;
-
-    const interval = setInterval(() => {
-      youtubePlaylistStorage.savePlaybackState(
-        activePlaylist.id,
-        currentIndex,
-        currentTime
-      );
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [activePlaylist, currentIndex, currentTime, isPlaying]);
+    if (viewMode === 'player') {
+      globalPlayer.setDisplayMode('fullscreen');
+    } else {
+      globalPlayer.setDisplayMode('hidden');
+    }
+  }, [viewMode]);
 
   const handlePlaylistSelect = async (playlist: Playlist) => {
     setSelectedPlaylist(playlist);
-    setActivePlaylist(playlist);
-
-    // Charger l'état de lecture sauvegardé
-    const savedState = await youtubePlaylistStorage.getPlaybackState(playlist.id);
-    if (savedState && savedState.videoIndex < playlist.videos.length) {
-      setCurrentIndex(savedState.videoIndex);
-      setCurrentTime(savedState.timestamp);
-      setInitialSeekTime(savedState.timestamp);
-    } else {
-      setCurrentIndex(0);
-      setCurrentTime(0);
-      setInitialSeekTime(undefined);
-    }
-
-    setIsPlaying(true);
+    await globalPlayer.playPlaylist(playlist);
     setViewMode('player');
   };
 
@@ -99,71 +72,22 @@ export function YouPlay({
     setViewMode('playlist-editor');
   };
 
-  const handleLoadInPlayer = (playlist: Playlist) => {
+  const handleLoadInPlayer = async (playlist: Playlist) => {
     setSelectedPlaylist(playlist);
-    setActivePlaylist(playlist);
-    setCurrentIndex(0);
-    setIsPlaying(true);
+    await globalPlayer.playPlaylist(playlist, 0);
     setViewMode('player');
   };
 
   const handleBackToLibrary = () => {
     setViewMode('library');
     setSelectedPlaylist(null);
-    // Don't reset activePlaylist - keep playing in background
+    // Don't stop playback - keep playing in background
   };
 
   const handleExpandPlayer = () => {
-    if (activePlaylist) {
-      setSelectedPlaylist(activePlaylist);
+    if (globalPlayer.activePlaylist) {
+      setSelectedPlaylist(globalPlayer.activePlaylist);
       setViewMode('player');
-    }
-  };
-
-  const handleStopPlayback = () => {
-    setActivePlaylist(null);
-    setIsPlaying(false);
-  };
-
-  const handleNext = () => {
-    if (!activePlaylist) return;
-    const nextIndex = (currentIndex + 1) % activePlaylist.videos.length;
-    setCurrentIndex(nextIndex);
-    setIsPlaying(true);
-  };
-
-  const handlePrevious = () => {
-    if (!activePlaylist) return;
-    const prevIndex = (currentIndex - 1 + activePlaylist.videos.length) % activePlaylist.videos.length;
-    setCurrentIndex(prevIndex);
-    setIsPlaying(true);
-  };
-
-  const handleVideoEnd = () => {
-    if (!activePlaylist) return;
-
-    switch (playMode) {
-      case 'loop-one':
-        setIsPlaying(true);
-        return;
-      case 'loop':
-        const nextIndex = (currentIndex + 1) % activePlaylist.videos.length;
-        setCurrentIndex(nextIndex);
-        setIsPlaying(true);
-        break;
-      case 'shuffle':
-        const randomIndex = Math.floor(Math.random() * activePlaylist.videos.length);
-        setCurrentIndex(randomIndex);
-        setIsPlaying(true);
-        break;
-      case 'sequential':
-        if (currentIndex < activePlaylist.videos.length - 1) {
-          setCurrentIndex(currentIndex + 1);
-          setIsPlaying(true);
-        } else {
-          setIsPlaying(false);
-        }
-        break;
     }
   };
 
@@ -193,52 +117,8 @@ export function YouPlay({
     }
   };
 
-  const currentVideo = activePlaylist?.videos[currentIndex];
-  const hasHandledEndRef = React.useRef(false);
-
-  // Detect when video is about to end and trigger next track
-  const handleTimeUpdate = (time: number, dur: number) => {
-    setCurrentTime(time);
-    setDuration(dur);
-
-    const remaining = dur - time;
-    // If we're within 1 second of the end and haven't handled it yet
-    if (dur > 0 && time > 0 && remaining < 1 && !hasHandledEndRef.current) {
-      hasHandledEndRef.current = true;
-      handleVideoEnd();
-    }
-  };
-
-  // Reset the flag when video changes
-  React.useEffect(() => {
-    hasHandledEndRef.current = false;
-    // Clear initialSeekTime after video changes to avoid seeking again
-    if (initialSeekTime !== undefined) {
-      setTimeout(() => setInitialSeekTime(undefined), 1000);
-    }
-  }, [currentVideo?.id]);
-
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-white/5 to-transparent text-white/90 overflow-hidden relative">
-      {/* Global Video Player - Always mounted when activePlaylist exists, hidden when not in player view */}
-      {activePlaylist && currentVideo && (
-        <div
-          className={viewMode === 'player' ? 'absolute inset-0 z-10' : 'absolute'}
-          style={viewMode === 'player' ? {} : { width: 0, height: 0, overflow: 'hidden', pointerEvents: 'none' }}
-        >
-          <VideoPlayer
-            videoId={currentVideo.id}
-            isPlaying={isPlaying}
-            volume={volume}
-            onEnded={handleVideoEnd}
-            onPlayStateChange={setIsPlaying}
-            playMode={playMode}
-            onTimeUpdate={handleTimeUpdate}
-            onSeek={(time) => {}}
-            initialSeekTime={initialSeekTime}
-          />
-        </div>
-      )}
 
       {/* Header */}
       {viewMode === 'library' && (
@@ -262,14 +142,14 @@ export function YouPlay({
             onPlaylistSelect={handlePlaylistSelect}
             onPlaylistEdit={handlePlaylistEdit}
             themeColor={themeColors.primary}
-            activePlaylist={activePlaylist}
-            currentIndex={currentIndex}
-            isPlaying={isPlaying}
-            onPlayPause={() => setIsPlaying(!isPlaying)}
-            onNext={handleNext}
-            onPrevious={handlePrevious}
+            activePlaylist={globalPlayer.activePlaylist}
+            currentIndex={globalPlayer.currentIndex}
+            isPlaying={globalPlayer.isPlaying}
+            onPlayPause={() => globalPlayer.setIsPlaying(!globalPlayer.isPlaying)}
+            onNext={globalPlayer.handleNext}
+            onPrevious={globalPlayer.handlePrevious}
             onExpandPlayer={handleExpandPlayer}
-            onStopPlayback={handleStopPlayback}
+            onStopPlayback={globalPlayer.stopPlayback}
           />
         )}
 
@@ -283,27 +163,24 @@ export function YouPlay({
         )}
       </div>
 
-      {/* Player View Overlay - Always on top */}
+      {/* Player View - Controls only, video is in App.tsx GlobalVideoPlayer */}
       {viewMode === 'player' && selectedPlaylist && (
-        <div className="absolute inset-0 z-20 pointer-events-none">
+        <div className="absolute inset-0 z-[160] pointer-events-none">
           <PlayerView
             playlist={selectedPlaylist}
             onBack={handleBackToLibrary}
             themeColor={themeColors.primary}
-            currentIndex={currentIndex}
-            isPlaying={isPlaying}
-            onCurrentIndexChange={setCurrentIndex}
-            onIsPlayingChange={setIsPlaying}
-            volume={volume}
-            onVolumeChange={setVolume}
-            playMode={playMode}
-            onPlayModeChange={setPlayMode}
-            currentTime={currentTime}
-            duration={duration}
-            onTimeUpdate={(time, dur) => {
-              setCurrentTime(time);
-              setDuration(dur);
-            }}
+            currentIndex={globalPlayer.currentIndex}
+            isPlaying={globalPlayer.isPlaying}
+            onCurrentIndexChange={globalPlayer.setCurrentIndex}
+            onIsPlayingChange={globalPlayer.setIsPlaying}
+            volume={globalPlayer.volume}
+            onVolumeChange={globalPlayer.setVolume}
+            playMode={globalPlayer.playMode}
+            onPlayModeChange={globalPlayer.setPlayMode}
+            currentTime={globalPlayer.currentTime}
+            duration={globalPlayer.duration}
+            onTimeUpdate={globalPlayer.handleTimeUpdate}
           />
         </div>
       )}

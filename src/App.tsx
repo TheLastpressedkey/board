@@ -13,6 +13,8 @@ import { LinkInput } from './components/Card/LinkInput';
 import { ContentType } from './types';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { CardThemeProvider } from './contexts/CardThemeContext';
+import { GlobalMusicPlayerProvider } from './contexts/GlobalMusicPlayerContext';
+import { GlobalVideoPlayer } from './components/GlobalVideoPlayer/GlobalVideoPlayer';
 
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -131,69 +133,74 @@ export default function App() {
   return (
     <ThemeProvider>
       <CardThemeProvider>
-        <div className="min-h-screen bg-gray-900" onContextMenu={handleContextMenu}>
-          <Sidebar
-            boards={boards}
-            currentBoard={currentBoard || ''}
-            onBoardSelect={setCurrentBoard}
-            onBoardDelete={deleteBoard}
-            user={user}
-            onSignOut={signOut}
-            onCreateCard={handleCreateCard}
-          />
+        <GlobalMusicPlayerProvider>
+          <div className="min-h-screen bg-gray-900" onContextMenu={handleContextMenu}>
+            <Sidebar
+              boards={boards}
+              currentBoard={currentBoard || ''}
+              onBoardSelect={setCurrentBoard}
+              onBoardDelete={deleteBoard}
+              user={user}
+              onSignOut={signOut}
+              onCreateCard={handleCreateCard}
+            />
 
-          {currentBoardData && (
-            <Board
-              board={currentBoardData}
-              onDeleteCard={deleteCard}
-              onUpdateCardPosition={updateCardPosition}
-              onContentChange={updateCardContent}
-              onScrollProgress={setScrollProgress}
-              onAddCard={handleCardTypeSelect}
-              onUpdateCardDimensions={updateCardDimensions}
-              onUpdateCardMetadata={updateCardMetadata}
-              onToggleCardPin={toggleCardPin}
+            {currentBoardData && (
+              <Board
+                board={currentBoardData}
+                onDeleteCard={deleteCard}
+                onUpdateCardPosition={updateCardPosition}
+                onContentChange={updateCardContent}
+                onScrollProgress={setScrollProgress}
+                onAddCard={handleCardTypeSelect}
+                onUpdateCardDimensions={updateCardDimensions}
+                onUpdateCardMetadata={updateCardMetadata}
+                onToggleCardPin={toggleCardPin}
+                onAutoArrange={autoArrangeCards}
+              />
+            )}
+
+            {contextMenu && !showLinkInput && (
+              <ContextMenu
+                x={contextMenu.x}
+                y={contextMenu.y}
+                onSelect={handleCardTypeSelect}
+                onClose={() => setContextMenu(null)}
+              />
+            )}
+
+            {showLinkInput && contextMenu && (
+              <LinkInput
+                position={contextMenu}
+                onSubmit={(url) => {
+                  // Convert global coordinates to board-relative coordinates for link cards
+                  const relativePosition = getRelativePositionFromGlobal(contextMenu.x, contextMenu.y);
+                  addLinkCard(relativePosition, url);
+                  setShowLinkInput(false);
+                  setContextMenu(null);
+                }}
+                onClose={() => {
+                  setShowLinkInput(false);
+                  setContextMenu(null);
+                }}
+              />
+            )}
+
+            <BottomBar
+              scrollProgress={scrollProgress}
+              onCreateBoard={createBoard}
+              onSaveBoards={saveBoards}
+              username={username}
+              email={user.email || ''}
+              hasUnsavedChanges={hasUnsavedChanges}
+              onUpdateUsername={updateUsername}
               onAutoArrange={autoArrangeCards}
             />
-          )}
 
-          {contextMenu && !showLinkInput && (
-            <ContextMenu
-              x={contextMenu.x}
-              y={contextMenu.y}
-              onSelect={handleCardTypeSelect}
-              onClose={() => setContextMenu(null)}
-            />
-          )}
-
-          {showLinkInput && contextMenu && (
-            <LinkInput
-              position={contextMenu}
-              onSubmit={(url) => {
-                // Convert global coordinates to board-relative coordinates for link cards
-                const relativePosition = getRelativePositionFromGlobal(contextMenu.x, contextMenu.y);
-                addLinkCard(relativePosition, url);
-                setShowLinkInput(false);
-                setContextMenu(null);
-              }}
-              onClose={() => {
-                setShowLinkInput(false);
-                setContextMenu(null);
-              }}
-            />
-          )}
-
-          <BottomBar 
-            scrollProgress={scrollProgress}
-            onCreateBoard={createBoard}
-            onSaveBoards={saveBoards}
-            username={username}
-            email={user.email || ''}
-            hasUnsavedChanges={hasUnsavedChanges}
-            onUpdateUsername={updateUsername}
-            onAutoArrange={autoArrangeCards}
-          />
-        </div>
+            {/* Global video player - persists across board changes */}
+            <GlobalVideoPlayer />
+          </div>
+        </GlobalMusicPlayerProvider>
       </CardThemeProvider>
     </ThemeProvider>
   );
