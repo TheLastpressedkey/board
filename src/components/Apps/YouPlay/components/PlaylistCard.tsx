@@ -10,6 +10,7 @@ interface PlaylistCardProps {
   onDelete: (playlist: Playlist) => void;
   onDuplicate: (playlist: Playlist) => void;
   layoutSize: LayoutSize;
+  themeColor: string;
 }
 
 const CATEGORY_ICONS = {
@@ -20,7 +21,7 @@ const CATEGORY_ICONS = {
   other: Music
 };
 
-export function PlaylistCard({ playlist, onPlay, onEdit, onDelete, onDuplicate, layoutSize }: PlaylistCardProps) {
+export function PlaylistCard({ playlist, onPlay, onEdit, onDelete, onDuplicate, layoutSize, themeColor }: PlaylistCardProps) {
   const Icon = CATEGORY_ICONS[playlist.category];
 
   const formatDuration = (seconds: number) => {
@@ -30,28 +31,28 @@ export function PlaylistCard({ playlist, onPlay, onEdit, onDelete, onDuplicate, 
     return `${minutes}m`;
   };
 
-  // Adaptive sizing
-  const iconContainerSize = layoutSize === 'compact' ? 'w-16 h-16' : 'w-20 h-20';
-  const iconSize = layoutSize === 'compact' ? 'w-8 h-8' : 'w-10 h-10';
-  const playButtonSize = layoutSize === 'compact' ? 'w-12 h-12' : 'w-16 h-16';
-  const playIconSize = layoutSize === 'compact' ? 'w-5 h-5' : 'w-7 h-7';
-  const padding = layoutSize === 'compact' ? 'p-3' : layoutSize === 'normal' ? 'p-4' : 'p-5';
-  const titleSize = layoutSize === 'compact' ? 'text-base' : 'text-lg';
-  const descriptionSize = layoutSize === 'compact' ? 'text-xs' : 'text-sm';
-  const badgePadding = layoutSize === 'compact' ? 'px-2 py-1' : 'px-3 py-1.5';
-  const badgePosition = layoutSize === 'compact' ? 'top-2 left-2' : 'top-3 left-3';
-  const actionIconSize = layoutSize === 'compact' ? 'w-3.5 h-3.5' : 'w-4 h-4';
+  // Adaptive sizing - more compact
+  const iconContainerSize = layoutSize === 'compact' ? 'w-12 h-12' : 'w-14 h-14';
+  const iconSize = layoutSize === 'compact' ? 'w-6 h-6' : 'w-7 h-7';
+  const playButtonSize = layoutSize === 'compact' ? 'w-8 h-8' : 'w-10 h-10';
+  const playIconSize = layoutSize === 'compact' ? 'w-4 h-4' : 'w-5 h-5';
+  const padding = layoutSize === 'compact' ? 'p-2' : layoutSize === 'normal' ? 'p-2.5' : 'p-3';
+  const titleSize = layoutSize === 'compact' ? 'text-xs' : 'text-sm';
+  const descriptionSize = 'text-xs';
+  const badgePadding = 'px-1.5 py-0.5';
+  const badgePosition = 'top-1.5 left-1.5';
+  const actionIconSize = 'w-3 h-3';
 
   return (
     <div
       onClick={() => onPlay(playlist)}
-      className="group relative rounded-2xl overflow-hidden transition-all duration-200 hover:scale-[1.02] cursor-pointer bg-white/10 backdrop-blur-sm"
+      className="group relative rounded-xl overflow-hidden transition-all duration-200 hover:scale-[1.03] cursor-pointer bg-white/5 backdrop-blur-sm border border-white/5"
       style={{
-        boxShadow: `0 4px 16px ${playlist.color}10, 0 2px 8px ${playlist.color}08`
+        boxShadow: `0 2px 8px ${themeColor}08`
       }}
     >
       {/* Thumbnail or Icon */}
-      <div className="aspect-video relative overflow-hidden bg-gradient-to-br from-white/5 to-transparent">
+      <div className="aspect-square relative overflow-hidden bg-gradient-to-br from-white/5 to-transparent">
         {playlist.thumbnail ? (
           <>
             <img
@@ -65,27 +66,26 @@ export function PlaylistCard({ playlist, onPlay, onEdit, onDelete, onDuplicate, 
           <div className="w-full h-full flex items-center justify-center">
             <div
               className={`${iconContainerSize} rounded-full flex items-center justify-center transition-all duration-200 group-hover:scale-110`}
-              style={{ backgroundColor: `${playlist.color}15` }}
+              style={{ backgroundColor: `${themeColor}15` }}
             >
-              <Icon className={`${iconSize} transition-colors duration-200`} style={{ color: playlist.color }} />
+              <Icon className={`${iconSize} transition-colors duration-200`} style={{ color: themeColor }} />
             </div>
           </div>
         )}
 
         {/* Play Button Overlay */}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200">
-          <div className={`${playButtonSize} bg-white rounded-full shadow-xl flex items-center justify-center transform scale-90 group-hover:scale-100 transition-transform duration-200`}>
-            <Play className={`${playIconSize} ml-1`} style={{ color: playlist.color }} fill="currentColor" />
+          <div className={`${playButtonSize} bg-white/95 rounded-full shadow-lg flex items-center justify-center transform scale-90 group-hover:scale-100 transition-transform duration-200`}>
+            <Play className={`${playIconSize} ml-0.5`} style={{ color: themeColor }} fill="currentColor" />
           </div>
         </div>
 
         {/* Category Badge */}
         <div
-          className={`absolute ${badgePosition} ${badgePadding} rounded-full text-xs font-semibold backdrop-blur-md transition-all duration-200`}
+          className={`absolute ${badgePosition} ${badgePadding} rounded text-[9px] font-semibold backdrop-blur-md transition-all duration-200 uppercase tracking-wide`}
           style={{
-            backgroundColor: `${playlist.color}95`,
-            color: 'white',
-            boxShadow: `0 2px 8px ${playlist.color}30`
+            backgroundColor: `${themeColor}80`,
+            color: 'white'
           }}
         >
           {playlist.category}
@@ -94,72 +94,36 @@ export function PlaylistCard({ playlist, onPlay, onEdit, onDelete, onDuplicate, 
 
       {/* Info */}
       <div className={padding}>
-        <div className="flex items-start justify-between mb-2">
-          <h3 className={`text-white/90 font-bold ${titleSize} truncate flex-1 leading-tight`}>{playlist.name}</h3>
+        <h3 className={`text-white/90 font-semibold ${titleSize} truncate mb-1 leading-tight`}>{playlist.name}</h3>
+
+        <div className="flex items-center gap-1.5 text-[10px] font-medium text-white/40">
+          <span>{playlist.videos.length} video{playlist.videos.length !== 1 ? 's' : ''}</span>
         </div>
 
-        {playlist.description && layoutSize !== 'compact' && (
-          <p className={`text-white/60 ${descriptionSize} mb-4 line-clamp-2 leading-relaxed`}>{playlist.description}</p>
-        )}
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 text-xs font-medium text-white/50">
-            <span className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: playlist.color }} />
-              {playlist.videos.length} video{playlist.videos.length !== 1 ? 's' : ''}
-            </span>
-            {playlist.totalDuration > 0 && layoutSize !== 'compact' && (
-              <span className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: playlist.color }} />
-                {formatDuration(playlist.totalDuration)}
-              </span>
-            )}
-          </div>
-
-          {/* Action Buttons - Progressive Disclosure */}
-          {layoutSize !== 'compact' && (
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(playlist);
-                }}
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors duration-200 cursor-pointer"
-                title="Edit"
-              >
-                <Settings className={actionIconSize} style={{ color: playlist.color }} />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDuplicate(playlist);
-                }}
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors duration-200 cursor-pointer"
-                title="Duplicate"
-              >
-                <Copy className={actionIconSize} style={{ color: playlist.color }} />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(playlist);
-                }}
-                className="p-2 rounded-lg hover:bg-red-500/20 transition-colors duration-200 cursor-pointer"
-                title="Delete"
-              >
-                <Trash2 className={`${actionIconSize} text-red-400`} />
-              </button>
-            </div>
-          )}
+        {/* Action Buttons - On hover */}
+        <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(playlist);
+            }}
+            className="p-1.5 rounded-lg bg-black/40 backdrop-blur-sm hover:bg-black/60 transition-colors duration-200 cursor-pointer"
+            title="Edit"
+          >
+            <Settings className={actionIconSize} style={{ color: themeColor }} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(playlist);
+            }}
+            className="p-1.5 rounded-lg bg-black/40 backdrop-blur-sm hover:bg-red-500/40 transition-colors duration-200 cursor-pointer"
+            title="Delete"
+          >
+            <Trash2 className={`${actionIconSize} text-red-400`} />
+          </button>
         </div>
       </div>
-
-      {/* Play Count Badge (if > 0) */}
-      {playlist.playCount > 0 && layoutSize !== 'compact' && (
-        <div className="absolute top-3 right-3 px-2.5 py-1 bg-white/95 backdrop-blur-sm rounded-full text-xs font-semibold shadow-md" style={{ color: playlist.color }}>
-          {playlist.playCount} play{playlist.playCount !== 1 ? 's' : ''}
-        </div>
-      )}
     </div>
   );
 }

@@ -178,7 +178,17 @@ export function YouPlay({
 
       {/* Player View - Video container + Controls */}
       {viewMode === 'player' && selectedPlaylist && (
-        <div className="absolute inset-0 flex flex-col bg-black">
+        <div
+          className="absolute inset-0 flex flex-col bg-black"
+          onDoubleClick={handleBackToLibrary}
+        >
+          {/* Draggable Header for Player Mode */}
+          <div
+            onMouseDown={onDragStart}
+            className="absolute top-0 left-0 right-0 h-12 z-50 cursor-move"
+            style={{ pointerEvents: 'auto' }}
+          />
+
           {/* Video Container - GlobalVideoPlayer will be rendered here via Portal */}
           <div id="youplay-video-container" className="flex-1 relative bg-black" />
 

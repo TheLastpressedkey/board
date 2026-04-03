@@ -122,7 +122,7 @@ export function PlayerView({
   return (
     <div className="flex flex-col h-full overflow-hidden relative pointer-events-none">
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-[160] bg-gradient-to-b from-black/80 to-transparent p-4 pointer-events-auto">
+      <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent p-4 pointer-events-auto">
         <div className="flex items-center justify-between">
           <button
             onClick={onBack}
@@ -151,7 +151,7 @@ export function PlayerView({
 
       {/* Controls Overlay - VideoPlayer is rendered in YouPlay.tsx */}
       <div
-        className="absolute inset-0 flex items-end pointer-events-auto z-[160]"
+        className="absolute inset-0 flex items-end pointer-events-auto z-20"
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
@@ -180,7 +180,7 @@ export function PlayerView({
 
       {/* Playlist Sidebar */}
       {showPlaylist && (
-        <div className="absolute right-0 top-0 bottom-0 w-80 md:w-96 bg-gray-900/98 backdrop-blur-xl z-[170] flex flex-col border-l border-white/10 shadow-2xl pointer-events-auto">
+        <div className="absolute right-0 top-0 bottom-0 w-80 md:w-96 bg-gray-900/98 backdrop-blur-xl z-30 flex flex-col border-l border-white/10 shadow-2xl pointer-events-auto">
           <div className="p-4 border-b border-white/10 flex items-center justify-between">
             <div>
               <h3 className="text-white font-semibold text-lg">{playlist.name}</h3>

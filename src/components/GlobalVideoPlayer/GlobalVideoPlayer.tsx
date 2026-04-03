@@ -35,7 +35,7 @@ export function GlobalVideoPlayer() {
         containerRef.current.style.left = `${rect.left}px`;
         containerRef.current.style.width = `${rect.width}px`;
         containerRef.current.style.height = `${rect.height}px`;
-        containerRef.current.style.zIndex = '150';
+        containerRef.current.style.zIndex = '10';
         containerRef.current.style.opacity = '1';
         containerRef.current.style.pointerEvents = 'none'; // Les contrôles sont gérés par PlayerView
       }

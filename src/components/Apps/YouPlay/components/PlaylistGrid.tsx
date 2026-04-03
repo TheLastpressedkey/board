@@ -32,8 +32,7 @@ export function PlaylistGrid({
   const textSize = layoutSize === 'compact' ? 'text-sm' : 'text-base';
   const buttonPadding = layoutSize === 'compact' ? 'px-6 py-3' : 'px-8 py-4';
   const spacing = layoutSize === 'compact' ? 'mb-8' : layoutSize === 'normal' ? 'mb-10' : 'mb-12';
-  const gridMinWidth = layoutSize === 'compact' ? '200px' : '280px';
-  const gridGap = layoutSize === 'compact' ? 'gap-3' : layoutSize === 'normal' ? 'gap-4' : 'gap-6';
+  const gridGap = layoutSize === 'compact' ? 'gap-2' : layoutSize === 'normal' ? 'gap-3' : 'gap-4';
 
   if (playlists.length === 0) {
     return (
@@ -84,7 +83,7 @@ export function PlaylistGrid({
     );
   }
 
-  const cardWidth = layoutSize === 'compact' ? '280px' : layoutSize === 'normal' ? '300px' : '320px';
+  const cardWidth = layoutSize === 'compact' ? '160px' : layoutSize === 'normal' ? '180px' : '200px';
 
   return (
     <div className={`flex flex-wrap ${gridGap} min-h-full`}>
@@ -97,6 +96,7 @@ export function PlaylistGrid({
             onDelete={onPlaylistDelete}
             onDuplicate={onPlaylistDuplicate}
             layoutSize={layoutSize}
+            themeColor={themeColor}
           />
         </div>
       ))}
