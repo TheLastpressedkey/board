@@ -183,7 +183,7 @@ export function YouPlay({
           <div id="youplay-video-container" className="flex-1 relative bg-black" />
 
           {/* Controls Overlay */}
-          <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0">
             <PlayerView
               playlist={selectedPlaylist}
               onBack={handleBackToLibrary}
