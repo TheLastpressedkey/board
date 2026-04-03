@@ -121,6 +121,16 @@ export function GlobalMusicPlayerProvider({ children }: { children: React.ReactN
   };
 
   const stopPlayback = () => {
+    // Destroy the global YouTube player
+    if ((window as any).__globalYouTubePlayer) {
+      try {
+        (window as any).__globalYouTubePlayer.destroy();
+      } catch (e) {
+        console.error('Error destroying player:', e);
+      }
+      delete (window as any).__globalYouTubePlayer;
+    }
+
     setActivePlaylist(null);
     setIsPlaying(false);
     setCurrentIndex(0);

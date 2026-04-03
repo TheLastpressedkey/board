@@ -197,7 +197,7 @@ export default function App() {
               onAutoArrange={autoArrangeCards}
             />
 
-            {/* Global video player - persists across board changes */}
+            {/* Global video player - floats at bottom when not in YouPlay */}
             <GlobalVideoPlayer />
           </div>
         </GlobalMusicPlayerProvider>

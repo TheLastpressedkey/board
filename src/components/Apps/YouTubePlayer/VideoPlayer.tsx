@@ -72,9 +72,16 @@ export function VideoPlayer({
     }
   }, []);
 
-  // Initialiser le lecteur (une seule fois)
+  // Initialiser le lecteur (une seule fois) - utilise un player global
   useEffect(() => {
     if (!isReady || !containerRef.current) return;
+
+    // Réutiliser le player existant s'il est déjà créé
+    if ((window as any).__globalYouTubePlayer && !playerRef.current) {
+      playerRef.current = (window as any).__globalYouTubePlayer;
+      return;
+    }
+
     if (playerRef.current) return; // Déjà initialisé
 
     playerRef.current = new window.YT.Player(containerRef.current, {
@@ -110,12 +117,11 @@ export function VideoPlayer({
       }
     });
 
-    return () => {
-      if (playerRef.current) {
-        playerRef.current.destroy();
-        playerRef.current = null;
-      }
-    };
+    // Stocker le player globalement pour le réutiliser
+    (window as any).__globalYouTubePlayer = playerRef.current;
+
+    // NE PAS détruire le player dans le cleanup - il doit persister
+    // Il sera détruit seulement quand on appelle stopPlayback()
   }, [isReady]);
 
   // Changer de vidéo sans recréer le player

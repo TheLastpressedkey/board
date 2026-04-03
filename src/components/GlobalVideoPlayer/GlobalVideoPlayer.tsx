@@ -22,35 +22,10 @@ export function GlobalVideoPlayer() {
     return null;
   }
 
-  // Hidden mode: invisible player for background playback
-  // Fullscreen mode: fixed position covering the whole viewport
-  const isHidden = displayMode === 'hidden';
-
-  if (isHidden) {
-    // Hidden background player
-    return (
-      <div
-        className="fixed bottom-0 left-0 right-0 z-[200]"
-        style={{ width: 0, height: 0, overflow: 'hidden', pointerEvents: 'none' }}
-      >
-        <VideoPlayer
-          videoId={currentVideo.id}
-          isPlaying={isPlaying}
-          volume={volume}
-          onEnded={handleVideoEnd}
-          onPlayStateChange={setIsPlaying}
-          playMode={playMode}
-          onTimeUpdate={handleTimeUpdate}
-          onSeek={(time) => {}}
-          initialSeekTime={initialSeekTime}
-        />
-      </div>
-    );
-  }
-
-  // Fullscreen mode: fixed position covering viewport behind YouPlay app
+  // Le player est caché en z-index négatif, mais reste dans le DOM pour continuer à jouer
+  // YouPlay affichera son propre conteneur par-dessus en mode fullscreen
   return (
-    <div className="fixed inset-0 z-[150] bg-black" style={{ pointerEvents: 'none' }}>
+    <div className="fixed bottom-0 left-0" style={{ width: '1px', height: '1px', zIndex: -999, opacity: 0, pointerEvents: 'none' }}>
       <VideoPlayer
         videoId={currentVideo.id}
         isPlaying={isPlaying}

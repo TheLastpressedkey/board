@@ -47,10 +47,16 @@ export function YouPlay({
       if (theme === 'youplay') {
         setTheme(previousTheme);
       }
-      // Stop playback when closing the app
-      globalPlayer.stopPlayback();
+      // Note: Don't stop playback here - it would stop when changing boards too
+      // Playback is stopped via handleClose instead
     };
   }, []);
+
+  const handleClose = () => {
+    // Stop playback when explicitly closing the app
+    globalPlayer.stopPlayback();
+    onClose();
+  };
 
   // Sync display mode with view mode
   useEffect(() => {
@@ -59,6 +65,13 @@ export function YouPlay({
     } else {
       globalPlayer.setDisplayMode('hidden');
     }
+
+    // Cleanup: reset to hidden when component unmounts or view changes
+    return () => {
+      if (viewMode === 'player') {
+        globalPlayer.setDisplayMode('hidden');
+      }
+    };
   }, [viewMode]);
 
   const handlePlaylistSelect = async (playlist: Playlist) => {
@@ -126,7 +139,7 @@ export function YouPlay({
           title={getHeaderTitle()}
           subtitle={getHeaderSubtitle()}
           icon={Music2}
-          onClose={onClose}
+          onClose={handleClose}
           onDragStart={onDragStart}
           onTogglePin={onTogglePin}
           isPinned={isPinned}
@@ -163,25 +176,31 @@ export function YouPlay({
         )}
       </div>
 
-      {/* Player View - Controls only, video is in App.tsx GlobalVideoPlayer */}
+      {/* Player View - Video container + Controls */}
       {viewMode === 'player' && selectedPlaylist && (
-        <div className="absolute inset-0 z-[160] pointer-events-none">
-          <PlayerView
-            playlist={selectedPlaylist}
-            onBack={handleBackToLibrary}
-            themeColor={themeColors.primary}
-            currentIndex={globalPlayer.currentIndex}
-            isPlaying={globalPlayer.isPlaying}
-            onCurrentIndexChange={globalPlayer.setCurrentIndex}
-            onIsPlayingChange={globalPlayer.setIsPlaying}
-            volume={globalPlayer.volume}
-            onVolumeChange={globalPlayer.setVolume}
-            playMode={globalPlayer.playMode}
-            onPlayModeChange={globalPlayer.setPlayMode}
-            currentTime={globalPlayer.currentTime}
-            duration={globalPlayer.duration}
-            onTimeUpdate={globalPlayer.handleTimeUpdate}
-          />
+        <div className="absolute inset-0 flex flex-col bg-black">
+          {/* Video Container - GlobalVideoPlayer will be rendered here via Portal */}
+          <div id="youplay-video-container" className="flex-1 relative bg-black" />
+
+          {/* Controls Overlay */}
+          <div className="absolute inset-0 pointer-events-none">
+            <PlayerView
+              playlist={selectedPlaylist}
+              onBack={handleBackToLibrary}
+              themeColor={themeColors.primary}
+              currentIndex={globalPlayer.currentIndex}
+              isPlaying={globalPlayer.isPlaying}
+              onCurrentIndexChange={globalPlayer.setCurrentIndex}
+              onIsPlayingChange={globalPlayer.setIsPlaying}
+              volume={globalPlayer.volume}
+              onVolumeChange={globalPlayer.setVolume}
+              playMode={globalPlayer.playMode}
+              onPlayModeChange={globalPlayer.setPlayMode}
+              currentTime={globalPlayer.currentTime}
+              duration={globalPlayer.duration}
+              onTimeUpdate={globalPlayer.handleTimeUpdate}
+            />
+          </div>
         </div>
       )}
     </div>
